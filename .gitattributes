@@ -1,2 +1,21 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# LF in the repository and in every working tree, whatever the OS: rustfmt and Prettier
+# write LF, and a CRLF checkout on Windows would turn every formatting check red.
+* text=auto eol=lf
+
+# Windows batch files need CRLF to run.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary assets: never normalised, never diffed as text.
+*.png binary
+*.gif binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.ico binary
+*.icns binary
+*.wasm binary
+*.ase binary
+*.aseprite binary
+*.woff2 binary
+*.jar binary
