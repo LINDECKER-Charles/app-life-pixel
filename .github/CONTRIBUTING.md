@@ -143,6 +143,8 @@ The scope is mandatory when the map covers the modified files:
 | `.github/workflows/**`, `.github/dependabot.yml`, `.github/CODEOWNERS` | `ci` |
 | `docs/**`, `README.md`, `AGENTS.md`, `CLAUDE.md`, the rest of `.github/**` | `docs` |
 | `scripts/**` | `scripts` |
+| `xtask/**` | `xtask` |
+| `samples/**` | `samples` |
 | configuration at the root | no scope: `build` for dependencies and toolchains, `chore` otherwise |
 
 Tests travel with the code they test and take its scope.

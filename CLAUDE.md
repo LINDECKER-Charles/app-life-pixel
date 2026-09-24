@@ -25,7 +25,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 |---|---|
 | [docs/product.md](docs/product.md) | what we build, for whom, in which order |
 | [docs/implementation-plan.md](docs/implementation-plan.md) | how the milestones split into tasks for parallel agents, and in which order |
-| [docs/v1-implementation.md](docs/v1-implementation.md) | what V1 contains, the contracts its tasks share, how it is built and released |
+| [docs/v1/](docs/v1/README.md) | V1's technical design: scope, method, and what each task builds and how it is tested |
 | [docs/architecture.md](docs/architecture.md) | components, crates, data flow, distributions |
 | [docs/export.md](docs/export.md) | how an animation becomes a WASM bundle, and how an app plays it |
 | [docs/mcp.md](docs/mcp.md) | MCP tools, transports, authentication, limits |
@@ -56,6 +56,8 @@ A **proposed** decision is not settled: do not build on it without the maintaine
 | `frontend` | Angular workspace: `projects/app` (editor, Ionic), `projects/admin`, `projects/shared` |
 | `i18n` | translation catalogues, one JSON file per language: served at runtime, shipped by the desktop app, used for emails |
 | `tauri` | Tauri 2 shell around `projects/app`: desktop with the local backend, Android on the hosted API |
+| `xtask` | build commands Cargo cannot express: the player, the engine, the size checkpoint, the desktop bundle |
+| `samples` | sample animations drawn for the project, dedicated to CC0 |
 | `docker`, `compose*.yaml` | images and deployment overlays |
 
 Dependency direction between crates:
@@ -158,6 +160,8 @@ Commit convention (maintained by /commit, initialised by /b-hive-init).
   - `.github/workflows/**`, `.github/dependabot.yml`, `.github/CODEOWNERS` → `ci`
   - `docs/**`, `README.md`, `CLAUDE.md`, `AGENTS.md`, the rest of `.github/**` → `docs`
   - `scripts/**` → `scripts`
+  - `xtask/**` → `xtask`
+  - `samples/**` → `samples`
   - cross-cutting files at the root (`Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`,
     `rustfmt.toml`, `clippy.toml`, `deny.toml`, `.nvmrc`, `.editorconfig`, `.gitignore`,
     `.gitattributes`, `LICENSE`, `LICENSE-MIT`) → no scope: `build` for dependencies and
