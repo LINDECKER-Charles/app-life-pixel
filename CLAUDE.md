@@ -24,6 +24,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 | Document | Answers |
 |---|---|
 | [docs/product.md](docs/product.md) | what we build, for whom, in which order |
+| [docs/implementation-plan.md](docs/implementation-plan.md) | how the milestones split into tasks for parallel agents, and in which order |
 | [docs/architecture.md](docs/architecture.md) | components, crates, data flow, distributions |
 | [docs/export.md](docs/export.md) | how an animation becomes a WASM bundle, and how an app plays it |
 | [docs/mcp.md](docs/mcp.md) | MCP tools, transports, authentication, limits |

@@ -101,5 +101,6 @@ a trade-off today:
 | M6 | Android app | the same Tauri shell built for Android, on the Play Store, connected to the hosted service through OAuth 2.1 |
 | M7 | Paid plans | billing live, three paid tiers |
 
-M1 and M2 run in parallel (D19): the work is split by an orchestrator from a plan, and the
-following milestones overlap as far as their dependencies allow.
+M1 and M2 run in parallel (D19): the work is split by an orchestrator from the
+[implementation plan](implementation-plan.md), and the following milestones overlap as far as
+their dependencies allow.
