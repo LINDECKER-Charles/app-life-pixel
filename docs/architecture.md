@@ -145,6 +145,7 @@ Exports are never stored: they are compiled on demand, in milliseconds, from the
 | Self-hosted server | the same Docker images as the hosted service | the user's server | the user's Postgres and storage | Streamable HTTP |
 
 - **Web**: the single-page app and the API share one origin — no CORS to maintain for browsers.
+  Without an account, the editor keeps the work in the page and saves nothing (D37).
 - **Android**: sells nothing in the app (D18). Pointing it at a self-hosted server is a later
   setting.
 - **Desktop**: works offline and without an account, ships the `life-pixel` CLI so that a local

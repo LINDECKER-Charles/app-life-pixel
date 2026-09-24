@@ -51,16 +51,15 @@ detailed here while the previous one is under way.
 
 | ID | Task | Owns | Waits for | Done when |
 |---|---|---|---|---|
-| W0 | Engine interface | `frontend/projects/app/src/app/engine/` | F3 | the TypeScript interface of the editor engine — documents, operations, undo and redo, rendering with onion skin, export — and an in-memory mock of it, so that the interface is built before `editor-wasm` exists |
-| U1 | Application shell | the app's root, routes and settings; `frontend/projects/shared` | F3 | the Ionic shell, lazy routes, settings with live language switching, design tokens, dark mode, reduced motion, visible focus |
+| W0 | Engine interface | `frontend/projects/app/src/app/engine/` | F3 | the TypeScript interface of the editor engine — documents, operations, undo and redo, rendering with onion skin, export, whether it holds unsaved work — and an in-memory mock of it, so that the interface is built before `editor-wasm` exists |
+| U1 | Application shell | the app's root, routes and settings; `frontend/projects/shared` | W0 | the Ionic shell, lazy routes, settings with live language switching, design tokens, dark mode, reduced motion, visible focus; a warning before the page is left while it holds unsaved work, since nothing is saved without an account (D37) |
 | K2 | Editing operations | the editing modules of `crates/core` | K1 | the tools and edits of the MVP in [product.md](product.md) as operations with their inverse, for undo and redo; PNG and sprite-sheet import reduced to the palette, decoded under dimension and size limits; golden images |
 | U2 | Canvas | the app's `canvas/` feature | U1, W0 | zoom, pan, grid, tool input, selection overlay and onion skin, all usable from the keyboard |
 | U3 | Timeline | the app's `timeline/` feature | U1, W0 | frames and their durations, layers, tags, playback preview |
 | U4 | Palette and tools | the app's `palette/` and `tools/` features | U1, W0 | palette editor, tool bar, keyboard shortcuts |
-| U5 | Local library | the app's `library/` feature | U1, W0 | projects and animations kept in the browser (IndexedDB) behind a storage port, which the account (M3) and the desktop (M5) implement later; search, duplicate, delete |
-| U6 | Export dialog | the app's `export/` feature | U1, W0, L1 | every format with its size side by side, download, the snippets for HTML, Angular, React and Vue |
+| U5 | Export dialog | the app's `export/` feature | U1, W0, L1 | every format with its size side by side, download, the snippets for HTML, Angular, React and Vue |
 | W1 | Editor engine | `crates/editor-wasm`, the engine's adapter | W0, K2, C1 | `editor-wasm` implements W0's interface over `core` and `compiler`, in a Web Worker, and the app leaves the mock; no pixel rule in TypeScript |
-| U7 | End-to-end path | `frontend/e2e/` | U2 to U6, W1 | Playwright covers draw → animate → export → play, with automated accessibility checks on every screen: M2 is done |
+| U6 | End-to-end path | `frontend/e2e/` | U2 to U5, W1 | Playwright covers draw → animate → export → play, with automated accessibility checks on every screen: M2 is done |
 
 ### Order
 
@@ -68,19 +67,19 @@ detailed here while the previous one is under way.
 flowchart LR
   F1[F1 CI] --> F2[F2 workspace, contract] & F3[F3 front-end workspace]
   F2 --> K1[K1 document model] & P1[P1 format codec] & L1[L1 loader]
-  F3 --> W0[W0 engine interface] & U1[U1 shell]
+  F3 --> W0[W0 engine interface] --> U1[U1 shell]
   P1 --> P2[P2 player]
   K1 --> K2[K2 editing] & C2[C2 classic exports]
   K1 & P2 & C2 & L1 --> C1[C1 WASM export]
   C1 --> S1[S1 size checkpoint]
-  U1 & W0 --> U2[U2 canvas] & U3[U3 timeline] & U4[U4 palette, tools] & U5[U5 library]
-  U1 & W0 & L1 --> U6[U6 export dialog]
+  U1 --> U2[U2 canvas] & U3[U3 timeline] & U4[U4 palette, tools]
+  U1 & L1 --> U5[U5 export dialog]
   W0 & K2 & C1 --> W1[W1 editor engine]
-  U2 & U3 & U4 & U5 & U6 & W1 --> U7[U7 end to end]
+  U2 & U3 & U4 & U5 & W1 --> U6[U6 end to end]
 ```
 
-In waves: F1; then F2 and F3; then K1, P1, L1, W0 and U1; then K2, P2, C2 and U2 to U6; then C1;
-then S1 and W1; then U7. Two chains set the pace — F2 → P1 → P2 → C1 → W1 and F2 → K1 → K2 →
+In waves: F1; then F2 and F3; then K1, P1, L1 and W0; then K2, P2, C2 and U1; then C1 and U2 to
+U5; then S1 and W1; then U6. Two chains set the pace — F2 → P1 → P2 → C1 → W1 and F2 → K1 → K2 →
 W1 —: the orchestrator staffs them first, while the interface tasks run on W0's mock.
 
 ## Later milestones
@@ -90,7 +89,7 @@ column is what only the maintainer can provide; starting it early avoids waiting
 
 | Milestone | Streams | Needed from the maintainer |
 |---|---|---|
-| M3 — hosted beta | `service`: use cases, storage ports, quotas; `server`: the API and its OpenAPI description, sign-in (D29), sessions, rate limits, problem details, the i18n endpoint, emails over SMTP, the Postgres and object-storage adapters; the typed client in `projects/shared`, and the library backed by the account — keeping the browser library for visitors is P16; admin console v1; images, compose files, build, promotion and deployment workflows, backups; legal pages | DNS records for `lifepixel.tech`; a Scaleway project — buckets, and Transactional Email with SPF, DKIM and DMARC; the GitHub secrets of [devops.md](devops.md); the `infra-vps` changes of [admin-console.md](admin-console.md); the identity printed in the legal notice |
+| M3 — hosted beta | `service`: use cases, storage ports, quotas; `server`: the API and its OpenAPI description, sign-in (D29), sessions, rate limits, problem details, the i18n endpoint, emails over SMTP, the Postgres and object-storage adapters; the typed client in `projects/shared`; the library — projects and animations, search, duplicate, delete — behind a storage port that the account implements, and the desktop later (M5), while a visitor without an account saves nothing (D37); admin console v1; images, compose files, build, promotion and deployment workflows, backups; legal pages | DNS records for `lifepixel.tech`; a Scaleway project — buckets, and Transactional Email with SPF, DKIM and DMARC; the GitHub secrets of [devops.md](devops.md); the `infra-vps` changes of [admin-console.md](admin-console.md); the identity printed in the legal notice |
 | M4 — MCP | `mcp`: the tools of [mcp.md](mcp.md) over `service`; the hosted endpoint with personal access tokens; `cli`: `life-pixel mcp` over stdio and local export, on the local file adapter of `service` | nothing |
 | M5 — desktop | `tauri/` in desktop mode: `service` in-process, the local library, the CLI shipped alongside, the signed updater; the release workflow | the Apple Developer Program, a Windows signing service, the updater key and its offline copy (D32) — a month ahead |
 | M6 — Android | the OAuth 2.1 authorization server, with PKCE, in `server`; the Android build of `tauri/`, back from the system browser through App Links, tokens in the keystore | a Play Console account and its two-week closed test, the upload key (D32) — a month ahead |

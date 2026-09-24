@@ -49,12 +49,11 @@ the documents it affects in the same commit. An ID is never reused or renumbered
 | D34 | Transactional email: Scaleway Transactional Email on the hosted service. The server speaks plain SMTP, so another provider — or a self-hoster's own server — is a configuration change (was O7) | 2026-09-24 |
 | D35 | Object storage: Scaleway Object Storage in Paris (`fr-par`), one bucket per environment, versioned in production. Database backups go, encrypted, to a bucket in Amsterdam (`nl-ams`), written by credentials that cannot delete them. Creations and backups stay in the EU (was O8) | 2026-09-24 |
 | D36 | Transloco is the client i18n library: its HTTP loader fetches the catalogues of D26 one language at a time, and it handles ICU plurals — a maintained library rather than a home-made loader and message formatter (was P10) | 2026-09-24 |
+| D37 | Visitors can try the hosted editor without an account, but nothing is saved: the work lives in the page, is lost when the page is left or reloaded — after a warning —, and every export stays available. Saving, and the library, take an account (was P16, amended: nothing is kept in the browser) | 2026-09-24 |
 
 ## Proposed
 
-| ID | Proposal | Why | Affects |
-|---|---|---|---|
-| P16 | The hosted editor keeps M2's mode without an account: documents stay in the browser until the visitor signs up, then move into their library, where the quota applies | trying the editor needs no sign-up, and M2 builds that mode anyway — without it, M2's browser library is dropped at M3 | [product.md](product.md), [architecture.md](architecture.md), [implementation-plan.md](implementation-plan.md) |
+None at the moment.
 
 ## Open
 

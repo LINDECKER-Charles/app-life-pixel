@@ -62,7 +62,7 @@ a trade-off today:
 | States | named frame ranges (tags), switchable from JavaScript |
 | Export | WASM bundle and loader, GIF, APNG, sprite sheet with JSON, PNG frames; integration snippets for HTML, Angular, React and Vue |
 | Library | projects and animations: search, duplicate, delete |
-| Accounts (hosted) | sign-up and sign-in with an email address and a password, storage usage against the 100 MB free quota |
+| Accounts (hosted) | sign-up and sign-in with an email address and a password, storage usage against the 100 MB free quota; without an account, the editor and its exports work, but nothing is saved (D37) |
 | MCP | the core tool set, on the hosted service (token authentication) and locally (stdio) |
 | Desktop | local library, every export, local MCP |
 | Languages | English and French |

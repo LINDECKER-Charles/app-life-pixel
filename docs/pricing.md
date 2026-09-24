@@ -4,6 +4,8 @@
 
 - **No paywall on usage.** Every editor feature, every export format and the MCP server are
   available on the free plan.
+- **Trying needs no account.** Without one, the editor and every export work in the browser, but
+  nothing is saved (D37): saving starts with the free plan.
 - **Storage bounds the free plan**, at **100 MB**: it is the cost that grows with users (D5).
 - **Three paid tiers** above it — Creator, Team, Business — that sell services rather than
   storage (D25).
