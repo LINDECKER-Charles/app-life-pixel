@@ -104,3 +104,6 @@ a trade-off today:
 M1 and M2 run in parallel (D19): the work is split by an orchestrator from the
 [implementation plan](implementation-plan.md), and the following milestones overlap as far as
 their dependencies allow.
+
+M1 to M5 deliver the MVP: they make V1, the first release, whose scope, definition of done and
+way of building are in [v1-implementation.md](v1-implementation.md).

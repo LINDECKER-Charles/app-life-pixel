@@ -42,6 +42,7 @@ document.querySelector('life-pixel').tag = 'jump';
 |---|---|
 | [Product](docs/product.md) | vision, principles, scope, milestones |
 | [Implementation plan](docs/implementation-plan.md) | the tasks of the next milestones, and their order |
+| [V1 implementation](docs/v1-implementation.md) | the first release: scope, shared contracts, method, release |
 | [Architecture](docs/architecture.md) | components, crates, distributions |
 | [Export and integration](docs/export.md) | the WASM bundle, the player, the `<life-pixel>` element |
 | [MCP server](docs/mcp.md) | tools, transports, authentication |
