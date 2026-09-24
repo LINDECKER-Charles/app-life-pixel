@@ -52,7 +52,9 @@ the documents it affects in the same commit. An ID is never reused or renumbered
 
 ## Proposed
 
-None at the moment.
+| ID | Proposal | Why | Affects |
+|---|---|---|---|
+| P16 | The hosted editor keeps M2's mode without an account: documents stay in the browser until the visitor signs up, then move into their library, where the quota applies | trying the editor needs no sign-up, and M2 builds that mode anyway — without it, M2's browser library is dropped at M3 | [product.md](product.md), [architecture.md](architecture.md), [implementation-plan.md](implementation-plan.md) |
 
 ## Open
 
