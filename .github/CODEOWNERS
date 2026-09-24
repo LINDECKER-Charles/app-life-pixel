@@ -1,0 +1,18 @@
+# Each rule requests a review from its owners; the last matching rule wins.
+# See https://docs.github.com/articles/about-code-owners
+
+# Default — the whole repository.
+*                       @LINDECKER-Charles
+
+# Code that runs inside other people's apps, and the format it reads.
+/crates/format/         @LINDECKER-Charles
+/crates/player/         @LINDECKER-Charles
+/player-js/             @LINDECKER-Charles
+
+# Supply chain, deployment and governance.
+/.github/               @LINDECKER-Charles
+/docker/                @LINDECKER-Charles
+/compose*.yaml          @LINDECKER-Charles
+/rust-toolchain.toml    @LINDECKER-Charles
+/LICENSE                @LINDECKER-Charles
+/LICENSE-MIT            @LINDECKER-Charles
