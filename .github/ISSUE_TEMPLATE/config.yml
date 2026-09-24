@@ -1,0 +1,17 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/LINDECKER-Charles/app-life-pixel/security/advisories/new
+    about: >-
+      Never in a public issue. Use a private security advisory.
+
+  - name: Read the specification
+    url: https://github.com/LINDECKER-Charles/app-life-pixel/tree/HEAD/docs
+    about: >-
+      Product scope, architecture, export format, MCP tools, roadmap and open decisions.
+
+  - name: Get help
+    url: https://github.com/LINDECKER-Charles/app-life-pixel/blob/HEAD/.github/SUPPORT.md
+    about: >-
+      Where to ask a question, and what to include so that it can be answered.

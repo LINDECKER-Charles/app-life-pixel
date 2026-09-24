@@ -1,0 +1,115 @@
+name: Bug report
+description: Report a behaviour that is wrong and reproducible
+title: "fix: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for this report.
+
+        **Never include** a token, an email address, a `.env` file or a creation you do not want
+        to make public. A problem with your hosted account, your plan or your data goes through
+        the support form of the app instead.
+
+        A **security vulnerability** is not reported here: use a
+        [private security advisory](https://github.com/LINDECKER-Charles/app-life-pixel/security/advisories/new).
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Preliminary checks
+      options:
+        - label: I have searched the existing issues, open and closed.
+          required: true
+        - label: This report contains no token and no personal data.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where does it happen?
+      options:
+        - Editor
+        - Export (the file produced)
+        - An export played in my app (loader or .wasm)
+        - MCP server
+        - Account, storage or plan (hosted)
+        - Admin console
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: distribution
+    attributes:
+      label: Distribution
+      options:
+        - Web app (hosted)
+        - Android app
+        - Desktop app — Windows
+        - Desktop app — macOS
+        - Desktop app — Linux
+        - Self-hosted server
+        - From source
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The app's version, the release tag, or the Docker image tag.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: >-
+        Browser or webview and operating system. For an export played in your app, add the
+        framework and the page's Content Security Policy.
+      placeholder: Firefox 142 on Ubuntu 24.04, Angular 22, strict CSP
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: The problem in one or two sentences.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: Add the console messages, with personal data removed.
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional notes
+      description: >-
+        Screenshots, a workaround you found, a minimal animation that reproduces the problem.

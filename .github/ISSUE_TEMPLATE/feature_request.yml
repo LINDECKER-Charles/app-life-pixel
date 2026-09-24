@@ -1,0 +1,60 @@
+name: Feature request
+description: Suggest an idea or describe a need
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the suggestion. Before writing it, check the scope, the milestones and the
+        non-goals in [docs/product.md](https://github.com/LINDECKER-Charles/app-life-pixel/blob/HEAD/docs/product.md),
+        and the open questions in [docs/decisions.md](https://github.com/LINDECKER-Charles/app-life-pixel/blob/HEAD/docs/decisions.md).
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Preliminary checks
+      options:
+        - label: I have read the product scope and its non-goals.
+          required: true
+        - label: I have searched the existing issues, open and closed.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Editor
+        - Export and player
+        - MCP server
+        - Desktop app
+        - Android app
+        - Hosted service, plans and quotas
+        - Admin console
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What you are trying to do, and what gets in the way today.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The proposal
+      description: What you would like to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other solutions or workarounds, and why they fall short.
