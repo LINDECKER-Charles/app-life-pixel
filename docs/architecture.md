@@ -178,12 +178,13 @@ Versions at the time of writing (2026-09); lockfiles and toolchain files pin the
 | Core, back-end, WebAssembly | Rust 1.98, edition 2024 | accepted (D1) |
 | HTTP | axum 0.8, tokio, tower-http | accepted (D21) |
 | Database | Postgres through sqlx | accepted (D21) |
-| Object storage | an external bucket, reached through `object_store` | accepted (D16, D21) |
+| Object storage | an external bucket, reached through `object_store`; Scaleway in Paris for the hosted service | accepted (D16, D21, D35) |
+| Transactional email | SMTP; Scaleway Transactional Email for the hosted service | accepted (D34) |
 | MCP | `rmcp`, the official Rust SDK | accepted (D21) |
 | OpenAPI | `utoipa`, the TypeScript client generated from it | accepted (D21) |
 | Editor bindings | `wasm-bindgen` | accepted (D21) |
 | Application front-end | Angular 22, Ionic 9 | accepted (D2) |
 | Desktop and mobile shell | Tauri 2 | accepted (D13) |
-| Internationalisation | catalogues served by an endpoint (D26); Transloco on the client (P10) | accepted, library proposed |
+| Internationalisation | catalogues served by an endpoint, Transloco on the client | accepted (D26, D36) |
 | Front-end tests | Vitest, Playwright | accepted (D21) |
 | Observability | `tracing`, OpenTelemetry, Prometheus metrics, collected by infra-vps | accepted (D4, D17) |

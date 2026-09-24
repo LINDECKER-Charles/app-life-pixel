@@ -19,7 +19,8 @@ edge. Nothing below exists yet; this is the target of the first CI pull request.
 | Path on the host | — | `/opt/life-pixel-staging` | `/opt/life-pixel-prod` |
 | Image tag | local build | `:<sha>`, `:staging` | `:<sha>`, `:prod` |
 | MCP server name | `life-pixel-dev` | `life-pixel-staging` | `life-pixel` |
-| Domains | `localhost` | to decide (O1) | to decide (O1) |
+| Domains (D28) | `localhost` | `staging.lifepixel.tech`, `admin.staging.lifepixel.tech` | `lifepixel.tech`, `admin.lifepixel.tech` |
+| Object storage (D35) | local, in Docker | a bucket in `fr-par` | a versioned bucket in `fr-par` |
 
 `COMPOSE_PROJECT_NAME` isolates containers, volumes and networks, which is what lets staging and
 production share the host. Images live in `ghcr.io/lindecker-charles/life-pixel/<image>`.
@@ -102,14 +103,17 @@ What `compose.deploy.yaml` must declare:
   every other site of the host from the access log.
 
 Services per environment: `server` (image `app`), `admin` (image `admin`), `postgres` with a
-named volume. Object storage is an external S3-compatible bucket, one per environment (D16).
+named volume. Object storage is an external S3-compatible bucket, one per environment (D16), on
+Scaleway Object Storage in Paris (D35).
 
 ## Backups — required before production
 
-`infra-vps` only backs up its own volumes. Life Pixel's production data needs (D16):
+`infra-vps` only backs up its own volumes. Life Pixel's production data needs (D16, D35):
 
-- a nightly Postgres dump and versioning (or replication) of the object storage bucket;
-- copies kept off the VPS, encrypted, with a retention policy;
+- a nightly Postgres dump, encrypted before it leaves the host and sent to a bucket in Amsterdam
+  (`nl-ams`), away from the live data, by credentials that cannot delete it — a compromised host
+  cannot erase its own backups; copies are kept six months at most;
+- versioning of the production bucket, whose replaced or deleted objects expire after 30 days;
 - a restore rehearsed before launch, then periodically.
 
 Staging data is disposable and not backed up.
@@ -128,14 +132,20 @@ GitHub secrets, following the shared deployment kit:
 | `ENV_TEST` | optional, for CI |
 
 The `.env` of an environment carries the database URL, the object storage endpoint, bucket and
-keys, the session secret, the SMTP settings, the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`), the
-OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents each
-variable; the real files are never committed.
+keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`),
+the OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents
+each variable; the real files are never committed.
 
-Release secrets, when the matching distribution lands: the Tauri updater signing key, Apple
-notarisation credentials, a Windows code-signing certificate, the Android upload key and a Play
-Console service account (open question O5). npm publishes through trusted publishing, without a
-token.
+Release secrets, when the matching distribution lands (D32): the Tauri updater signing key, the
+Apple Developer ID certificate and notarisation key, the Windows signing credentials, the Android
+upload key and a Play Console service account. They live in a GitHub `release` environment that
+requires the maintainer's approval. The updater key and the upload key also have an encrypted
+offline copy: without the updater key, no installed desktop app could ever update again. npm
+publishes through trusted publishing, without a token.
+
+Enrolment starts about a month before M5 and M6: an organisation account needs a D-U-N-S number
+first, and a new personal Play Console account must run a two-week closed test before it can
+publish.
 
 ## Rollback
 

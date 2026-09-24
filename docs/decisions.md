@@ -40,25 +40,22 @@ the documents it affects in the same commit. An ID is never reused or renumbered
 | D25 | Pricing: creating stays free; the paid tiers — Creator, Team, Business — sell services: live embeds served from a CDN, sync between devices, full version history, team workspaces, higher MCP limits. Every plan, paid ones included, keeps fair-use ceilings on storage, embed views and MCP calls, set high enough that only exceptional consumers ever reach them (was P15) | 2026-09-24 |
 | D26 | Translations are served by an endpoint and loaded at runtime: the app downloads the active language only, fetches another one when the user switches — without reloading —, and reads the list of languages from the same endpoint. No catalogue is compiled into the bundle (P10 described a single bundle) | 2026-09-24 |
 | D27 | The product is named Life Pixel: crates `life-pixel-*`, npm package `@life-pixel/player`, custom element `<life-pixel>` (from O1) | 2026-09-24 |
+| D28 | The domain is `lifepixel.tech`. Production serves the app, the API (`/api/v1`), the MCP endpoint (`/mcp`) and the catalogues (`/i18n`) from `lifepixel.tech`, and the admin console from `admin.lifepixel.tech`; staging mirrors them on `staging.lifepixel.tech` and `admin.staging.lifepixel.tech`; live embeds will come from `embed.lifepixel.tech`. Domains are configuration: the code names none, so a self-hosted server runs on its own (was O1) | 2026-09-24 |
+| D29 | Sign-in with our own accounts — an email address and a password — at first. Social sign-in, GitHub first then Google, comes after the first release as another way into the same account. No magic links: every sign-in would depend on the mailbox, and a link opened from a mail app does not come back to the browser tab where the OAuth flow of the Android app or of an MCP connector waits. A self-hosted server needs no third-party OAuth application (was O2) | 2026-09-24 |
+| D30 | Billing goes through a merchant of record, which sells on our behalf and handles VAT and sales taxes in every country: no tax registration or return of our own. The vendor is chosen at M7, behind a port of `service`; Stripe Billing with Stripe Tax is reconsidered if volume ever makes its lower fees worth the tax filings (was O3) | 2026-09-24 |
+| D31 | Provisional prices and allowances, detailed in [pricing.md](pricing.md): Creator at €6 a month, Team at €10 per seat and month, Business on quote, and a 30-day grace period after a downgrade or a failed payment. Plan values are configuration, revisited with the usage data of the first release (was O4) | 2026-09-24 |
+| D32 | Signing: the Apple Developer Program for the Developer ID certificate and notarisation; on Windows, a certificate whose key stays in a cloud HSM, or Azure Trusted Signing — whichever the publishing entity is eligible for at M5; on Android, Play App Signing, so that we only hold an upload key Google can reset. Signing material lives in a GitHub `release` environment that requires the maintainer's approval; the Tauri updater key and the upload key also have an encrypted offline copy (was O5) | 2026-09-24 |
+| D33 | No public gallery or sharing in the first release. Live embeds, when they come, are unlisted — reachable by their URL only — and abuse is reported through the "abuse" category of the support form. A gallery would take a new decision, with its moderation and legal duties (was O6) | 2026-09-24 |
+| D34 | Transactional email: Scaleway Transactional Email on the hosted service. The server speaks plain SMTP, so another provider — or a self-hoster's own server — is a configuration change (was O7) | 2026-09-24 |
+| D35 | Object storage: Scaleway Object Storage in Paris (`fr-par`), one bucket per environment, versioned in production. Database backups go, encrypted, to a bucket in Amsterdam (`nl-ams`), written by credentials that cannot delete them. Creations and backups stay in the EU (was O8) | 2026-09-24 |
+| D36 | Transloco is the client i18n library: its HTTP loader fetches the catalogues of D26 one language at a time, and it handles ICU plurals — a maintained library rather than a home-made loader and message formatter (was P10) | 2026-09-24 |
 
 ## Proposed
 
-| ID | Proposal | Why | Affects |
-|---|---|---|---|
-| P10 | Transloco as the client i18n library: its HTTP loader fetches the catalogues of D26 one language at a time, and it handles ICU plurals | a maintained library that already implements D26, rather than a home-made loader and message formatter | [i18n.md](i18n.md) |
+None at the moment.
 
 ## Open
 
-Each open question is scheduled by the plan in the milestone it blocks: O1, O2, O7 and O8 before
-M3, O5 before M5 and M6, O3 and O4 before M7, O6 when sharing is considered.
-
-| ID | Question |
-|---|---|
-| O1 | Domains and branding: application, API and MCP, admin console, embeds, for staging and production. The name is settled (D27). To do early: reserve the npm organisation `life-pixel` and a domain — lifepixel.app, lifepixel.dev, lifepixel.io, life-pixel.com and lifepixel.fr were unregistered on 2026-09-24; lifepixel.com is taken |
-| O2 | Sign-in methods: own accounts, social sign-in (GitHub, Google), magic links. Whatever the choice, the Tauri apps and MCP connectors authenticate through OAuth 2.1 |
-| O3 | Billing: Stripe Billing with Stripe Tax, or a merchant of record handling EU VAT |
-| O4 | Paid tiers: prices, allowances and fair-use ceilings — the structure is D25 |
-| O5 | Code signing: Apple notarisation, Windows certificate, custody of the Android upload key |
-| O6 | Public sharing or a gallery — and, if so, moderation and the legal duties that come with it |
-| O7 | Transactional email provider |
-| O8 | Object storage provider and location |
+None at the moment. Three accepted decisions leave a detail to later, within the direction they
+set: the final prices (D31, after the first release), the Windows signing service (D32, at M5)
+and the billing vendor (D30, at M7).

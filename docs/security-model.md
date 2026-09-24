@@ -31,15 +31,17 @@ explains what the design protects and how.
 
 ## Authentication (hosted and self-hosted)
 
-- Passwords hashed with Argon2id. Sessions in `HttpOnly`, `Secure`, `SameSite=Lax` cookies;
-  state-changing requests checked against CSRF (origin check and token).
+- Sign-in with an email address and a password (D29 in [decisions.md](decisions.md)); social
+  sign-in comes after the first release, as another way into the same account.
+- Passwords hashed with Argon2id. Sessions in `HttpOnly`, `Secure`, `SameSite=Lax` cookies with
+  the `__Host-` prefix: bound to their host, they never reach a subdomain — the embed host
+  included. State-changing requests checked against CSRF (origin check and token).
 - MCP: personal access tokens — 256 random bits, shown once, stored hashed, scoped, revocable,
   expiring. OAuth 2.1 with PKCE when claude.ai connectors land.
 - Tauri apps (Android, desktop sync): OAuth 2.1 authorization code with PKCE, through the system
   browser and a deep link back — the same authorization server as the MCP connectors. Tokens
   live in the platform's keystore, never in web storage.
 - Admin console: separate admin accounts, mandatory second factor, short sessions, audit log.
-- Which sign-in methods to offer is open question O2 in [decisions.md](decisions.md).
 
 ## Web hardening
 
@@ -80,7 +82,8 @@ explains what the design protects and how.
 - **Rights**: access (export of the account's data) and erasure (account deletion, object storage
   included), from the app or through a support request.
 - **Retention**: product events 13 months; deleted accounts purged within 30 days, then gone from
-  backups as they rotate. The VPS keeps logs, and the edge access log — IP addresses and
-  geolocation, which are personal data — 90 days.
+  backups as they rotate, within six months. The VPS keeps logs, and the edge access log — IP
+  addresses and geolocation, which are personal data — 90 days.
 - **Processors and hosting locations** are listed in the privacy policy; EU locations are
-  preferred.
+  preferred. Creations and transactional email are handled by Scaleway in Paris, backups in
+  Amsterdam (D34, D35).

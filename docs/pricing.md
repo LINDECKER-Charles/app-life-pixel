@@ -34,7 +34,7 @@ whose app is free and whose sync and publishing are paid.
 | Team | small teams | shared libraries, roles, per-seat billing, a larger view allowance |
 | Business | companies | single sign-on, audit log export, priority support, invoicing, custom limits |
 
-- **Live embeds**: `<life-pixel src="https://<embed host>/<id>.wasm">`, served from a CDN.
+- **Live embeds**: `<life-pixel src="https://embed.lifepixel.tech/<id>.wasm">`, served from a CDN.
   Editing the animation updates every site that embeds it, without redeploying anything. They
   are optional: downloaded exports stay free, unlimited and dependency-free. Views are counted
   without cookies or personal data.
@@ -43,7 +43,20 @@ whose app is free and whose sync and publishing are paid.
 - **Fair-use ceilings** cover storage, embed views and MCP calls on every plan. They protect the
   service from a runaway consumer, not the price list: set high enough that reaching one is
   exceptional, and a custom Business agreement takes over beyond them.
-- **Prices** are set after the M1 measurements and a look at comparable tools (O4).
+
+## Provisional grid (D31)
+
+Starting values, set before any usage data: they are configuration, not code, and are revisited
+with the data of the first release. The M1 measurements check the storage allowances.
+
+| | Free | Creator | Team | Business |
+|---|---|---|---|---|
+| Price | €0 | €6 a month, or €60 a year | €10 per seat and month, or €100 per seat and year | on quote |
+| Storage | 100 MB | 10 GB | 10 GB per seat, pooled | custom |
+| Live embeds | 3, with 10,000 views a month | unlimited, with 1 million views a month | unlimited, with 5 million views a month, pooled | custom |
+| MCP calls | 1,000 a day | 10,000 a day | 10,000 a day per seat | custom |
+
+Paying for a year costs ten months.
 
 ## What counts against the storage quota
 
@@ -61,13 +74,13 @@ whatever the client — interface, API or MCP.
   downloadable.
 - A write that would take usage above the quota is refused with `quota.storage_exceeded`;
   deleting always works.
-- After a downgrade or a failed payment, a grace period (duration to decide) precedes the free
-  quota; the same read-only rule applies afterwards.
+- After a downgrade or a failed payment, a 30-day grace period (D31) precedes the free quota; the
+  same read-only rule applies afterwards.
 
 ## Billing
 
-- **Provider**: Stripe Billing with Stripe Tax, or a merchant of record that handles EU VAT on our
-  behalf (open question O3).
+- **Provider**: a merchant of record (D30), which sells on our behalf and handles VAT and sales
+  taxes in every country. The vendor is chosen at M7.
 - The provider hosts checkout, invoices and the customer portal (upgrade, downgrade, cancel). Our
   database keeps the plan, the subscription status and the end of the current period — never
   card data.

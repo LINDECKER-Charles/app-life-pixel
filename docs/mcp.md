@@ -8,12 +8,12 @@ the codebase. Claude is the first client we target; any MCP client works.
 
 | Distribution | Transport | Authentication | Registering it in Claude Code |
 |---|---|---|---|
-| Hosted | Streamable HTTP, `https://<api host>/mcp` | personal access token; OAuth 2.1 next | `claude mcp add --transport http life-pixel https://<api host>/mcp --header "Authorization: Bearer <token>"` |
+| Hosted | Streamable HTTP, `https://lifepixel.tech/mcp` | personal access token; OAuth 2.1 next | `claude mcp add --transport http life-pixel https://lifepixel.tech/mcp --header "Authorization: Bearer <token>"` |
 | Self-hosted | the same, on the user's host | the same | the same, with the user's host |
 | Desktop and CLI | stdio, `life-pixel mcp` | none: the local user | `claude mcp add life-pixel -- life-pixel mcp` |
 
-- The staging endpoint announces itself as `life-pixel-staging`, so that both environments can
-  sit side by side in a client configuration.
+- The staging endpoint, `https://staging.lifepixel.tech/mcp`, announces itself as
+  `life-pixel-staging`, so that both environments can sit side by side in a client configuration.
 - claude.ai and Claude Desktop connectors authenticate remote servers with OAuth: OAuth 2.1, as the
   MCP authorization specification describes it, comes right after token authentication (see
   [product.md](product.md)). Claude Desktop can also launch the local server over stdio.
