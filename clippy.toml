@@ -1,0 +1,10 @@
+# Thresholds taken from the "Size and complexity limits" of AGENTS.md / CLAUDE.md.
+#
+# `too_many_lines` (pedantic) and `cognitive_complexity` (nursery) are off by default: the root
+# Cargo.toml switches them on in `[workspace.lints.clippy]`. Without that, the values below
+# change nothing.
+too-many-arguments-threshold = 3
+too-many-lines-threshold = 30
+
+# Clippy has no cyclomatic-complexity lint; cognitive complexity is the closest proxy.
+cognitive-complexity-threshold = 10

@@ -1,0 +1,5 @@
+# Formatting is rustfmt's job, not the reviewer's. The values below are rustfmt's defaults,
+# written down so that editors, CI and the code conventions agree on them.
+edition = "2024"
+max_width = 100
+newline_style = "Unix"

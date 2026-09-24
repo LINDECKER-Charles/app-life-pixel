@@ -1,0 +1,8 @@
+# One toolchain for everyone — contributors, CI, release builds — so that formatting, lints
+# and above all the player's WebAssembly output do not drift with whatever `stable` is on a
+# given day. rustup installs it on the first `cargo` call in this repository.
+[toolchain]
+channel = "1.98"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"
