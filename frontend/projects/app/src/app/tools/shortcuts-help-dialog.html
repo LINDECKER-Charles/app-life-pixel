@@ -1,0 +1,22 @@
+<ion-modal
+  [isOpen]="state.isOpen()"
+  [attr.aria-label]="'shortcuts.title' | transloco"
+  (didDismiss)="state.close()"
+>
+  <ng-template>
+    <div class="dialog">
+      <h2 class="heading">{{ 'shortcuts.title' | transloco }}</h2>
+      <ul class="list">
+        @for (shortcut of shortcuts.all(); track $index) {
+          <li class="row">
+            <span class="label">{{ shortcut.label | transloco }}</span>
+            <span class="keys">{{ describe(shortcut) }}</span>
+          </li>
+        }
+      </ul>
+      <button type="button" class="secondary" (click)="state.close()">
+        {{ 'common.close' | transloco }}
+      </button>
+    </div>
+  </ng-template>
+</ion-modal>

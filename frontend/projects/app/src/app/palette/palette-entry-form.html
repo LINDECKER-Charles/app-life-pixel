@@ -1,0 +1,50 @@
+<form class="form" novalidate (submit)="submit($event)">
+  <div class="field">
+    <label for="palette-entry-color">{{ 'palette.dialog.color' | transloco }}</label>
+    <input
+      #colorField
+      id="palette-entry-color"
+      type="color"
+      [value]="rgb()"
+      (input)="setRgb(colorField.value)"
+    />
+  </div>
+  <div class="field">
+    <label for="palette-entry-alpha">{{ 'palette.dialog.alpha' | transloco }}</label>
+    <div class="alpha">
+      <input
+        #alphaField
+        id="palette-entry-alpha"
+        type="range"
+        min="0"
+        max="255"
+        step="1"
+        [value]="alpha()"
+        (input)="setAlpha(alphaField.valueAsNumber)"
+      />
+      <output for="palette-entry-alpha">{{ alpha() }}</output>
+    </div>
+  </div>
+  <div class="field">
+    <label for="palette-entry-hex">{{ 'palette.dialog.hex' | transloco }}</label>
+    <input
+      #hexField
+      id="palette-entry-hex"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      maxlength="9"
+      [value]="hex()"
+      [attr.aria-invalid]="!isValid()"
+      (input)="setHex(hexField.value)"
+    />
+  </div>
+  <div class="actions">
+    <button type="button" class="secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button type="submit" class="primary" [disabled]="!isValid()">
+      {{ submitLabel() | transloco }}
+    </button>
+  </div>
+</form>

@@ -1,0 +1,60 @@
+<div class="group">
+  @for (definition of tools; track definition.tool) {
+    <button
+      type="button"
+      class="tool"
+      [attr.aria-pressed]="tool() === definition.tool"
+      [attr.aria-keyshortcuts]="definition.shortcutKey"
+      [title]="
+        (definition.labelKey | transloco) + ' (' + definition.shortcutKey.toUpperCase() + ')'
+      "
+      (click)="selectTool(definition.tool)"
+    >
+      {{ definition.labelKey | transloco }}
+    </button>
+  }
+  <button
+    type="button"
+    class="tool"
+    [attr.aria-pressed]="rectangleFilled()"
+    aria-keyshortcuts="Shift+R"
+    [title]="('tools.rectangle_filled' | transloco) + ' (Shift+R)'"
+    (click)="toggleFilled()"
+  >
+    {{ 'tools.rectangle_filled' | transloco }}
+  </button>
+</div>
+<div class="group">
+  <button
+    type="button"
+    [disabled]="!engine.state().canUndo"
+    aria-keyshortcuts="Control+Z"
+    [title]="('tools.undo' | transloco) + ' (Ctrl/⌘+Z)'"
+    (click)="engine.undo()"
+  >
+    {{ 'tools.undo' | transloco }}
+  </button>
+  <button
+    type="button"
+    [disabled]="!engine.state().canRedo"
+    aria-keyshortcuts="Control+Shift+Z"
+    [title]="('tools.redo' | transloco) + ' (Ctrl/⌘+Shift+Z)'"
+    (click)="engine.redo()"
+  >
+    {{ 'tools.redo' | transloco }}
+  </button>
+</div>
+<div class="group">
+  <lp-import-image-button />
+  <lp-import-sprite-sheet-button />
+</div>
+<button
+  type="button"
+  class="help"
+  aria-keyshortcuts="?"
+  [title]="('tools.shortcuts_button' | transloco) + ' (?)'"
+  (click)="help.open()"
+>
+  {{ 'tools.shortcuts_button' | transloco }}
+</button>
+<lp-shortcuts-help-dialog />
