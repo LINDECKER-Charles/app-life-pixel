@@ -3,6 +3,7 @@
 
 use std::collections::BTreeSet;
 
+use life_pixel_service::animation::EditingError;
 use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
 use life_pixel_service::local::LocalLibraryError;
@@ -31,10 +32,16 @@ fn every_error() -> Vec<CodedError> {
             path: "Life Pixel".into(),
         },
     ];
+    let editing = [
+        EditingError::TooManyOperations,
+        EditingError::PaletteInUse { index: 3 },
+        EditingError::PreviewTooLarge,
+    ];
     let library = library.iter().map(CodedError::of);
     let local = local.iter().map(CodedError::of);
+    let editing = editing.iter().map(CodedError::of);
     let others = [CodedError::of(&MalformedCursor)];
-    library.chain(local).chain(others).collect()
+    library.chain(local).chain(editing).chain(others).collect()
 }
 
 fn catalogue(language: &str) -> Map<String, Value> {
