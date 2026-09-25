@@ -80,7 +80,8 @@ exports! {
     /// The framebuffer: `width × height × 4` bytes of RGBA, rows top to bottom.
     fn frame_ptr() { with_player(|player| pointer(player.frame_ptr())) }
 
-    /// Advances playback; bit 0: the framebuffer changed; bit 1: the range reached its end.
+    /// Advances playback; bit 0: the framebuffer changed; bit 1: the range reached its end;
+    /// bit 2: it reached it by stopping there, rather than by looping back to its first frame.
     fn tick(elapsed_ms) { with_player(|player| player.tick(elapsed_ms)) }
 
     /// The number of tags.

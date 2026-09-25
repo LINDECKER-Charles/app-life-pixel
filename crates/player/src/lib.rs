@@ -23,7 +23,7 @@ mod player;
 mod span;
 
 pub use call_error::CallError;
-pub use playback::{FRAME_CHANGED, RANGE_ENDED};
+pub use playback::{FRAME_CHANGED, RANGE_ENDED, RANGE_STOPPED};
 pub use player::Player;
 
 /// Traps: a panic never crosses the WebAssembly boundary, and the module imports nothing that
