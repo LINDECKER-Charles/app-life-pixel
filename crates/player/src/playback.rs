@@ -11,6 +11,14 @@ pub const FRAME_CHANGED: u32 = 1;
 /// `tick`'s bit 1: playback left the range's last frame.
 pub const RANGE_ENDED: u32 = 2;
 
+/// `tick`'s bit 2: the range that ended stayed there, rather than looping back to its first
+/// frame. Set together with [`RANGE_ENDED`], never alone: a loader cannot tell a range that
+/// stopped from one that looped back to its first frame by comparing frame indices alone — a
+/// looping range whose elapsed time is reduced modulo its total duration (see [`Playback::tick`])
+/// may land anywhere in the range, including on its last frame, without having stopped. This bit
+/// is the only reliable signal.
+pub const RANGE_STOPPED: u32 = 4;
+
 /// The frames a range plays, and how it ends.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Range {
@@ -99,9 +107,10 @@ impl Playback {
         Ok(())
     }
 
-    /// Advances playback by `elapsed_ms` and returns what changed: [`FRAME_CHANGED`] and
-    /// [`RANGE_ENDED`]. A looping range first drops whole cycles, so a long pause costs one cycle
-    /// at most; a range played once stops on its last frame, and later ticks return `0`.
+    /// Advances playback by `elapsed_ms` and returns what changed: [`FRAME_CHANGED`],
+    /// [`RANGE_ENDED`] and [`RANGE_STOPPED`]. A looping range first drops whole cycles, so a long
+    /// pause costs one cycle at most; a range played once stops on its last frame, and later
+    /// ticks return `0`.
     pub(crate) fn tick(&mut self, elapsed_ms: u32, duration_ms: impl Fn(u16) -> u16) -> u32 {
         if self.is_stopped {
             return 0;
@@ -129,7 +138,8 @@ impl Playback {
     }
 
     /// Leaves the frame shown for the next one, or ends the range: back to its first frame when
-    /// it loops, stopped on its last one otherwise. Returns [`RANGE_ENDED`] when the range ended.
+    /// it loops, stopped on its last one otherwise. Returns [`RANGE_ENDED`] when the range ended,
+    /// plus [`RANGE_STOPPED`] when it stopped there rather than looping.
     fn leave_frame(&mut self) -> u32 {
         if self.frame < self.range.last {
             self.frame += 1;
@@ -137,11 +147,11 @@ impl Playback {
         }
         if self.is_looping() {
             self.frame = self.range.first;
-        } else {
-            self.is_stopped = true;
-            self.time_ms = 0;
+            return RANGE_ENDED;
         }
-        RANGE_ENDED
+        self.is_stopped = true;
+        self.time_ms = 0;
+        RANGE_ENDED | RANGE_STOPPED
     }
 
     fn is_looping(&self) -> bool {

@@ -11,6 +11,16 @@ const OUT_OF_MEMORY = 6;
 export const FRAME_CHANGED = 1;
 /** `tick`'s bit 1: the range reached its end. */
 export const RANGE_ENDED = 2;
+/**
+ * `tick`'s bit 2: the range that ended stopped there, rather than looping back to its first
+ * frame — set together with bit 1, never alone. Internal to this loader: masked out of `tick`'s
+ * return value, kept only to answer `hasStopped()`. Comparing `frame_index()` to the range's
+ * first frame cannot answer it: a single-frame range played once never leaves that frame, and a
+ * looping range whose elapsed time wraps modulo its total duration can land anywhere in the
+ * range, including its last frame, without having stopped.
+ */
+const RANGE_STOPPED = 4;
+const MEANINGFUL_FLAGS = FRAME_CHANGED | RANGE_ENDED;
 
 /** The exports of a player, ABI v1: every value is an `i32`. */
 interface PlayerExports {
@@ -43,8 +53,8 @@ export class PlayerInstance {
   /** The framebuffer, as the canvas takes it: it never moves once loaded. */
   readonly frame: ImageData;
   readonly #player: PlayerExports;
-  /** The animation frame the current range starts on. */
-  #rangeStart: number;
+  /** Whether the range the last `tick` ended stopped there, rather than looping. */
+  #hasStopped = false;
 
   private constructor(player: PlayerExports) {
     const buffer = player.memory.buffer;
@@ -57,7 +67,6 @@ export class PlayerInstance {
     this.tags = Array.from({ length: player.tag_count() }, (_, index) =>
       decode(buffer, player.tag_name_ptr(index), player.tag_name_len(index)),
     );
-    this.#rangeStart = player.frame_index();
   }
 
   /** Instantiates the player of an export and loads its payload; throws on any refusal. */
@@ -74,7 +83,6 @@ export class PlayerInstance {
   showTag(index: number): void {
     const player = this.#player;
     player.set_tag(index < 0 && !this.tags.length ? WHOLE_ANIMATION : Math.max(index, 0));
-    this.#rangeStart = player.frame_index();
   }
 
   /** Sets the loop mode: `0` the range's own, `1` loop, `2` once. */
@@ -87,14 +95,16 @@ export class PlayerInstance {
     return !this.#player.seek(frame);
   }
 
-  /** Advances playback; returns `tick`'s flags. */
+  /** Advances playback; returns `tick`'s flags, `RANGE_STOPPED` kept for `hasStopped()` only. */
   tick(elapsedMs: number): number {
-    return this.#player.tick(elapsedMs);
+    const flags = this.#player.tick(elapsedMs);
+    if (flags & RANGE_ENDED) this.#hasStopped = (flags & RANGE_STOPPED) !== 0;
+    return flags & MEANINGFUL_FLAGS;
   }
 
-  /** Whether a range that reached its end stayed there, played once, rather than looping. */
+  /** Whether the range the last `tick` ended stayed there, played once, rather than looping. */
   hasStopped(): boolean {
-    return this.#player.frame_index() !== this.#rangeStart;
+    return this.#hasStopped;
   }
 }
 
