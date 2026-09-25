@@ -2,16 +2,13 @@
 //! executor.
 
 use bytes::Bytes;
+use life_pixel_core::edit::{self, EditError, Operation};
 use life_pixel_core::limits::MAX_DOCUMENT_BYTES;
 use life_pixel_core::serialize::{read_document, write_document};
 use life_pixel_core::{Animation, DocumentError, Name, NewAnimation};
-use serde_json::Value;
 
 use super::LibraryError;
 use crate::ports::library_store::AnimationMeta;
-
-/// The document field holding the title.
-const TITLE_FIELD: &str = "title";
 
 /// A valid document as `core` serializes it, and what lists show of it.
 pub(super) struct Document {
@@ -38,16 +35,18 @@ pub(super) async fn retitle(bytes: Bytes, title: Name) -> Result<Document, Libra
     blocking(move || retitled(&bytes, &title)).await
 }
 
-/// The document `bytes` with the title `title`, checked again by `core`. The title is set in the
-/// current document version's JSON until `core` offers a title edit.
+/// The document `bytes` with the title `title`, set through `core`'s `Operation::SetTitle` and
+/// checked again by the model's rules.
 fn retitled(bytes: &[u8], title: &Name) -> Result<Document, DocumentError> {
-    let current = write_document(&read_document(bytes)?)?;
-    let mut document: Value =
-        serde_json::from_str(&current).map_err(|_| DocumentError::Malformed)?;
-    let fields = document.as_object_mut().ok_or(DocumentError::Malformed)?;
-    fields.insert(TITLE_FIELD.to_owned(), title.as_str().into());
-    let bytes = serde_json::to_vec(&document).map_err(|_| DocumentError::Malformed)?;
-    serialize(&read_document(&bytes)?)
+    let mut animation = read_document(bytes)?;
+    let operation = Operation::SetTitle {
+        title: title.as_str().to_owned(),
+    };
+    edit::apply(&mut animation, &operation).map_err(|error| match error {
+        EditError::Document(document) => document,
+        _ => DocumentError::Malformed,
+    })?;
+    serialize(&animation)
 }
 
 fn serialize(animation: &Animation) -> Result<Document, DocumentError> {
