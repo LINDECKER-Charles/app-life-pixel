@@ -65,6 +65,8 @@
   "errors.import.sheet_grid": "La planche de sprites ne se découpe pas en cellules de cette taille.",
   "errors.library.animation_not_found": "Cette animation n’existe pas ou a été supprimée.",
   "errors.library.project_not_found": "Ce projet n’existe pas ou a été supprimé.",
+  "errors.library.unavailable": "Le dossier de bibliothèque {path} ne peut pas être ouvert. Vérifiez qu’il existe et que vous pouvez y écrire.",
+  "errors.library.unsupported_version": "Cette bibliothèque a été créée par une version plus récente de Life Pixel (version de bibliothèque {version}). Mettez Life Pixel à jour pour l’ouvrir.",
   "errors.quota.storage_exceeded": "Votre espace de stockage est plein : {used, number} octets utilisés sur {limit, number}, et cette modification en demande {requested, number} de plus. Supprimez des animations pour libérer de la place.",
   "errors.request.malformed": "Cette requête n’a pas pu être comprise.",
   "errors.service.unavailable": "Life Pixel est momentanément indisponible. Réessayez dans un instant.",

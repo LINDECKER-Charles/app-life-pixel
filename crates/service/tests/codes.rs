@@ -5,6 +5,7 @@ use std::collections::BTreeSet;
 
 use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
+use life_pixel_service::local::LocalLibraryError;
 use life_pixel_service::paging::MalformedCursor;
 use life_pixel_service::{Coded, CodedError};
 use serde_json::{Map, Value};
@@ -24,8 +25,16 @@ fn every_error() -> Vec<CodedError> {
         },
         LibraryError::Unavailable,
     ];
+    let local = [
+        LocalLibraryError::UnsupportedVersion { version: 2 },
+        LocalLibraryError::Unavailable {
+            path: "Life Pixel".into(),
+        },
+    ];
     let library = library.iter().map(CodedError::of);
-    library.chain([CodedError::of(&MalformedCursor)]).collect()
+    let local = local.iter().map(CodedError::of);
+    let others = [CodedError::of(&MalformedCursor)];
+    library.chain(local).chain(others).collect()
 }
 
 fn catalogue(language: &str) -> Map<String, Value> {

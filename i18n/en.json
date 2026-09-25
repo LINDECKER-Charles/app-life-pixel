@@ -65,6 +65,8 @@
   "errors.import.sheet_grid": "The sprite sheet does not divide into cells of this size.",
   "errors.library.animation_not_found": "This animation does not exist, or was deleted.",
   "errors.library.project_not_found": "This project does not exist, or was deleted.",
+  "errors.library.unavailable": "The library folder {path} cannot be opened. Check that it exists and that you can write to it.",
+  "errors.library.unsupported_version": "This library was made by a newer version of Life Pixel (library version {version}). Update Life Pixel to open it.",
   "errors.quota.storage_exceeded": "Your storage is full: {used, number} of {limit, number} bytes are used, and this change needs {requested, number} more. Delete animations to free space.",
   "errors.request.malformed": "This request could not be understood.",
   "errors.service.unavailable": "Life Pixel is unavailable for a moment. Try again shortly.",
