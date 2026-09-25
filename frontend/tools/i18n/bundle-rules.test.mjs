@@ -20,4 +20,9 @@ describe('findBundledEntries', () => {
     const scripts = [{ name: 'main.js', text: 'e.translate("common.close");t={key:"app.name"}' }];
     assert.deepEqual(findBundledEntries(scripts, keys), []);
   });
+
+  it('ignores a minified ternary between two backtick key literals', () => {
+    const scripts = [{ name: 'chunk.js', text: 'm===`edit`?`common.close`:`app.name`' }];
+    assert.deepEqual(findBundledEntries(scripts, keys), []);
+  });
 });

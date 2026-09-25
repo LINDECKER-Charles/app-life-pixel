@@ -7,7 +7,11 @@ function escapeRegExp(text) {
 
 function entryPattern(key) {
   const quote = String.raw`\\?["'\x60]`;
-  return new RegExp(`${quote}${escapeRegExp(key)}${quote}\\s*:\\s*${quote}`);
+  // The value must be a JSON-like string literal (double or single quoted, optionally
+  // JSON-escaped): a backtick there is a template literal, not a catalogue value — as in a
+  // minified ternary between two key literals, e.g. `` `a.b`:`c.d` ``.
+  const valueQuote = String.raw`\\?["']`;
+  return new RegExp(`${quote}${escapeRegExp(key)}${quote}\\s*:\\s*${valueQuote}`);
 }
 
 /** Returns, for each script, the catalogue keys it carries as entries of a catalogue. */
