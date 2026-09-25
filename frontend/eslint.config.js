@@ -30,13 +30,14 @@ const restrictedImports = (...patterns) => ({
   'no-restricted-imports': ['error', { patterns }],
 });
 // The files allowed to use @angular/common/http (server.md, H3): the API client and its
-// services, the app's providers, and the i18n loaders, which fetch static catalogues, not the
-// API.
+// services, the app's providers, and the i18n loaders, which fetch static catalogues and legal
+// pages, not the API.
 const httpUsers = [
   'projects/shared/src/lib/api/**',
   'projects/app/src/app/app.config.ts',
   'projects/shared/src/lib/i18n/available-languages.ts',
   'projects/shared/src/lib/i18n/catalogue-loader.ts',
+  'projects/app/src/app/legal/legal-text-loader.ts',
 ];
 
 module.exports = defineConfig([
