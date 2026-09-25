@@ -2,6 +2,8 @@
 
 #![allow(dead_code)] // Each test file uses its own share of the helpers.
 
+pub mod wasm_player;
+
 use life_pixel_compiler::ClassicOptions;
 use life_pixel_core::Animation;
 use life_pixel_core::serialize::read_document;
@@ -12,6 +14,12 @@ pub const MASCOT: &str = include_str!("../fixtures/mascot.json");
 /// 2 × 2, titled `Blink — 2!`, 5 frames of 10, 40, 1000, 65535 and 100 ms, the third blank;
 /// tag `blink` (1–3, once).
 pub const BLINK: &str = include_str!("../fixtures/blink.json");
+/// 16 × 8, titled `Scanner`, 5 frames of 80 ms but the last, of 240; no tag; the top row
+/// transparent, a beam crossing a background layer, gone on the last frame.
+pub const SCANNER: &str = include_str!("../fixtures/scanner.json");
+
+/// The fixtures exported as WebAssembly, each with its golden export and expected frames.
+pub const WASM_FIXTURES: [&str; 3] = [MASCOT, BLINK, SCANNER];
 
 /// The composited palette indices of each mascot frame, row by row.
 pub const MASCOT_FRAMES: [[u8; 12]; 3] = [
