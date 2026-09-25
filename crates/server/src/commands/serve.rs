@@ -6,6 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use axum::Router;
+use life_pixel_service::accounts::ports::Mailer;
 use metrics_exporter_prometheus::{BuildError, PrometheusHandle};
 use object_store::ObjectStore;
 use sqlx::PgPool;
@@ -14,10 +15,12 @@ use tokio::net::TcpListener;
 use tokio::sync::watch;
 use tokio::time::MissedTickBehavior;
 
+use crate::accounts;
 use crate::app;
 use crate::config::Config;
 use crate::database::{self, DatabaseError, DatabaseReadiness};
 use crate::http::rate_limit::RATE_LIMIT_UPKEEP_PERIOD;
+use crate::mail::{EmailTemplates, MailSetupError, SmtpMailer, TemplateError};
 use crate::state::{AppState, Backends, StartError};
 use crate::storage::{self, HostedLibraryStore, ObjectStoreSetupError, Sweeper};
 use crate::telemetry::{self, METRICS_UPKEEP_PERIOD};
@@ -31,6 +34,12 @@ pub enum ServeError {
     /// The object storage cannot be set up.
     #[error(transparent)]
     Objects(#[from] ObjectStoreSetupError),
+    /// The mail server's URL or the sender is invalid.
+    #[error(transparent)]
+    Mail(#[from] MailSetupError),
+    /// The emails' texts could not be read.
+    #[error("LP_I18N_DIR: {0}")]
+    Templates(#[from] TemplateError),
     /// The metrics recorder could not be installed.
     #[error("the metrics recorder cannot be installed: {0}")]
     Metrics(#[from] BuildError),
@@ -60,16 +69,18 @@ pub enum ServeError {
 ///
 /// # Errors
 ///
-/// When the database does not answer, the object storage cannot be set up, the state cannot be
-/// built, or a listener fails.
+/// When the database does not answer, the object storage or the mailer cannot be set up, the
+/// state cannot be built, or a listener fails.
 pub async fn serve(config: Config) -> Result<(), ServeError> {
     let (pool, objects) = open_storage(&config).await?;
     let metrics = telemetry::recorder()?;
     storage::metrics::describe();
-    let backends = backends(&pool, Arc::clone(&objects));
+    accounts::metrics::describe();
+    let backends = backends(&pool, Arc::clone(&objects), mailer(&config)?);
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;
     spawn_upkeep(&state, metrics.clone());
+    accounts::spawn_purge(state.accounts.clone());
     storage::spawn_upkeep(pool.clone(), Sweeper::new(pool, objects));
     let stop = stop_signal();
     let [public, private, admin] = addresses;
@@ -90,11 +101,19 @@ async fn open_storage(config: &Config) -> Result<(PgPool, Arc<dyn ObjectStore>),
     Ok((pool, objects))
 }
 
-/// The backends of the database of `pool` and the documents of `objects`.
-fn backends(pool: &PgPool, objects: Arc<dyn ObjectStore>) -> Backends {
+/// The SMTP mailer of `LP_SMTP_URL`, with the emails of the catalogues.
+fn mailer(config: &Config) -> Result<Arc<dyn Mailer>, ServeError> {
+    let templates = EmailTemplates::load(&config.i18n_dir)?;
+    Ok(Arc::new(SmtpMailer::new(&config.mail, templates)?))
+}
+
+/// The backends of the database of `pool`, the documents of `objects` and the emails of
+/// `mailer`.
+fn backends(pool: &PgPool, objects: Arc<dyn ObjectStore>, mailer: Arc<dyn Mailer>) -> Backends {
     Backends {
         readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
         library_store: Arc::new(HostedLibraryStore::new(pool.clone(), objects)),
+        accounts: accounts::hosted_ports(pool, mailer),
     }
 }
 
