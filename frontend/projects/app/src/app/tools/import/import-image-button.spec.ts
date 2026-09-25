@@ -23,6 +23,13 @@ describe('ImportImageButton', () => {
     await fixture.whenStable();
   }
 
+  it('labels the file input for assistive technology', async () => {
+    await setup();
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');
+
+    expect(input.getAttribute('aria-label')).toBe(en['tools.import_image']);
+  });
+
   it('opens the file picker from the button', async () => {
     await setup();
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');

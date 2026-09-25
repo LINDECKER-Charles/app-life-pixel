@@ -29,6 +29,13 @@ describe('ImportSpriteSheetButton', () => {
 
   afterEach(() => document.body.replaceChildren());
 
+  it('labels the file input for assistive technology', async () => {
+    await setup();
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');
+
+    expect(input.getAttribute('aria-label')).toBe(en['tools.import_sprite_sheet']);
+  });
+
   it('forwards the picked file to ImportSpriteSheetFlow', async () => {
     await setup();
     const pickFile = vi
