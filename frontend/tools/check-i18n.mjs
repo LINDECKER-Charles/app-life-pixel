@@ -9,10 +9,12 @@ import {
   checkMessages,
   checkSameKeys,
 } from './i18n/catalogue-rules.mjs';
+import { checkLegalPages, LEGAL_PAGES } from './i18n/legal-rules.mjs';
 import { findUnusedKeys } from './i18n/unused-keys.mjs';
 
 const FRONTEND_DIR = new URL('../', import.meta.url);
 const I18N_DIR = new URL('../../i18n/', import.meta.url);
+const LEGAL_DIR = new URL('legal/', I18N_DIR);
 const LANGUAGES_FILE = 'languages.json';
 const SOURCE_CODE = 'en';
 
@@ -48,7 +50,25 @@ function checkAll(catalogues) {
       checkSameKeys(fileName, messages, source.messages),
     ),
     ...parsed.flatMap(({ fileName, code, messages }) => checkMessages(fileName, code, messages)),
+    ...checkLegalPages(readLegalPages(parsed.map(({ code }) => code))),
   ];
+}
+
+function readLegalPages(codes) {
+  return Object.fromEntries(
+    codes.map((code) => [
+      code,
+      Object.fromEntries(LEGAL_PAGES.map((page) => [page, readLegalPage(code, page)])),
+    ]),
+  );
+}
+
+function readLegalPage(code, page) {
+  try {
+    return readFileSync(new URL(`${code}/${page}.md`, LEGAL_DIR), 'utf8');
+  } catch {
+    return undefined;
+  }
 }
 
 function readSourceTexts() {
