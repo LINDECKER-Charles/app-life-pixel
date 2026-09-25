@@ -1,0 +1,55 @@
+<ion-content>
+  <div class="page">
+    <h1>{{ 'settings.title' | transloco }}</h1>
+    @if (languages().length > 0) {
+      <div class="field">
+        <label for="settings-language">{{ 'settings.language.label' | transloco }}</label>
+        <select
+          #languageField
+          id="settings-language"
+          (change)="preferences.setLanguage(languageField.value)"
+        >
+          @for (language of languages(); track language.code) {
+            <option
+              [value]="language.code"
+              [attr.lang]="language.code"
+              [selected]="language.code === preferences.language()"
+            >
+              {{ language.name }}
+            </option>
+          }
+        </select>
+      </div>
+    }
+    <fieldset class="choices">
+      <legend>{{ 'settings.theme.legend' | transloco }}</legend>
+      @for (choice of themes; track choice.value) {
+        <label class="choice">
+          <input
+            type="radio"
+            name="theme"
+            [value]="choice.value"
+            [checked]="preferences.theme() === choice.value"
+            (change)="preferences.setTheme(choice.value)"
+          />
+          {{ choice.label | transloco }}
+        </label>
+      }
+    </fieldset>
+    <fieldset class="choices">
+      <legend>{{ 'settings.motion.legend' | transloco }}</legend>
+      @for (choice of motions; track choice.value) {
+        <label class="choice">
+          <input
+            type="radio"
+            name="motion"
+            [value]="choice.value"
+            [checked]="preferences.motion() === choice.value"
+            (change)="preferences.setMotion(choice.value)"
+          />
+          {{ choice.label | transloco }}
+        </label>
+      }
+    </fieldset>
+  </div>
+</ion-content>

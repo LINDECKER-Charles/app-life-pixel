@@ -1,0 +1,80 @@
+// The design tokens: colours, spacing, radii and type, as CSS custom properties. Both colour sets
+// meet WCAG 2.2 AA: text at least 4.5:1 on the background and the surface, borders and the focus
+// outline at least 3:1. The dark set applies under `prefers-color-scheme: dark` unless the theme
+// is set to light by hand, and whenever it is set to dark (`data-theme` on the root element).
+
+@mixin light-colors {
+  color-scheme: light;
+  --lp-color-background: #ffffff;
+  --lp-color-background-rgb: 255, 255, 255;
+  --lp-color-surface: #f3f3f6;
+  --lp-color-text: #1c1b22;
+  --lp-color-text-rgb: 28, 27, 34;
+  --lp-color-text-muted: #545461;
+  --lp-color-border: #8b8b98;
+  --lp-color-accent: #4338ca;
+  --lp-color-accent-rgb: 67, 56, 202;
+  --lp-color-on-accent: #ffffff;
+  --lp-color-on-accent-rgb: 255, 255, 255;
+  --lp-color-danger: #b3261e;
+  --lp-color-danger-rgb: 179, 38, 30;
+  --lp-color-on-danger: #ffffff;
+  --lp-color-on-danger-rgb: 255, 255, 255;
+  --lp-color-focus: #1a56db;
+}
+
+@mixin dark-colors {
+  color-scheme: dark;
+  --lp-color-background: #16161c;
+  --lp-color-background-rgb: 22, 22, 28;
+  --lp-color-surface: #212129;
+  --lp-color-text: #ececf1;
+  --lp-color-text-rgb: 236, 236, 241;
+  --lp-color-text-muted: #a6a6b3;
+  --lp-color-border: #74748a;
+  --lp-color-accent: #a5b4fc;
+  --lp-color-accent-rgb: 165, 180, 252;
+  --lp-color-on-accent: #16161c;
+  --lp-color-on-accent-rgb: 22, 22, 28;
+  --lp-color-danger: #ffb4ab;
+  --lp-color-danger-rgb: 255, 180, 171;
+  --lp-color-on-danger: #16161c;
+  --lp-color-on-danger-rgb: 22, 22, 28;
+  --lp-color-focus: #8ab4f8;
+}
+
+:root {
+  @include light-colors;
+
+  --lp-space-1: 0.25rem;
+  --lp-space-2: 0.5rem;
+  --lp-space-3: 0.75rem;
+  --lp-space-4: 1rem;
+  --lp-space-5: 1.5rem;
+  --lp-space-6: 2rem;
+
+  --lp-radius-small: 4px;
+  --lp-radius-medium: 8px;
+  --lp-radius-large: 12px;
+  --lp-radius-round: 999px;
+
+  --lp-font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --lp-font-family-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --lp-font-size-small: 0.875rem;
+  --lp-font-size-body: 1rem;
+  --lp-font-size-large: 1.25rem;
+  --lp-font-size-title: 1.5rem;
+  --lp-font-weight-regular: 400;
+  --lp-font-weight-bold: 600;
+  --lp-font-line-height: 1.5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-colors;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-colors;
+}

@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <div class="bar">
+      <a class="brand" routerLink="/editor">{{ 'app.name' | transloco }}</a>
+      <nav class="navigation" [attr.aria-label]="'shell.nav.label' | transloco">
+        <ul>
+          @for (link of links; track link.path) {
+            <li>
+              <a [routerLink]="link.path" routerLinkActive="active" ariaCurrentWhenActive="page">
+                {{ link.label | transloco }}
+              </a>
+            </li>
+          }
+        </ul>
+      </nav>
+      @if (accountMenu) {
+        <div class="account">
+          <ng-container *ngComponentOutlet="accountMenu" />
+        </div>
+      }
+    </div>
+  </ion-toolbar>
+</ion-header>

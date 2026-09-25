@@ -1,0 +1,62 @@
+<form class="form" novalidate (submit)="submit($event)">
+  <div class="field">
+    <label for="new-animation-title">{{ 'editor.new.title_field' | transloco }}</label>
+    <input
+      #titleField
+      id="new-animation-title"
+      type="text"
+      autocomplete="off"
+      required
+      [value]="title()"
+      [attr.maxlength]="limits().nameMaxChars"
+      [attr.aria-invalid]="!isTitleValid()"
+      (input)="title.set(titleField.value)"
+    />
+  </div>
+  <fieldset class="size" aria-describedby="new-animation-size-hint">
+    <legend>{{ 'editor.new.size' | transloco }}</legend>
+    <div class="field">
+      <label for="new-animation-width">{{ 'editor.new.width' | transloco }}</label>
+      <input
+        #widthField
+        id="new-animation-width"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        required
+        [min]="bounds().min"
+        [max]="bounds().max"
+        [value]="width()"
+        [attr.aria-invalid]="!isWidthValid()"
+        (input)="width.set(widthField.valueAsNumber)"
+      />
+    </div>
+    <div class="field">
+      <label for="new-animation-height">{{ 'editor.new.height' | transloco }}</label>
+      <input
+        #heightField
+        id="new-animation-height"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        required
+        [min]="bounds().min"
+        [max]="bounds().max"
+        [value]="height()"
+        [attr.aria-invalid]="!isHeightValid()"
+        (input)="height.set(heightField.valueAsNumber)"
+      />
+    </div>
+    <p id="new-animation-size-hint" class="hint">
+      {{ 'editor.new.size_hint' | transloco: bounds() }}
+    </p>
+  </fieldset>
+  <div class="actions">
+    <button type="button" class="secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button type="submit" class="primary" [disabled]="!isValid()">
+      {{ 'editor.new.create' | transloco }}
+    </button>
+  </div>
+</form>
