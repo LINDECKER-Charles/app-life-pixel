@@ -4,5 +4,22 @@
   "common.close": "Close",
   "common.loading": "Loading…",
   "common.ok": "OK",
-  "common.retry": "Retry"
+  "common.retry": "Retry",
+  "errors.document.canvas_size": "The canvas must measure between {min} and {max} pixels on each side.",
+  "errors.document.cel": "The pixels of a layer on one frame are damaged.",
+  "errors.document.frame_count": "An animation holds 1 to {max, number} frames.",
+  "errors.document.frame_duration": "A frame lasts between {min} and {max, number} milliseconds.",
+  "errors.document.layer_count": "An animation holds 1 to {max} layers.",
+  "errors.document.malformed": "This file is not a valid Life Pixel animation.",
+  "errors.document.name": "A name holds 1 to {max} characters, without control characters.",
+  "errors.document.palette": "A palette holds 1 to {max} colours written #rrggbbaa, the first one transparent.",
+  "errors.document.pixel_budget": "The layers of this animation hold more than {max, number} pixels in total.",
+  "errors.document.reference": "The animation refers to a layer or a frame that does not exist.",
+  "errors.document.tag": "The tag “{name}” is invalid, used twice or outside the frames.",
+  "errors.document.tag_count": "An animation holds at most {max} tags.",
+  "errors.document.too_large": "The animation is larger than {maxBytes, number} bytes.",
+  "errors.document.unsupported_version": "This animation uses version {version} of the file format, which this version of Life Pixel cannot open. Update Life Pixel to open it.",
+  "errors.grid.character": "Unknown character at row {row}, column {column} of the grid.",
+  "errors.grid.index": "Colour {index} at row {row}, column {column} is not in the palette.",
+  "errors.grid.size": "The grid must hold {height} rows of {width} pixels."
 }

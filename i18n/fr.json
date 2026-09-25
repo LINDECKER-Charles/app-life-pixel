@@ -4,5 +4,22 @@
   "common.close": "Fermer",
   "common.loading": "Chargement…",
   "common.ok": "OK",
-  "common.retry": "Réessayer"
+  "common.retry": "Réessayer",
+  "errors.document.canvas_size": "Le canevas doit mesurer entre {min} et {max} pixels de côté.",
+  "errors.document.cel": "Les pixels d’un calque sur une image sont endommagés.",
+  "errors.document.frame_count": "Une animation contient de 1 à {max, number} images.",
+  "errors.document.frame_duration": "Une image dure entre {min} et {max, number} millisecondes.",
+  "errors.document.layer_count": "Une animation contient de 1 à {max} calques.",
+  "errors.document.malformed": "Ce fichier n’est pas une animation Life Pixel valide.",
+  "errors.document.name": "Un nom contient de 1 à {max} caractères, sans caractère de contrôle.",
+  "errors.document.palette": "Une palette contient de 1 à {max} couleurs au format #rrggbbaa, la première transparente.",
+  "errors.document.pixel_budget": "Les calques de cette animation dépassent {max, number} pixels au total.",
+  "errors.document.reference": "L’animation fait référence à un calque ou à une image qui n’existe pas.",
+  "errors.document.tag": "Le repère « {name} » est invalide, en double ou hors des images.",
+  "errors.document.tag_count": "Une animation contient au plus {max} repères.",
+  "errors.document.too_large": "L’animation dépasse {maxBytes, number} octets.",
+  "errors.document.unsupported_version": "Cette animation utilise la version {version} du format de fichier, que cette version de Life Pixel ne sait pas ouvrir. Mettez Life Pixel à jour pour l’ouvrir.",
+  "errors.grid.character": "Caractère inconnu à la ligne {row}, colonne {column} de la grille.",
+  "errors.grid.index": "La couleur {index} à la ligne {row}, colonne {column} n’est pas dans la palette.",
+  "errors.grid.size": "La grille doit compter {height} lignes de {width} pixels."
 }
