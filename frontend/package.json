@@ -9,8 +9,11 @@
     "build:app": "node tools/copy-i18n.mjs && ng build app",
     "build": "npm run build:app",
     "test:ci": "ng test app --watch=false && ng test shared --watch=false",
+    "test:tools": "node --test \"tools/**/*.test.mjs\"",
     "lint": "ng lint && prettier --check .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "i18n:check": "node tools/check-i18n.mjs",
+    "i18n:check-bundle": "node tools/check-i18n-bundle.mjs"
   },
   "packageManager": "npm@11.19.0",
   "dependencies": {
