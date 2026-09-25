@@ -1,0 +1,7 @@
+# Generated or installed files: never formatted by hand.
+dist/
+.angular/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
