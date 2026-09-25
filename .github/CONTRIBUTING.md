@@ -95,6 +95,21 @@ cargo xtask build-player --write-hash     # after a change: update player.sha256
 cargo clippy -p life-pixel-player --all-targets --target wasm32-unknown-unknown -- -D warnings
 ```
 
+### Editor engine
+
+`crates/editor-wasm` is the editor's engine, which the app runs in a Web Worker.
+`cargo xtask build-editor` builds it for `wasm32-unknown-unknown`, then writes its JavaScript glue
+to `frontend/projects/app/src/app/engine/wasm/generated/` and its module to
+`frontend/projects/app/public/engine/`, both ignored by Git. It needs the `wasm-bindgen` command
+of the version in `Cargo.lock`, and names the command to install it when it is missing or differs.
+
+```shell
+cargo install wasm-bindgen-cli --version "$(cargo pkgid wasm-bindgen | sed 's/.*@//')" --locked
+cargo xtask build-editor                  # the module and its glue, into the app
+cargo test -p life-pixel-editor-wasm      # EngineCore, on the host
+cargo clippy -p life-pixel-editor-wasm --all-targets --target wasm32-unknown-unknown -- -D warnings
+```
+
 ### Fuzzing
 
 The format decoder's fuzz target, on the nightly toolchain; CI runs it 60 seconds on each pull
@@ -106,15 +121,20 @@ cd crates/format && cargo +nightly fuzz run decode -- -max_total_time=60
 
 ### Front-end
 
-Run with the Node.js version of `.nvmrc`, from the root of the repository. `start` and `build`
-copy the catalogues of `i18n/` into the app, which serves them at `/i18n/`.
+Run with the Node.js version of `.nvmrc`, from the root of the repository. `start`, `build` and
+`test:engine` first build the editor's engine with `cargo xtask build-editor` — skipped when
+`LP_ENGINE_PREBUILT=1` and both its outputs exist —; `start` and `build` then copy the catalogues
+of `i18n/` into the app, which serves them at `/i18n/`. `test:ci` runs on the mock engine, and
+needs no Rust.
 
 ```shell
 npm ci --prefix frontend
+npx --prefix frontend playwright install chromium # once: the browser of test:engine
 npm start --prefix frontend                       # the app on http://localhost:4260
 npm run format --prefix frontend                  # Prettier, in place
 npm run lint --prefix frontend                    # ESLint, then Prettier's check
 npm run test:ci --prefix frontend                 # unit tests of app and shared (Vitest)
+npm run test:engine --prefix frontend             # W0's contract suite on the engine, in Chromium
 npm run test:tools --prefix frontend              # tests of frontend/tools/
 npm run build --prefix frontend
 npm run i18n:check --prefix frontend              # the catalogues of i18n/
