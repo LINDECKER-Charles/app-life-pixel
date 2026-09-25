@@ -1,0 +1,40 @@
+<table class="table">
+  <caption class="lp-visually-hidden">
+    {{
+      'export.table.caption' | transloco
+    }}
+  </caption>
+  <thead>
+    <tr>
+      <th scope="col">{{ 'export.table.format' | transloco }}</th>
+      <th scope="col">{{ 'export.table.raw' | transloco }}</th>
+      <th scope="col">{{ 'export.table.gzip' | transloco }}</th>
+      <th scope="col">
+        <span class="lp-visually-hidden">{{ 'export.table.download' | transloco }}</span>
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (row of rows(); track row.format) {
+      <tr [class.lightest]="row.format === lightest()">
+        <th scope="row">
+          {{ 'export.format.' + row.format | transloco }}
+          @if (row.format === lightest()) {
+            <span class="badge">{{ 'export.table.lightest' | transloco }}</span>
+          }
+        </th>
+        <td>{{ rawSize(row) ?? ('export.table.' + row.status | transloco) }}</td>
+        <td>{{ gzipSize(row) ?? ('export.table.' + row.status | transloco) }}</td>
+        <td>
+          <button
+            type="button"
+            [disabled]="row.status !== 'ready'"
+            (click)="download.emit(row.format)"
+          >
+            {{ 'export.table.download' | transloco }}
+          </button>
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

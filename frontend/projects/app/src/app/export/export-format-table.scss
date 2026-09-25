@@ -1,0 +1,39 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: var(--lp-space-2) var(--lp-space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--lp-color-border);
+}
+
+tr.lightest {
+  background: color-mix(in srgb, var(--lp-color-accent) 12%, transparent);
+}
+
+.badge {
+  padding: 0 var(--lp-space-2);
+  margin-inline-start: var(--lp-space-2);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-on-accent);
+  background: var(--lp-color-accent);
+  border-radius: var(--lp-radius-round);
+}
+
+button {
+  padding: var(--lp-space-1) var(--lp-space-3);
+  font: inherit;
+  color: var(--lp-color-text);
+  background: transparent;
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
+  cursor: pointer;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}

@@ -1,0 +1,65 @@
+<section class="snippet" [attr.aria-label]="'export.snippet.title' | transloco">
+  <h3 class="heading">{{ 'export.snippet.title' | transloco }}</h3>
+  <div class="field">
+    <label for="export-framework">{{ 'export.snippet.framework' | transloco }}</label>
+    <select
+      id="export-framework"
+      #frameworkField
+      [value]="framework()"
+      (change)="onFrameworkChange(frameworkField.value)"
+    >
+      @for (item of frameworks; track item) {
+        <option [value]="item">{{ 'export.framework.' + item | transloco }}</option>
+      }
+    </select>
+  </div>
+  <div class="field">
+    <label for="export-src">{{ 'export.snippet.src' | transloco }}</label>
+    <input
+      id="export-src"
+      #srcField
+      type="text"
+      [value]="src()"
+      (change)="src.set(srcField.value)"
+    />
+  </div>
+  <div class="field">
+    <label for="export-loader">{{ 'export.snippet.loader' | transloco }}</label>
+    <input
+      id="export-loader"
+      #loaderField
+      type="text"
+      [value]="loader()"
+      (change)="loader.set(loaderField.value)"
+    />
+  </div>
+  <div class="field">
+    <label for="export-snippet-tag">{{ 'export.snippet.tag' | transloco }}</label>
+    <select id="export-snippet-tag" #tagField [value]="tag()" (change)="tag.set(tagField.value)">
+      <option value="">{{ 'export.options.tag_all' | transloco }}</option>
+      @for (item of tags(); track item.name) {
+        <option [value]="item.name">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="field">
+    <label for="export-alt">{{ 'export.snippet.alt' | transloco }}</label>
+    <input
+      id="export-alt"
+      #altField
+      type="text"
+      [value]="alt()"
+      (change)="alt.set(altField.value)"
+    />
+  </div>
+  <pre class="code" [attr.aria-label]="'export.snippet.code_label' | transloco"><code>{{
+    code()
+  }}</code></pre>
+  <button type="button" (click)="copy()">{{ 'export.snippet.copy' | transloco }}</button>
+  <p class="lp-visually-hidden" aria-live="polite">
+    @if (copied()) {
+      {{ 'export.snippet.copied' | transloco }}
+    }
+  </p>
+  <p class="hint">{{ 'export.snippet.hint.' + framework() | transloco }}</p>
+</section>
