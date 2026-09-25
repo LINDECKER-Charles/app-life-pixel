@@ -43,7 +43,7 @@ impl AppState {
     ///
     /// When the catalogues or the app cannot be read.
     pub fn new(config: Config, readiness: Arc<dyn Readiness>) -> Result<Self, StartError> {
-        let catalogues = Catalogues::load(&config.i18n_dir)?;
+        let catalogues = Catalogues::load(&config.i18n_dir, &config.legal)?;
         let static_app = StaticApp::load(&config.app_dir)?;
         Ok(Self {
             config: Arc::new(config),
