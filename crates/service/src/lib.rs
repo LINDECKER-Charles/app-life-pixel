@@ -7,6 +7,7 @@
 //! With the `testing` feature, [`memory`] holds in-memory adapters and [`testing`] the contract
 //! suites every adapter runs from its own crate's tests.
 
+pub mod animation;
 pub mod error;
 pub mod ids;
 pub mod library;
