@@ -69,6 +69,23 @@ cmp CLAUDE.md AGENTS.md
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
+### Front-end
+
+Run with the Node.js version of `.nvmrc`, from the root of the repository. `start` and `build`
+copy the catalogues of `i18n/` into the app, which serves them at `/i18n/`.
+
+```shell
+npm ci --prefix frontend
+npm start --prefix frontend                       # the app on http://localhost:4260
+npm run format --prefix frontend                  # Prettier, in place
+npm run lint --prefix frontend                    # ESLint, then Prettier's check
+npm run test:ci --prefix frontend                 # unit tests of app and shared (Vitest)
+npm run test:tools --prefix frontend              # tests of frontend/tools/
+npm run build --prefix frontend
+npm run i18n:check --prefix frontend              # the catalogues of i18n/
+npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
+```
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
