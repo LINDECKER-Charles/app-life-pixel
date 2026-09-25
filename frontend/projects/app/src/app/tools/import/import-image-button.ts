@@ -17,6 +17,7 @@ import { ImportImage } from './import-image';
       class="lp-visually-hidden"
       type="file"
       accept="image/png"
+      [attr.aria-label]="'tools.import_image' | transloco"
       (change)="onChange(fileInput)"
     />
     @if (importImage.error(); as error) {
