@@ -30,7 +30,9 @@ const SUFFIX_DIGITS: usize = 16;
 
 const LIST_TEST_DATABASES: &str = "select datname::text, shobj_description(oid, 'pg_database') \
                                    from pg_database where starts_with(datname, $1)";
-const INSERT_ACCOUNT: &str = "insert into accounts (id) values ($1)";
+const INSERT_ACCOUNT: &str = "insert into accounts (id, email, password_hash) values ($1, $2, $3)";
+/// The password hash of the accounts `create_account` makes: no password matches it.
+const UNUSABLE_PASSWORD_HASH: &str = "!";
 
 /// A migrated database of its own, owned by [`TEST_DATABASE_OWNER`]; dropped with `drop()`, or
 /// when it goes out of scope.
@@ -83,15 +85,19 @@ impl TestDatabase {
         &self.name
     }
 
-    /// A new account, which owns nothing yet.
+    /// A new account, which owns nothing yet: its address is its id at
+    /// [`TEST_MAIL_DOMAIN`](super::TEST_MAIL_DOMAIN), and no password signs in to it.
     ///
     /// # Errors
     ///
     /// When the insert fails.
     pub async fn create_account(&self) -> Result<AccountId, TestSetupError> {
         let id = AccountId::from_uuid(Uuid::now_v7());
+        let email = format!("lp-test-{}@{}", id.uuid().simple(), super::TEST_MAIL_DOMAIN);
         sqlx::query(INSERT_ACCOUNT)
             .bind(id.uuid())
+            .bind(email)
+            .bind(UNUSABLE_PASSWORD_HASH)
             .execute(&self.pool)
             .await?;
         Ok(id)

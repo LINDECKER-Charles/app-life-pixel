@@ -3,6 +3,7 @@
 
 use std::collections::BTreeSet;
 
+use life_pixel_service::accounts::AccountsError;
 use life_pixel_service::animation::EditingError;
 use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
@@ -41,7 +42,26 @@ fn every_error() -> Vec<CodedError> {
     let local = local.iter().map(CodedError::of);
     let editing = editing.iter().map(CodedError::of);
     let others = [CodedError::of(&MalformedCursor)];
-    library.chain(local).chain(editing).chain(others).collect()
+    let known = library.chain(local).chain(editing).chain(others);
+    known.chain(account_errors()).collect()
+}
+
+/// One error of each of the accounts' codes.
+fn account_errors() -> Vec<CodedError> {
+    let errors = [
+        AccountsError::Unauthenticated,
+        AccountsError::InvalidCredentials,
+        AccountsError::EmailInvalid,
+        AccountsError::PasswordLength,
+        AccountsError::EmailTaken,
+        AccountsError::TokenInvalid,
+        AccountsError::CurrentPassword,
+        AccountsError::AccountSuspended,
+        AccountsError::Language {
+            available: vec!["en".into(), "fr".into()],
+        },
+    ];
+    errors.iter().map(CodedError::of).collect()
 }
 
 fn catalogue(language: &str) -> Map<String, Value> {

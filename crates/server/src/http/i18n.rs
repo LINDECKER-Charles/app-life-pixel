@@ -63,6 +63,7 @@ pub enum CatalogueError {
 pub struct Catalogues {
     files: HashMap<String, CachedFile>,
     legal: HashMap<(String, String), CachedFile>,
+    languages: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -80,18 +81,10 @@ impl Catalogues {
     /// legal page is not valid UTF-8.
     pub fn load(dir: &Path, identity: &LegalIdentity) -> Result<Self, CatalogueError> {
         let list = read(dir, LANGUAGES_FILE)?;
-        let languages: Vec<Language> =
-            serde_json::from_slice(&list).map_err(|_| CatalogueError::Languages)?;
+        let languages = codes(&list)?;
         let mut files = HashMap::new();
         let mut legal = HashMap::new();
-        for Language { code } in languages {
-            let is_plain = !code.is_empty()
-                && code
-                    .bytes()
-                    .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-');
-            if !is_plain {
-                return Err(CatalogueError::Code { code });
-            }
+        for code in &languages {
             let name = format!("{code}.json");
             files.insert(name.clone(), catalogue_file(read(dir, &name)?));
             for page in LEGAL_PAGES {
@@ -107,7 +100,17 @@ impl Catalogues {
             }
         }
         files.insert(LANGUAGES_FILE.to_owned(), catalogue_file(list));
-        Ok(Self { files, legal })
+        Ok(Self {
+            files,
+            legal,
+            languages,
+        })
+    }
+
+    /// The codes `languages.json` lists, in its order: those an account may choose.
+    #[must_use]
+    pub fn languages(&self) -> &[String] {
+        &self.languages
     }
 
     /// The file `name`: `languages.json` or `<code>.json`.
@@ -158,6 +161,26 @@ async fn legal_page(
 fn known_page(file: &str) -> Option<&str> {
     file.strip_suffix(".md")
         .filter(|page| LEGAL_PAGES.contains(page))
+}
+
+/// The codes `list` — `languages.json` — lists, in its order, when each is a plain name.
+fn codes(list: &[u8]) -> Result<Vec<String>, CatalogueError> {
+    let languages: Vec<Language> =
+        serde_json::from_slice(list).map_err(|_| CatalogueError::Languages)?;
+    let codes = languages.into_iter().map(|Language { code }| code);
+    codes
+        .map(|code| {
+            let is_plain = !code.is_empty()
+                && code
+                    .bytes()
+                    .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-');
+            if is_plain {
+                Ok(code)
+            } else {
+                Err(CatalogueError::Code { code })
+            }
+        })
+        .collect()
 }
 
 fn read(dir: &Path, name: &str) -> Result<Bytes, CatalogueError> {

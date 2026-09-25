@@ -5,6 +5,9 @@ use axum::http::StatusCode;
 
 /// The codes the server itself answers with, as constants.
 pub mod codes {
+    /// An unsafe request carrying the session cookie from another origin, or without the
+    /// session's CSRF token.
+    pub const AUTH_CSRF: &str = "auth.csrf";
     /// The client is older than `LP_MIN_CLIENT_VERSIONS` allows; params `minimum`.
     pub const CLIENT_UPDATE_REQUIRED: &str = "client.update_required";
     /// A write without the `If-Match` of the version it replaces.
@@ -30,6 +33,7 @@ pub mod codes {
 /// Every code of this crate, each with its key `errors.<code>` in every catalogue.
 /// `request.malformed` and `service.unavailable` belong to `service::error::CODES`.
 pub const CODES: &[&str] = &[
+    codes::AUTH_CSRF,
     codes::CLIENT_UPDATE_REQUIRED,
     codes::DOCUMENT_VERSION_REQUIRED,
     codes::INTERNAL_ERROR,
@@ -42,6 +46,16 @@ pub const CODES: &[&str] = &[
 
 /// Code to status: one line per code, sorted. A task that creates a code adds its line.
 const STATUSES: &[(&str, StatusCode)] = &[
+    ("account.language", StatusCode::UNPROCESSABLE_ENTITY),
+    ("auth.account_suspended", StatusCode::FORBIDDEN),
+    ("auth.csrf", StatusCode::FORBIDDEN),
+    ("auth.current_password", StatusCode::FORBIDDEN),
+    ("auth.email_invalid", StatusCode::UNPROCESSABLE_ENTITY),
+    ("auth.email_taken", StatusCode::CONFLICT),
+    ("auth.invalid_credentials", StatusCode::UNAUTHORIZED),
+    ("auth.password_length", StatusCode::UNPROCESSABLE_ENTITY),
+    ("auth.token_invalid", StatusCode::BAD_REQUEST),
+    ("auth.unauthenticated", StatusCode::UNAUTHORIZED),
     ("client.update_required", StatusCode::UPGRADE_REQUIRED),
     ("document.canvas_size", StatusCode::UNPROCESSABLE_ENTITY),
     ("document.cel", StatusCode::UNPROCESSABLE_ENTITY),
