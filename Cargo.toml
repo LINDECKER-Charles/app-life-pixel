@@ -23,6 +23,7 @@ fd-lock = "4.0.4"
 gif = { version = "0.14.2", default-features = false, features = ["std"] }
 governor = "0.10.4"
 ipnet = "2.12.2"
+life-pixel-compiler = { path = "crates/compiler" }
 life-pixel-core = { path = "crates/core" }
 life-pixel-format = { path = "crates/format" }
 life-pixel-service = { path = "crates/service" }
