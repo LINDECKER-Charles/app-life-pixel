@@ -1,0 +1,50 @@
+{
+  "name": "life-pixel-frontend",
+  "version": "0.0.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "start": "node tools/copy-i18n.mjs && ng serve app --port 4260",
+    "build:app": "node tools/copy-i18n.mjs && ng build app",
+    "build": "npm run build:app",
+    "test:ci": "ng test app --watch=false && ng test shared --watch=false",
+    "test:tools": "node --test \"tools/**/*.test.mjs\"",
+    "lint": "ng lint && prettier --check .",
+    "format": "prettier --write .",
+    "i18n:check": "node tools/check-i18n.mjs",
+    "i18n:check-bundle": "node tools/check-i18n-bundle.mjs"
+  },
+  "packageManager": "npm@11.19.0",
+  "dependencies": {
+    "@angular/common": "^22.2.0",
+    "@angular/compiler": "^22.2.0",
+    "@angular/core": "^22.2.0",
+    "@angular/forms": "^22.2.0",
+    "@angular/platform-browser": "^22.2.0",
+    "@angular/router": "^22.2.0",
+    "@ionic/angular": "^9.0.5",
+    "@jsverse/transloco": "^8.4.0",
+    "@jsverse/transloco-messageformat": "^8.4.0",
+    "rxjs": "~7.8.0",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.2.0",
+    "@angular/cli": "^22.2.0",
+    "@angular/compiler-cli": "^22.2.0",
+    "@axe-core/playwright": "^4.13.0",
+    "@eslint/js": "^10.0.1",
+    "@messageformat/parser": "^5.1.1",
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24.13.6",
+    "angular-eslint": "22.5.0",
+    "eslint": "^10.9.1",
+    "jsdom": "^30.0.0",
+    "ng-packagr": "^22.2.0",
+    "prettier": "^3.9.9",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "8.69.0",
+    "vitest": "^5.0.0"
+  }
+}
