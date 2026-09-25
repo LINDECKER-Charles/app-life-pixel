@@ -328,6 +328,7 @@ is scaffolded, and CI runs the same ones.
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+cargo test -p life-pixel-server --features stack-tests  # needs the local stack and a .env
 cargo deny check
 cargo xtask check-boundaries
 cargo xtask build-player --check
