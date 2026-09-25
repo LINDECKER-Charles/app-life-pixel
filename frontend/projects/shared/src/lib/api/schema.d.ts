@@ -4,6 +4,165 @@
  */
 
 export interface paths {
+  '/api/v1/auth/password': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /** Replaces the signed-in account's password, and ends its other sessions. */
+    put: operations['changePassword'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/password-reset': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Emails a link setting a new password, when an active account has the address. The answer is
+     *     the same, and as quick, whether it has or not.
+     */
+    post: operations['requestPasswordReset'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/password-reset/confirm': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Sets a new password with the token of an emailed link, and ends every session of the account. */
+    post: operations['confirmPasswordReset'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/session': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The session the request carries, and its CSRF token. */
+    get: operations['getSession'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/sign-in': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Opens a session with an address and its password. */
+    post: operations['signIn'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/sign-out': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Ends the session the request carries, if any, and clears its cookie. */
+    post: operations['signOut'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/sign-up': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Creates an account, signs it in, and sends the email that verifies its address. */
+    post: operations['signUp'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/verify-email': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Verifies the address of the account an emailed link was sent to, and spends its token. */
+    post: operations['verifyEmail'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/auth/verify-email/resend': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Sends the signed-in account's verification email again, with a new link; nothing once the
+     *     address is verified.
+     */
+    post: operations['resendVerificationEmail'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/healthz': {
     parameters: {
       query?: never;
@@ -25,6 +184,29 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** @description An account as its owner sees it. */
+    Account: {
+      /**
+       * Format: date-time
+       * @description When it signed up.
+       */
+      createdAt: string;
+      /** @description Its address, as it signed up with it. */
+      email: string;
+      /** @description Whether the address is verified. */
+      emailVerified: boolean;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /** @description The language code of its emails and interface. */
+      language: string;
+      /** @description Its plan: `free`. */
+      plan: string;
+      /** @description Its documents' bytes and its quota. */
+      storage: components['schemas']['Storage'];
+    };
     /** @description The server's health. */
     Health: {
       /** @description Always `ok`: a server that cannot answer sends a problem. */
@@ -35,6 +217,25 @@ export interface components {
      * @enum {string}
      */
     HealthStatus: 'ok';
+    /** @description A change of password. */
+    PasswordChangeRequest: {
+      /** @description The current password. */
+      currentPassword: string;
+      /** @description The new password: 12 to 128 characters. */
+      newPassword: string;
+    };
+    /** @description A new password, with the token of the emailed link. */
+    PasswordResetConfirmation: {
+      /** @description The new password: 12 to 128 characters. */
+      password: string;
+      /** @description The link's `token`. */
+      token: string;
+    };
+    /** @description A request for a link setting a new password. */
+    PasswordResetRequest: {
+      /** @description The account's address. */
+      email: string;
+    };
     /**
      * @description An error, as RFC 9457 problem details with a stable code and its parameters, never a
      *     sentence: the interface translates `errors.<code>`.
@@ -64,6 +265,47 @@ export interface components {
       /** @description `urn:life-pixel:problem:<code>`. */
       type: string;
     };
+    /** @description A session: the account signed in, and the token its unsafe requests send in `X-CSRF-Token`. */
+    Session: {
+      /** @description The account signed in. */
+      account: components['schemas']['Account'];
+      /** @description The CSRF token of the session. */
+      csrfToken: string;
+    };
+    /** @description A sign-in. */
+    SignInRequest: {
+      /** @description The address, whatever its case. */
+      email: string;
+      /** @description The password. */
+      password: string;
+    };
+    /** @description A sign-up. */
+    SignUpRequest: {
+      /** @description The address; spaces around it are ignored. */
+      email: string;
+      /** @description The language code of the interface, one of `languages.json`. */
+      language: string;
+      /** @description The password: 12 to 128 characters. */
+      password: string;
+    };
+    /** @description An account's storage. */
+    Storage: {
+      /**
+       * Format: int64
+       * @description Its quota, in bytes.
+       */
+      limitBytes?: number | null;
+      /**
+       * Format: int64
+       * @description The bytes of its documents.
+       */
+      usedBytes: number;
+    };
+    /** @description The token of an emailed verification link. */
+    VerifyEmailRequest: {
+      /** @description The link's `token`. */
+      token: string;
+    };
   };
   responses: never;
   parameters: never;
@@ -73,6 +315,420 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  changePassword: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PasswordChangeRequest'];
+      };
+    };
+    responses: {
+      /** @description The password is changed; the other sessions ended */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.unauthenticated` */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.current_password`, `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.password_length` (`min`, `max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 5 a minute per account, as signing in */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  requestPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PasswordResetRequest'];
+      };
+    };
+    responses: {
+      /** @description A link is on its way, if an account has the address */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 5 an hour per address and per email */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  confirmPasswordReset: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['PasswordResetConfirmation'];
+      };
+    };
+    responses: {
+      /** @description The password is set; every session has ended */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.token_invalid`: unknown, used or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.password_length` (`min`, `max`); the token still works */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getSession: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The session */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Session'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  signIn: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SignInRequest'];
+      };
+    };
+    responses: {
+      /** @description Signed in: `Set-Cookie` holds the session */
+      200: {
+        headers: {
+          /** @description The session cookie */
+          'Set-Cookie'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Session'];
+        };
+      };
+      /** @description `auth.invalid_credentials`: an unknown address or a wrong password */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 10 a minute per address, 5 per address signed in to */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  signOut: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Signed out: `Set-Cookie` clears the session cookie */
+      204: {
+        headers: {
+          /** @description The cleared session cookie */
+          'Set-Cookie'?: string;
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  signUp: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SignUpRequest'];
+      };
+    };
+    responses: {
+      /** @description The account, signed in: `Set-Cookie` holds its session */
+      201: {
+        headers: {
+          /** @description The session cookie */
+          'Set-Cookie'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Session'];
+        };
+      };
+      /** @description `auth.csrf`: from another origin */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.email_taken` */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.email_invalid`, `auth.password_length` (`min`, `max`), `account.language` (`available`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 5 an hour per address */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  verifyEmail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['VerifyEmailRequest'];
+      };
+    };
+    responses: {
+      /** @description The address is verified */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.token_invalid`: unknown, used or expired */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  resendVerificationEmail: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The email is on its way, if the address is unverified */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `auth.unauthenticated` */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 3 an hour per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
   healthz: {
     parameters: {
       query?: never;
