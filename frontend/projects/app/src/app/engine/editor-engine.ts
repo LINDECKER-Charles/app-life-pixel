@@ -1,5 +1,5 @@
 import { InjectionToken } from '@angular/core';
-import { MockEditorEngine } from './testing/mock-editor-engine';
+import { createDefaultEngine } from './default-engine';
 import type {
   EditOperation,
   EngineState,
@@ -29,10 +29,10 @@ export interface EditorEngine {
 }
 
 /**
- * Until W1 lands `WasmEditorEngine`, this token provides the in-memory mock, so that the
- * interface tasks (U1 to U6) are built against the real contract from day one.
+ * The engine of the page: `WasmEditorEngine` in the app, the in-memory mock in the unit tests,
+ * whose build swaps default-engine.ts for testing/default-engine.ts.
  */
 export const EDITOR_ENGINE = new InjectionToken<EditorEngine>('EDITOR_ENGINE', {
   providedIn: 'root',
-  factory: () => new MockEditorEngine(),
+  factory: createDefaultEngine,
 });

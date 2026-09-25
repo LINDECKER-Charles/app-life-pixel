@@ -53,6 +53,14 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "mock-engine": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/app/src/app/engine/default-engine.ts",
+                  "with": "projects/app/src/app/engine/testing/default-engine.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -73,7 +81,20 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "app:build:development,mock-engine",
+            "exclude": ["**/*.browser.spec.ts"]
+          },
+          "configurations": {
+            "engine": {
+              "buildTarget": "app:build:development",
+              "include": ["**/*.browser.spec.ts"],
+              "exclude": [],
+              "browsers": ["chromium"],
+              "headless": true
+            }
+          }
         },
         "lint": {
           "builder": "@angular-eslint/builder:lint",
