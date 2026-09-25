@@ -51,9 +51,18 @@ an issue.
 | cargo-deny | latest | `cargo install cargo-deny --locked` |
 | Rust nightly, cargo-fuzz | latest nightly, cargo-fuzz 0.13 | fuzzing only: `rustup toolchain install nightly --profile minimal`, `cargo install cargo-fuzz --locked` |
 | Docker | recent | local Postgres and object storage, image checks |
+| Tauri CLI | 2 | the desktop app: `cargo install tauri-cli --version ^2 --locked` |
 
 The Tauri apps need the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) of
-your operating system. For Android, add Android Studio with its SDK and NDK, a JDK, and the Rust
+your operating system: on macOS the Xcode command-line tools, on Windows the Microsoft C++ build
+tools and WebView2, on Debian or Ubuntu WebKitGTK and its companions — without them, `cargo build`
+and `cargo clippy --workspace` stop at `tauri/`:
+
+```shell
+sudo apt-get install libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev
+```
+
+For Android, add Android Studio with its SDK and NDK, a JDK, and the Rust
 Android targets:
 
 ```shell
@@ -172,6 +181,28 @@ types, and commits both; CI's `api` job fails when they differ.
 npm run api:generate --prefix frontend
 git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts
 ```
+
+### Desktop
+
+`tauri/` is `life-pixel-desktop`: the app in a Tauri 2 window, with `service` in-process on a
+local library folder. `cargo build` compiles it without the front-end: a debug binary loads the
+app from `npm start` on http://localhost:4260. Run with the Node.js version of `.nvmrc`, from the
+root of the repository, after `npm ci --prefix frontend`.
+
+```shell
+cargo test -p life-pixel-desktop            # every command on a temporary library
+cargo xtask build-desktop --debug           # the front-end, then the app: the macOS .app, a Linux .deb
+cargo xtask build-desktop                   # the same, in release; unsigned, without an updater
+cd tauri && cargo tauri dev                 # the app on the dev server, reloading as you edit
+```
+
+`build-desktop` never makes a DMG, whose creation drives the Finder; installers are release.yml's.
+`LIFE_PIXEL_LIBRARY` chooses the library folder of a run, whatever the settings say, and a debug
+build saves exports into `LP_EXPORT_DIR` without a dialog: set both to temporary folders when you
+try the app, so that it leaves your library alone. The icons come from the pixel-art
+`tauri/icons/source.png`, drawn at 32 × 32 and scaled 32 times: after changing it, run
+`cargo tauri icon icons/source.png` in `tauri/`, then delete what it makes for mobile and the
+Windows Store — `android/`, `ios/`, `Square*Logo.png`, `StoreLogo.png`.
 
 ## Code conventions
 
