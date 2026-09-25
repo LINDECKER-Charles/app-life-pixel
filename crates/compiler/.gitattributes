@@ -1,0 +1,4 @@
+# Golden files are compared byte for byte: never normalised, never diffed as text.
+*.apng binary
+*.zip binary
+tests/golden/** -text

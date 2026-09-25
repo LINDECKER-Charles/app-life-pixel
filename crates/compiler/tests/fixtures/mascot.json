@@ -1,0 +1,30 @@
+{
+  "format": "life-pixel/animation",
+  "version": 1,
+  "title": "Mascot",
+  "width": 4,
+  "height": 3,
+  "palette": ["#00000000", "#000000ff", "#ffffffff", "#ff000080", "#0000ff00"],
+  "layers": [
+    { "id": 1, "name": "Body", "visible": true },
+    { "id": 2, "name": "Ghost", "visible": false },
+    { "id": 3, "name": "Face", "visible": true }
+  ],
+  "frames": [
+    { "id": 4, "durationMs": 100 },
+    { "id": 5, "durationMs": 150 },
+    { "id": 6, "durationMs": 25 }
+  ],
+  "cels": [
+    { "layer": 1, "frame": 4, "grid": ["1111", "1221", "1111"] },
+    { "layer": 1, "frame": 5, "grid": ["....", "1111", "4..."] },
+    { "layer": 1, "frame": 6, "grid": ["3...", "....", "...4"] },
+    { "layer": 2, "frame": 5, "grid": ["2222", "2222", "2222"] },
+    { "layer": 3, "frame": 4, "grid": ["....", ".3..", "...."] }
+  ],
+  "tags": [
+    { "name": "idle", "first": 0, "last": 1, "loop": "loop" },
+    { "name": "jump", "first": 2, "last": 2, "loop": "once" }
+  ],
+  "nextId": 7
+}
