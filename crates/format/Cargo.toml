@@ -12,5 +12,9 @@ license = "MIT"
 # The encoder, which allocates; the decoder never does.
 encode = []
 
+[dev-dependencies]
+# The fixture test reads the expected values from JSON; nothing that ships depends on it.
+serde_json.workspace = true
+
 [lints]
 workspace = true
