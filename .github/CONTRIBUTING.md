@@ -49,6 +49,7 @@ an issue.
 | Rust | 1.98, with `rustfmt`, `clippy` and the `wasm32-unknown-unknown` target | `rust-toolchain.toml` — rustup installs it on the first `cargo` call |
 | Node.js | 24.21.0 LTS | `.nvmrc` |
 | cargo-deny | latest | `cargo install cargo-deny --locked` |
+| Rust nightly, cargo-fuzz | latest nightly, cargo-fuzz 0.13 | fuzzing only: `rustup toolchain install nightly --profile minimal`, `cargo install cargo-fuzz --locked` |
 | Docker | recent | local Postgres and object storage, image checks |
 
 The Tauri apps need the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) of
@@ -80,6 +81,15 @@ cargo xtask check-boundaries
 ```
 
 `cargo xtask --help` lists the repository's build commands.
+
+### Fuzzing
+
+The format decoder's fuzz target, on the nightly toolchain; CI runs it 60 seconds on each pull
+request and 30 minutes every week.
+
+```shell
+cd crates/format && cargo +nightly fuzz run decode -- -max_total_time=60
+```
 
 ### Front-end
 
