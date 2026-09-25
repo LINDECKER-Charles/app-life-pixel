@@ -11,6 +11,8 @@ pub const CODES: &[&str] = &[
     "document.version_conflict",
     "library.animation_not_found",
     "library.project_not_found",
+    "library.unavailable",
+    "library.unsupported_version",
     "quota.storage_exceeded",
     "request.malformed",
     "service.unavailable",

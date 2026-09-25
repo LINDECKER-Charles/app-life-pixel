@@ -10,6 +10,7 @@
 pub mod error;
 pub mod ids;
 pub mod library;
+pub mod local;
 pub mod owner;
 pub mod paging;
 pub mod plans;
