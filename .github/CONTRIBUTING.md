@@ -162,7 +162,14 @@ npm run test:tools --prefix frontend              # tests of frontend/tools/
 npm run build --prefix frontend
 npm run i18n:check --prefix frontend              # the catalogues of i18n/
 npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
+npm run e2e --prefix frontend                     # the editor's end-to-end path, in Chromium
 ```
+
+`e2e` runs the Playwright project `editor` (`frontend/e2e/editor/`): draw, animate, export, then
+play the export with its loader, the same drawing with the keyboard alone, and axe on the
+editor's screens. It starts the app with `npm start` on port 4260 — which must be free, or already
+serve the app —, so the first run builds the engine; traces of failed tests land in
+`frontend/e2e/editor/test-results/`.
 
 ### Loader
 
