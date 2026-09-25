@@ -4,13 +4,39 @@
 use std::collections::BTreeSet;
 
 use life_pixel_core::DocumentError;
+use life_pixel_core::edit::EditError;
 use life_pixel_core::error::CODES;
 use serde_json::{Map, Value};
 
 const CATALOGUES: [&str; 2] = ["en", "fr"];
 
-/// One error of each variant.
-fn every_error() -> Vec<DocumentError> {
+/// The code and params of one error of each variant, of documents and of edits.
+fn every_error() -> Vec<(&'static str, Map<String, Value>)> {
+    let documents = document_errors().into_iter().map(EditError::Document);
+    let edits = documents.chain(edit_errors());
+    edits.map(|error| (error.code(), error.params())).collect()
+}
+
+fn edit_errors() -> Vec<EditError> {
+    vec![
+        EditError::LayerNotFound,
+        EditError::FrameNotFound,
+        EditError::TagNotFound {
+            name: "idle".to_owned(),
+        },
+        EditError::OutOfCanvas,
+        EditError::LastLayer,
+        EditError::LastFrame,
+        EditError::PaletteFull,
+        EditError::PositionOutOfRange { max: 3 },
+        EditError::StrokeTooLong,
+        EditError::ImageTooLarge,
+        EditError::ImageMalformed,
+        EditError::SheetGrid,
+    ]
+}
+
+fn document_errors() -> Vec<DocumentError> {
     vec![
         DocumentError::Malformed,
         DocumentError::UnsupportedVersion { version: 2 },
@@ -64,7 +90,7 @@ fn arguments(message: &str) -> BTreeSet<String> {
 fn codes_are_unique_and_cover_every_error() {
     let unique: BTreeSet<&str> = CODES.iter().copied().collect();
     assert_eq!(unique.len(), CODES.len());
-    let used: BTreeSet<&str> = every_error().iter().map(DocumentError::code).collect();
+    let used: BTreeSet<&str> = every_error().iter().map(|(code, _)| *code).collect();
     assert_eq!(used, unique);
 }
 
@@ -72,11 +98,11 @@ fn codes_are_unique_and_cover_every_error() {
 fn every_code_has_its_message_with_its_params_in_every_catalogue() {
     for language in CATALOGUES {
         let messages = catalogue(language);
-        for error in every_error() {
-            let key = format!("errors.{}", error.code());
+        for (code, params) in every_error() {
+            let key = format!("errors.{code}");
             let message = messages.get(&key).and_then(Value::as_str);
             let message = message.unwrap_or_else(|| panic!("{language}: {key} is missing"));
-            let params: BTreeSet<String> = error.params().keys().cloned().collect();
+            let params: BTreeSet<String> = params.keys().cloned().collect();
             assert_eq!(arguments(message), params, "{language}: {key}");
         }
     }

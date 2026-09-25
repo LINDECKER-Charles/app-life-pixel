@@ -1,7 +1,8 @@
 use std::fmt;
 use std::str::FromStr;
 
-use serde::{Serialize, Serializer};
+use serde::de::Error as _;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::error::DocumentError;
 
@@ -75,6 +76,15 @@ impl fmt::Display for Rgba {
 impl Serialize for Rgba {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         serializer.collect_str(self)
+    }
+}
+
+impl<'de> Deserialize<'de> for Rgba {
+    /// Reads `#rrggbbaa`, as [`FromStr`] does.
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let text = String::deserialize(deserializer)?;
+        text.parse()
+            .map_err(|_| D::Error::custom("expected a colour written #rrggbbaa"))
     }
 }
 

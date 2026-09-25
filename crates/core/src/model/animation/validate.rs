@@ -47,6 +47,43 @@ impl Animation {
         Ok(())
     }
 
+    /// Checks every rule after an edit: the skeleton, the cels of `keys` — every cel when `keys`
+    /// is `None` —, then the pixel budget.
+    pub(crate) fn check_edited(
+        &self,
+        keys: Option<&[(LayerId, FrameId)]>,
+    ) -> Result<(), DocumentError> {
+        self.check_skeleton()?;
+        match keys {
+            Some(keys) => keys.iter().try_for_each(|key| self.check_stored_cel(*key)),
+            None => self
+                .cels
+                .keys()
+                .try_for_each(|key| self.check_stored_cel(*key)),
+        }?;
+        check_pixel_budget(self.cels.len(), self.cel_shape())
+    }
+
+    /// Whether `cel_count` non-blank cels would stay within the pixel budget.
+    pub(crate) fn check_cel_count(&self, cel_count: usize) -> Result<(), DocumentError> {
+        check_pixel_budget(cel_count, self.cel_shape())
+    }
+
+    /// The cel of `key`, when there is one, is on an existing layer and frame and fits.
+    fn check_stored_cel(&self, key: (LayerId, FrameId)) -> Result<(), DocumentError> {
+        let Some(cel) = self.cels.get(&key) else {
+            return Ok(());
+        };
+        let (layer, frame) = key;
+        if self.layer(layer).is_none() || self.frame(frame).is_none() {
+            return Err(DocumentError::Reference);
+        }
+        self.cel_shape()
+            .fits(cel)
+            .then_some(())
+            .ok_or(DocumentError::Cel)
+    }
+
     /// Layer and frame ids are unique together, and below `next_id`.
     fn check_ids(&self) -> Result<(), DocumentError> {
         let layer_ids = self.layers.iter().map(|layer| layer.id().get());
