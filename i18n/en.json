@@ -19,7 +19,13 @@
   "errors.document.tag_count": "An animation holds at most {max} tags.",
   "errors.document.too_large": "The animation is larger than {maxBytes, number} bytes.",
   "errors.document.unsupported_version": "This animation uses version {version} of the file format, which this version of Life Pixel cannot open. Update Life Pixel to open it.",
+  "errors.document.version_conflict": "This animation was changed elsewhere and is now at version {current}. Reload it before saving again.",
   "errors.grid.character": "Unknown character at row {row}, column {column} of the grid.",
   "errors.grid.index": "Colour {index} at row {row}, column {column} is not in the palette.",
-  "errors.grid.size": "The grid must hold {height} rows of {width} pixels."
+  "errors.grid.size": "The grid must hold {height} rows of {width} pixels.",
+  "errors.library.animation_not_found": "This animation does not exist, or was deleted.",
+  "errors.library.project_not_found": "This project does not exist, or was deleted.",
+  "errors.quota.storage_exceeded": "Your storage is full: {used, number} of {limit, number} bytes are used, and this change needs {requested, number} more. Delete animations to free space.",
+  "errors.request.malformed": "This request could not be understood.",
+  "errors.service.unavailable": "Life Pixel is unavailable for a moment. Try again shortly."
 }
