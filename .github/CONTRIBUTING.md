@@ -151,6 +151,28 @@ Reset it, dropping all of its data:
 docker compose down -v
 ```
 
+### Server
+
+`crates/server` is `life-pixel-server`. Run from the root of the repository, with the local stack
+started: in development it reads `.env`, copied from `.env.example`, checks that the database
+answers, then serves on http://localhost:8460. `npm start --prefix frontend` proxies `/api` and
+`/mcp` to it, so the app on http://localhost:4260 talks to this server.
+
+```shell
+cargo run -p life-pixel-server                        # serve: the public, metrics and admin listeners
+cargo run -p life-pixel-server -- migrate             # the migrations, then exit
+cargo run -p life-pixel-server -- healthcheck         # exit 0 when /healthz answers 200
+cargo run -p life-pixel-server -- openapi             # the API's description, on stdout
+```
+
+A change to a route or to one of its types regenerates the API's description and its TypeScript
+types, and commits both; CI's `api` job fails when they differ.
+
+```shell
+npm run api:generate --prefix frontend
+git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts
+```
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
