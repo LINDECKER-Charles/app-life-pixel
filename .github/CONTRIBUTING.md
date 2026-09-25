@@ -82,6 +82,19 @@ cargo xtask check-boundaries
 
 `cargo xtask --help` lists the repository's build commands.
 
+### Player
+
+`crates/player` builds to the WebAssembly player, reproducibly, into `target/player/`. Its hash
+is committed in `crates/player/player.sha256`: a change to the player or the format commits the
+new hash, and CI fails when they differ.
+
+```shell
+cargo xtask build-player                  # the module, its size and its sha256
+cargo xtask build-player --check          # the hash, the 16 KiB budget, the v1 fixture in wasmi
+cargo xtask build-player --write-hash     # after a change: update player.sha256, then commit it
+cargo clippy -p life-pixel-player --all-targets --target wasm32-unknown-unknown -- -D warnings
+```
+
 ### Fuzzing
 
 The format decoder's fuzz target, on the nightly toolchain; CI runs it 60 seconds on each pull

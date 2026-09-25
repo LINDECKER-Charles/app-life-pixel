@@ -330,6 +330,7 @@ cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo deny check
 cargo xtask check-boundaries
+cargo xtask build-player --check
 npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend && npm run i18n:check --prefix frontend
 npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
