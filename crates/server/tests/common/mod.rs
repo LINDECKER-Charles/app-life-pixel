@@ -1,9 +1,12 @@
 //! What the router tests share: the local configuration over a temporary built app and the
-//! repository's catalogues, a database that answers or not, an in-memory library, and one request
-//! at a time.
+//! repository's catalogues, a database that answers or not, an in-memory library and accounts,
+//! and one request at a time.
 
 #![allow(dead_code)] // Each test file uses its own share of the helpers.
 #![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+
+pub mod accounts;
+pub mod auth;
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -24,6 +27,8 @@ use life_pixel_service::memory::InMemoryLibraryStore;
 use serde_json::Value;
 use tempfile::TempDir;
 use tower::ServiceExt;
+
+use self::accounts::TestAccounts;
 
 /// A secret of the right shape, never a real one.
 pub const SECRET: &str = "5f0c3a1e9b7d2468ace013579bdf2468ace013579bdf2468ace013579bdf2468";
@@ -143,6 +148,7 @@ pub fn client_peer() -> SocketAddr {
 /// The server's state over a temporary built app, and the requests it answers.
 pub struct TestServer {
     pub state: AppState,
+    pub accounts: TestAccounts,
     _app_dir: TempDir,
 }
 
@@ -158,15 +164,18 @@ impl TestServer {
         let mut env = local_env(app_dir.path());
         change(&mut env);
         let config = read_config(&env).unwrap();
+        let accounts = TestAccounts::new();
         let backends = Backends {
             readiness: Arc::new(Database {
                 answers: database_answers,
             }),
             library_store: Arc::new(InMemoryLibraryStore::new()),
+            accounts: accounts.ports(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {
             state,
+            accounts,
             _app_dir: app_dir,
         }
     }

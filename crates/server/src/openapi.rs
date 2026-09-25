@@ -44,7 +44,9 @@ impl Modify for SecuritySchemes {
 /// The public description: every route group of the public router. One line per group.
 #[must_use]
 pub fn description() -> utoipa::openapi::OpenApi {
-    let api = routes::api_rate_limited().merge(routes::api_own_policies());
+    let api = routes::api_rate_limited()
+        .merge(routes::api_own_policies())
+        .merge(routes::api_session_opening());
     OpenApiRouter::<AppState>::with_openapi(ApiDoc::openapi())
         .merge(health::router())
         .nest(API_PREFIX, api)
