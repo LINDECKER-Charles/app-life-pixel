@@ -59,6 +59,7 @@
   "errors.export.scale": "The export scale must be between {min} and {max}.",
   "errors.export.tag_not_found": "This animation has no tag named “{name}”.",
   "errors.export.too_large": "The exported image would measure more than {maxSide, number} pixels on a side. Choose a smaller scale or fewer frames.",
+  "errors.export.write_failed": "The file {path} could not be written. Check that you can write to its folder, then export again.",
   "errors.grid.character": "Unknown character at row {row}, column {column} of the grid.",
   "errors.grid.index": "Colour {index} at row {row}, column {column} is not in the palette.",
   "errors.grid.size": "The grid must hold {height} rows of {width} pixels.",
