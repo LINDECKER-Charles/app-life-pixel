@@ -1,0 +1,7 @@
+// Ionic positions its router outlet over the whole app: here it takes the room the header and
+// the footer leave.
+.outlet {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}

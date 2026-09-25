@@ -1,3 +1,26 @@
 import { Routes } from '@angular/router';
 
-export const routes: Routes = [];
+// One lazy route per feature; a route's title is an i18n key. The not-found route stays last.
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'editor' },
+  {
+    path: 'editor',
+    title: 'editor.heading',
+    loadComponent: () => import('./editor/editor-page').then((m) => m.EditorPage),
+  },
+  {
+    path: 'editor/:animationId',
+    title: 'editor.heading',
+    loadComponent: () => import('./editor/editor-page').then((m) => m.EditorPage),
+  },
+  {
+    path: 'settings',
+    title: 'settings.title',
+    loadComponent: () => import('./settings/settings-page').then((m) => m.SettingsPage),
+  },
+  {
+    path: '**',
+    title: 'not_found.title',
+    loadComponent: () => import('./not-found/not-found-page').then((m) => m.NotFoundPage),
+  },
+];

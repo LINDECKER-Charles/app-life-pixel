@@ -1,0 +1,23 @@
+<div class="editor">
+  <header class="header">
+    <h1 class="lp-visually-hidden">{{ 'editor.heading' | transloco }}</h1>
+    <lp-animation-title class="title" />
+    <ion-button fill="outline" (click)="newAnimation.start()">
+      {{ 'editor.new.action' | transloco }}
+    </ion-button>
+    <lp-export-button class="export" />
+  </header>
+  <section class="region tools" [attr.aria-label]="'editor.region.tools' | transloco">
+    <lp-tool-bar />
+  </section>
+  <section class="region canvas" [attr.aria-label]="'editor.region.canvas' | transloco">
+    <lp-canvas />
+  </section>
+  <section class="region palette" [attr.aria-label]="'editor.region.palette' | transloco">
+    <lp-palette-panel />
+  </section>
+  <section class="region timeline" [attr.aria-label]="'editor.region.timeline' | transloco">
+    <lp-timeline />
+  </section>
+</div>
+<lp-new-animation-dialog />

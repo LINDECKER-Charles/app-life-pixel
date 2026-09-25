@@ -1,1 +1,18 @@
-/* You can add global styles to this file, and also import other style files */
+// Ionic's required and typography CSS, then the shared design tokens, which map Ionic's
+// variables onto theirs.
+@use '@ionic/angular/css/core.css';
+@use '@ionic/angular/css/normalize.css';
+@use '@ionic/angular/css/structure.css';
+@use '@ionic/angular/css/typography.css';
+@use '../../shared/src/styles';
+
+body {
+  font-family: var(--lp-font-family);
+  line-height: var(--lp-font-line-height);
+  color: var(--lp-color-text);
+  background: var(--lp-color-background);
+}
+
+a {
+  color: var(--lp-color-accent);
+}

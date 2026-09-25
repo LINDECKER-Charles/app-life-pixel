@@ -1,0 +1,58 @@
+// Reading width: long lines of settings are hard to scan.
+$page-max-width: 40rem;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-5);
+  max-width: $page-max-width;
+  padding: var(--lp-space-5) var(--lp-space-4);
+  margin-inline: auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: var(--lp-font-size-title);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+}
+
+select {
+  align-self: flex-start;
+  padding: var(--lp-space-2);
+  font: inherit;
+  color: var(--lp-color-text);
+  background: var(--lp-color-background);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-small);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-3) var(--lp-space-4);
+  margin: 0;
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
+
+  legend {
+    padding-inline: var(--lp-space-1);
+    font-weight: var(--lp-font-weight-bold);
+  }
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-2);
+  min-height: 1.5rem;
+}
+
+input[type='radio'] {
+  accent-color: var(--lp-color-accent);
+}
