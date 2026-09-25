@@ -18,6 +18,7 @@ import { ImportSpriteSheetFlow } from './import-sprite-sheet-flow';
       class="lp-visually-hidden"
       type="file"
       accept="image/png"
+      [attr.aria-label]="'tools.import_sprite_sheet' | transloco"
       (change)="onChange(fileInput)"
     />
     @if (flow.error(); as error) {

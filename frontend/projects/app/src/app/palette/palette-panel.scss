@@ -52,6 +52,11 @@
 }
 
 .icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: 24px;
+  min-block-size: 24px;
   padding: 0 var(--lp-space-1);
   font-size: var(--lp-font-size-small);
   color: var(--lp-color-text-muted);
