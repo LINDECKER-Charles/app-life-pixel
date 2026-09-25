@@ -111,6 +111,10 @@ jobs:
           if-no-files-found: ignore
 
   # F3: npm ci, lint, test:ci, build, i18n:check, then the checks of the tools and the bundle.
+  # W1: the editor's engine built once, before them — LP_ENGINE_PREBUILT=1 lets the scripts skip
+  # their prebuild —, W0's contract suite against it in Chromium (test:engine), and its two
+  # outputs kept as the `engine` artifact, rooted at frontend/projects/app/, for the jobs that
+  # serve the app.
   frontend:
     name: Front-end
     runs-on: ubuntu-latest
@@ -119,9 +123,23 @@ jobs:
     defaults:
       run:
         working-directory: frontend
+    env:
+      LP_ENGINE_PREBUILT: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install the pinned toolchain
+        run: |
+          rustup toolchain install
+          rustup show
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Install the wasm-bindgen of Cargo.lock
+        run: |
+          version="$(cargo pkgid --locked wasm-bindgen)"
+          cargo install wasm-bindgen-cli --version "${version##*@}" --locked
+      - name: Build the editor's engine
+        run: cargo xtask build-editor
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
@@ -136,12 +154,31 @@ jobs:
         run: npm run test:ci
       - name: Tests of the tools
         run: npm run test:tools
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Engine tests
+        run: npm run test:engine
+      - name: Keep the screenshots of the engine tests that failed
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: engine-test-screenshots
+          path: frontend/.vitest/attachments
+          if-no-files-found: ignore
       - name: Build
         run: npm run build
       - name: Check the catalogues
         run: npm run i18n:check
       - name: Check that no catalogue is bundled
         run: npm run i18n:check-bundle
+      - name: Keep the engine
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: engine
+          path: |
+            frontend/projects/app/src/app/engine/wasm/generated/
+            frontend/projects/app/public/engine/
+          if-no-files-found: error
 
   # L1: npm ci, build then check that the committed life-pixel.js is current, the Playwright tests
   # on the fake player, the size budget of the loader.
