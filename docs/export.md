@@ -135,6 +135,44 @@ mascot.addEventListener('tagend', () => { mascot.tag = 'idle'; });
 CI fails when a budget is exceeded. The M1 prototype confirms or revises these numbers once;
 after that, raising a budget is a design discussion, never a silent edit.
 
+**Confirmed by S1's size checkpoint** ([Measured sizes](#measured-sizes)): the player measures
+11,838 B (≤ 16 KiB, 72% of budget) and the loader 1,926 B gzipped (≤ 2 KiB, 94% of budget).
+Neither budget is exceeded, so both are kept as initially set; the loader's headroom is the
+tighter of the two and is worth watching as `player-js/` grows.
+
+## Measured sizes
+
+`cargo xtask measure-sizes` (S1, [docs/v1/format-player.md](v1/format-player.md#s1--size-checkpoint))
+compiles the four animations of [`samples/`](../samples/README.md) as WASM, GIF and APNG through
+the compiler, and as a lossless animated WebP through `img2webp` from their PNG frames — WebP
+measurement only, the format is not exported by the product (see
+[Classic formats](#classic-formats)) — then measures each raw, gzipped at level 9 and with
+brotli at level 11, plus the player alone and the loader. Run twice, the table is identical: the
+compiler, `img2webp` and the two compressors are deterministic for a fixed input.
+
+<!-- sizes:start -->
+| Artefact | Raw | Gzip 9 | Brotli 11 |
+|---|---|---|---|
+| `mascot-wave.wasm` | 13501 B | 6231 B | 5736 B |
+| `mascot-wave.gif` | 1653 B | 852 B | 793 B |
+| `mascot-wave.apng` | 2313 B | 1255 B | 1175 B |
+| `mascot-wave.webp` | 1552 B | 1281 B | 1189 B |
+| `loader-dots.wasm` | 12139 B | 5623 B | 5138 B |
+| `loader-dots.gif` | 321 B | 241 B | 205 B |
+| `loader-dots.apng` | 738 B | 587 B | 525 B |
+| `loader-dots.webp` | 480 B | 321 B | 295 B |
+| `hero-run.wasm` | 17448 B | 7926 B | 7200 B |
+| `hero-run.gif` | 5066 B | 2644 B | 2580 B |
+| `hero-run.apng` | 5992 B | 3693 B | 3556 B |
+| `hero-run.webp` | 4576 B | 2270 B | 2184 B |
+| `empty-state.wasm` | 13648 B | 6010 B | 5461 B |
+| `empty-state.gif` | 5280 B | 2362 B | 2056 B |
+| `empty-state.apng` | 4646 B | 4114 B | 4028 B |
+| `empty-state.webp` | 1744 B | 1322 B | 1241 B |
+| `player.wasm (no payload)` | 11838 B | 5429 B | 4933 B |
+| `life-pixel.js (loader)` | 4376 B | 1926 B | 1684 B |
+<!-- sizes:end -->
+
 ## Versioning
 
 - The payload header carries the format version and the player ABI version. A player refuses an
