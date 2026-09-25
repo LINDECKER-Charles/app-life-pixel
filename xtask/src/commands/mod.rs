@@ -28,6 +28,7 @@ macro_rules! commands {
 }
 
 commands! {
+    build_desktop: BuildDesktop,
     build_player: BuildPlayer,
     check_boundaries: CheckBoundaries,
 }
