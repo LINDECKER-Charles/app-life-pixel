@@ -56,6 +56,7 @@
   "errors.edit.position_out_of_range": "La position doit être comprise entre 0 et {max}.",
   "errors.edit.stroke_too_long": "Un tracé contient au plus {max, number} points.",
   "errors.edit.tag_not_found": "Aucun repère ne s’appelle « {name} ».",
+  "errors.engine.no_document": "Aucune animation n’est ouverte. Créez-en ou ouvrez-en une d’abord.",
   "errors.export.scale": "L’échelle d’export est comprise entre {min} et {max}.",
   "errors.export.tag_not_found": "Cette animation n’a pas de repère nommé « {name} ».",
   "errors.export.too_large": "L’image exportée dépasserait {maxSide, number} pixels de côté. Choisissez une échelle plus petite ou moins d’images.",
