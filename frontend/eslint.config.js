@@ -42,6 +42,26 @@ module.exports = defineConfig([
     },
   },
   {
+    // engine/testing/ is test code (editor.md, W0): production files get the engine through
+    // EDITOR_ENGINE and EngineStore, never the mock directly. editor-engine.ts is the one
+    // production file allowed in, since it is where EDITOR_ENGINE provides the mock until W1.
+    files: ['**/*.ts'],
+    ignores: ['**/*.spec.ts', '**/engine/testing/**', '**/engine/editor-engine.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/engine/testing', '**/engine/testing/*'],
+              message: 'engine/testing is test code: import EDITOR_ENGINE or EngineStore instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
     rules: {
@@ -58,7 +78,14 @@ module.exports = defineConfig([
     rules: { ...sizeRules, ...complexityRules },
   },
   {
-    files: ['**/*.spec.ts', 'e2e/**/*.ts', 'tools/**/*.test.mjs'],
+    // engine-contract.ts defines the shared suite as nested `describe`/`it` blocks: like a spec
+    // file, its size is the suite's, not a single function's.
+    files: [
+      '**/*.spec.ts',
+      'e2e/**/*.ts',
+      'tools/**/*.test.mjs',
+      '**/engine/testing/engine-contract.ts',
+    ],
     rules: { 'max-lines': 'off', 'max-lines-per-function': 'off' },
   },
 ]);
