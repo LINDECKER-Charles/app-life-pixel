@@ -1,0 +1,56 @@
+//! The state every handler shares, built once at start. One line per field.
+
+use std::sync::Arc;
+
+use thiserror::Error;
+
+use crate::config::Config;
+use crate::http::i18n::{CatalogueError, Catalogues};
+use crate::http::rate_limit::RateLimits;
+use crate::http::static_app::StaticApp;
+use crate::readiness::Readiness;
+
+/// Why the state could not be built.
+#[derive(Debug, Error)]
+pub enum StartError {
+    /// The catalogues of `LP_I18N_DIR` could not be read.
+    #[error("LP_I18N_DIR: {0}")]
+    Catalogues(#[from] CatalogueError),
+    /// The built app of `LP_APP_DIR` could not be read.
+    #[error("LP_APP_DIR: {0}")]
+    App(#[from] std::io::Error),
+}
+
+/// The shared state: cheap to clone, one field per line.
+#[derive(Clone)]
+pub struct AppState {
+    /// The configuration.
+    pub config: Arc<Config>,
+    /// Whether the database answers.
+    pub readiness: Arc<dyn Readiness>,
+    /// The rate limiters.
+    pub rate_limits: Arc<RateLimits>,
+    /// The catalogues of `/i18n`.
+    pub catalogues: Arc<Catalogues>,
+    /// The built app.
+    pub static_app: Arc<StaticApp>,
+}
+
+impl AppState {
+    /// Reads the catalogues and the built app, and gathers the rest.
+    ///
+    /// # Errors
+    ///
+    /// When the catalogues or the app cannot be read.
+    pub fn new(config: Config, readiness: Arc<dyn Readiness>) -> Result<Self, StartError> {
+        let catalogues = Catalogues::load(&config.i18n_dir)?;
+        let static_app = StaticApp::load(&config.app_dir)?;
+        Ok(Self {
+            config: Arc::new(config),
+            readiness,
+            rate_limits: Arc::new(RateLimits::new()),
+            catalogues: Arc::new(catalogues),
+            static_app: Arc::new(static_app),
+        })
+    }
+}

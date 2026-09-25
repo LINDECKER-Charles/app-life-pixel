@@ -332,6 +332,7 @@ cargo deny check
 cargo xtask check-boundaries
 cargo xtask build-player --check
 npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend && npm run i18n:check --prefix frontend
+npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts
 npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
