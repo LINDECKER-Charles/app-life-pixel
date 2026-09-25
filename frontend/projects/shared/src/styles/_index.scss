@@ -1,0 +1,5 @@
+// The shared styles of the app and the admin console: load them after Ionic's own CSS, so that
+// the token mapping wins over Ionic's defaults.
+@forward 'tokens';
+@forward 'ionic';
+@forward 'accessibility';

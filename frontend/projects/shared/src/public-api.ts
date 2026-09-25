@@ -2,6 +2,8 @@
  * Public API Surface of shared: one export per line.
  */
 
+export * from './lib/appearance/appearance';
+export * from './lib/appearance/apply-appearance';
 export * from './lib/i18n/available-languages';
 export * from './lib/i18n/choose-language';
 export * from './lib/i18n/language';

@@ -1,0 +1,48 @@
+// Ionic's variables, mapped onto the design tokens: Ionic follows the light and dark sets with no
+// palette of its own. Its stepped colours mix the text into the background by thousandths, as
+// Ionic's own palettes do.
+
+$ionic-steps: 19;
+$ionic-step-size: 50;
+
+:root {
+  --ion-font-family: var(--lp-font-family);
+  --ion-background-color: var(--lp-color-background);
+  --ion-background-color-rgb: var(--lp-color-background-rgb);
+  --ion-text-color: var(--lp-color-text);
+  --ion-text-color-rgb: var(--lp-color-text-rgb);
+  --ion-border-color: var(--lp-color-border);
+  --ion-toolbar-background: var(--lp-color-surface);
+  --ion-toolbar-color: var(--lp-color-text);
+  --ion-item-background: var(--lp-color-background);
+  --ion-placeholder-color: var(--lp-color-text-muted);
+
+  --ion-color-primary: var(--lp-color-accent);
+  --ion-color-primary-rgb: var(--lp-color-accent-rgb);
+  --ion-color-primary-contrast: var(--lp-color-on-accent);
+  --ion-color-primary-contrast-rgb: var(--lp-color-on-accent-rgb);
+  --ion-color-primary-shade: color-mix(in srgb, var(--lp-color-accent) 88%, black);
+  --ion-color-primary-tint: color-mix(in srgb, var(--lp-color-accent) 90%, white);
+
+  --ion-color-danger: var(--lp-color-danger);
+  --ion-color-danger-rgb: var(--lp-color-danger-rgb);
+  --ion-color-danger-contrast: var(--lp-color-on-danger);
+  --ion-color-danger-contrast-rgb: var(--lp-color-on-danger-rgb);
+  --ion-color-danger-shade: color-mix(in srgb, var(--lp-color-danger) 88%, black);
+  --ion-color-danger-tint: color-mix(in srgb, var(--lp-color-danger) 90%, white);
+
+  @for $step from 1 through $ionic-steps {
+    $thousandths: $step * $ionic-step-size;
+    $percent: $thousandths * 0.1%;
+    --ion-background-color-step-#{$thousandths}: color-mix(
+      in srgb,
+      var(--lp-color-text) #{$percent},
+      var(--lp-color-background)
+    );
+    --ion-text-color-step-#{$thousandths}: color-mix(
+      in srgb,
+      var(--lp-color-background) #{$percent},
+      var(--lp-color-text)
+    );
+  }
+}

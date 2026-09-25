@@ -1,0 +1,55 @@
+// Visible focus, reduced motion and the visually hidden utility (WCAG 2.2 AA).
+
+$focus-outline-width: 2px;
+$focus-outline-offset: 2px;
+// "Nothing", yet long enough for `animationend` and `transitionend` to fire.
+$reduced-duration: 0.01ms;
+
+@mixin focus-outline {
+  outline: $focus-outline-width solid var(--lp-color-focus);
+  outline-offset: $focus-outline-offset;
+}
+
+:focus-visible {
+  @include focus-outline;
+}
+
+// Ionic's controls take the focus inside their shadow root and mark their host `ion-focused`.
+.ion-focusable.ion-focused {
+  @include focus-outline;
+}
+
+@mixin reduced-motion {
+  *,
+  *::before,
+  *::after {
+    animation-duration: $reduced-duration !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: $reduced-duration !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    @include reduced-motion;
+  }
+}
+
+:root[data-motion='reduce'] {
+  @include reduced-motion;
+}
+
+.lp-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
