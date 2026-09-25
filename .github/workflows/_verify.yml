@@ -83,3 +83,35 @@ jobs:
         run: npm run i18n:check
       - name: Check that no catalogue is bundled
         run: npm run i18n:check-bundle
+
+  # L1: npm ci, build then check that the committed life-pixel.js is current, the Playwright tests
+  # on the fake player, the size budget of the loader.
+  player-js:
+    name: Player loader
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: player-js
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: player-js/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Check that the committed build is current
+        run: git diff --exit-code -- life-pixel.js
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Tests
+        run: npm test
+      - name: Check the size budget
+        run: npm run size
