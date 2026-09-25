@@ -11,11 +11,17 @@ license = "AGPL-3.0-only"
 [dependencies]
 # One line per dependency, sorted. Each command adds those it uses.
 anyhow.workspace = true
+brotli.workspace = true
 cargo_metadata.workspace = true
 clap.workspace = true
+flate2.workspace = true
+life-pixel-compiler.workspace = true
+life-pixel-core.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+tempfile.workspace = true
 wasmi.workspace = true
+zip.workspace = true
 
 [lints]
 workspace = true

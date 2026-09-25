@@ -51,6 +51,7 @@ an issue.
 | cargo-deny | latest | `cargo install cargo-deny --locked` |
 | Rust nightly, cargo-fuzz | latest nightly, cargo-fuzz 0.13 | fuzzing only: `rustup toolchain install nightly --profile minimal`, `cargo install cargo-fuzz --locked` |
 | Docker | recent | local Postgres and object storage, image checks |
+| `img2webp` | libwebp's command-line tools | the size checkpoint's WebP measurement only |
 
 The Tauri apps need the [Tauri prerequisites](https://v2.tauri.app/start/prerequisites/) of
 your operating system. For Android, add Android Studio with its SDK and NDK, a JDK, and the Rust
@@ -93,6 +94,19 @@ cargo xtask build-player                  # the module, its size and its sha256
 cargo xtask build-player --check          # the hash, the 16 KiB budget, the v1 fixture in wasmi
 cargo xtask build-player --write-hash     # after a change: update player.sha256, then commit it
 cargo clippy -p life-pixel-player --all-targets --target wasm32-unknown-unknown -- -D warnings
+```
+
+### Size checkpoint
+
+`samples/` holds four CC0 animations (S1, [docs/v1/format-player.md](../docs/v1/format-player.md#s1--size-checkpoint)).
+`cargo xtask measure-sizes` exports each as WASM, GIF, APNG and — through `img2webp`, for the
+measurement only — a lossless animated WebP, measures every artefact raw, gzipped and with
+brotli, writes the table of [docs/export.md](../docs/export.md#measured-sizes), and builds the
+demo of `target/demo/`.
+
+```shell
+cargo xtask measure-sizes                 # the table, and target/demo/
+git diff --exit-code -- docs/export.md    # the committed table is current
 ```
 
 ### Fuzzing
