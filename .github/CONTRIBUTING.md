@@ -59,7 +59,15 @@ Android targets:
 rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
 ```
 
-The development loop — which commands start what — is written down with the first code.
+The development loop — which commands start what. Each task that adds a command lists it here as
+it lands; this is the loop so far.
+
+### Repository checks
+
+```shell
+cmp CLAUDE.md AGENTS.md
+docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
+```
 
 ## Code conventions
 
