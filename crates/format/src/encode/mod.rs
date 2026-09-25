@@ -5,7 +5,11 @@ mod animation_data;
 mod encode_error;
 mod encode_payload;
 mod frame_data;
+mod frames;
+mod operations;
+mod sections;
 mod tag_data;
+mod validate;
 
 pub use animation_data::AnimationData;
 pub use encode_error::EncodeError;

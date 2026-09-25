@@ -14,9 +14,11 @@ mod decode;
 mod encode;
 mod frame;
 mod frame_kind;
+mod layout;
 mod loop_mode;
 mod rgba;
 mod tag;
+mod varint;
 
 pub use decode::{DecodeError, Payload, apply_frame};
 #[cfg(feature = "encode")]
