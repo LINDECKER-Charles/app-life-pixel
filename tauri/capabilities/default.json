@@ -1,0 +1,30 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main window: Tauri's core defaults and the app's commands, nothing else. Dialogs open from Rust, so the webview holds no file-system permission.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "allow-library-list-projects",
+    "allow-library-create-project",
+    "allow-library-rename-project",
+    "allow-library-duplicate-project",
+    "allow-library-delete-project",
+    "allow-library-list-animations",
+    "allow-library-create-animation",
+    "allow-library-open-document",
+    "allow-library-save-document",
+    "allow-library-rename-animation",
+    "allow-library-move-animation",
+    "allow-library-duplicate-animation",
+    "allow-library-delete-animation",
+    "allow-library-usage",
+    "allow-export-save-files",
+    "allow-settings-get",
+    "allow-settings-set",
+    "allow-settings-pick-library-folder",
+    "allow-platform-info"
+  ]
+}
