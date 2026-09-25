@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Life Pixel — size checkpoint demo</title>
+<script type="module" src="./life-pixel.js"></script>
+<style>
+  body { font: 14px/1.4 system-ui, sans-serif; background: #12121c; color: #eee; margin: 2rem; }
+  h1 { font-size: 1.1rem; }
+  .samples { display: flex; flex-wrap: wrap; gap: 2rem; }
+  figure { margin: 0; padding: 1rem; background: #1c1c2b; border-radius: 8px; }
+  life-pixel { width: 160px; height: 160px; image-rendering: pixelated; }
+  figcaption { margin-top: .5rem; text-align: center; }
+  .tags button { margin: 0 .25rem; }
+  .tags button[aria-pressed="true"] { font-weight: bold; text-decoration: underline; }
+</style>
+</head>
+<body>
+<h1>Life Pixel — size checkpoint demo</h1>
+<p>Every sample of <a href="README.md">samples/</a>, played by the loader alone.</p>
+<div class="samples">
+  <figure data-sample="mascot-wave">
+    <life-pixel src="./mascot-wave.wasm" tag="idle" alt="Mascot wave"></life-pixel>
+    <figcaption>mascot-wave</figcaption>
+    <div class="tags" data-tags="idle,wave"></div>
+  </figure>
+  <figure data-sample="loader-dots">
+    <life-pixel src="./loader-dots.wasm" alt="Loader dots"></life-pixel>
+    <figcaption>loader-dots</figcaption>
+  </figure>
+  <figure data-sample="hero-run">
+    <life-pixel src="./hero-run.wasm" tag="idle" alt="Hero run"></life-pixel>
+    <figcaption>hero-run</figcaption>
+    <div class="tags" data-tags="idle,run,jump"></div>
+  </figure>
+  <figure data-sample="empty-state">
+    <life-pixel src="./empty-state.wasm" alt="Empty state"></life-pixel>
+    <figcaption>empty-state</figcaption>
+  </figure>
+</div>
+<script type="module">
+  for (const tagList of document.querySelectorAll('[data-tags]')) {
+    const figure = tagList.closest('figure');
+    const player = figure.querySelector('life-pixel');
+    const tags = tagList.dataset.tags.split(',');
+    for (const tag of tags) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = tag;
+      button.setAttribute('aria-pressed', String(tag === player.getAttribute('tag')));
+      button.addEventListener('click', () => {
+        player.tag = tag;
+        for (const sibling of tagList.querySelectorAll('button')) {
+          sibling.setAttribute('aria-pressed', String(sibling === button));
+        }
+      });
+      tagList.append(button);
+    }
+  }
+</script>
+</body>
+</html>
