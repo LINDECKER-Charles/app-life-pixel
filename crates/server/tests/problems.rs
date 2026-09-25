@@ -14,7 +14,7 @@ const CATALOGUES: [&str; 2] = ["en", "fr"];
 
 /// The status of every code outside `core`: the service's, the compiler's, those later tasks
 /// create, and the server's own.
-const STATUSES: [(&str, u16); 20] = [
+const STATUSES: [(&str, u16); 22] = [
     ("client.update_required", 426),
     ("document.version_conflict", 412),
     ("document.version_required", 428),
@@ -26,6 +26,8 @@ const STATUSES: [(&str, u16); 20] = [
     ("internal.error", 500),
     ("library.animation_not_found", 404),
     ("library.project_not_found", 404),
+    ("library.unavailable", 503),
+    ("library.unsupported_version", 422),
     ("preview.too_large", 422),
     ("quota.storage_exceeded", 409),
     ("rate_limit.exceeded", 429),
