@@ -6,6 +6,7 @@ use axum::routing::get;
 use metrics_exporter_prometheus::PrometheusHandle;
 use tower_http::catch_panic::CatchPanicLayer;
 
+use crate::accounts::{self, csrf};
 use crate::http::client_version::require_supported;
 use crate::http::problem::{
     API_BODY_LIMIT_BYTES, BodyLimit, ensure_problem, not_found, panic_problem,
@@ -53,17 +54,22 @@ pub fn admin_router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// `/api/v1`: the route groups, then, from the inside out, their rate limits, the body limit,
-/// the client-version check and the problems of unknown routes and methods.
+/// `/api/v1`: the route groups, then, from the inside out, their rate limits, their CSRF
+/// checks, the body limit, the session, the client-version check and the problems of unknown
+/// routes and methods.
 fn api_router(state: &AppState) -> Router<AppState> {
     let minimums = state.config.min_client_versions.clone();
+    let opening = routes::api_session_opening();
     Router::from(
         routes::api_rate_limited()
             .layer(from_fn_with_state(state.clone(), limit_api))
-            .merge(routes::api_own_policies()),
+            .merge(routes::api_own_policies())
+            .layer(from_fn_with_state(state.clone(), csrf::protect))
+            .merge(opening.layer(from_fn_with_state(state.clone(), csrf::check_origin))),
     )
     .fallback(not_found)
     .body_limit(API_BODY_LIMIT_BYTES)
+    .layer(from_fn_with_state(state.clone(), accounts::resolve))
     .layer(from_fn_with_state(minimums, require_supported))
     .layer(from_fn(ensure_problem))
 }

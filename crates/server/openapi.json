@@ -1,6 +1,51 @@
 {
   "components": {
     "schemas": {
+      "Account": {
+        "description": "An account as its owner sees it.",
+        "properties": {
+          "createdAt": {
+            "description": "When it signed up.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "description": "Its address, as it signed up with it.",
+            "type": "string"
+          },
+          "emailVerified": {
+            "description": "Whether the address is verified.",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "language": {
+            "description": "The language code of its emails and interface.",
+            "type": "string"
+          },
+          "plan": {
+            "description": "Its plan: `free`.",
+            "type": "string"
+          },
+          "storage": {
+            "$ref": "#/components/schemas/Storage",
+            "description": "Its documents' bytes and its quota."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "emailVerified",
+          "language",
+          "plan",
+          "storage",
+          "createdAt"
+        ],
+        "type": "object"
+      },
       "Health": {
         "description": "The server's health.",
         "properties": {
@@ -20,6 +65,55 @@
           "ok"
         ],
         "type": "string"
+      },
+      "PasswordChangeRequest": {
+        "description": "A change of password.",
+        "properties": {
+          "currentPassword": {
+            "description": "The current password.",
+            "type": "string"
+          },
+          "newPassword": {
+            "description": "The new password: 12 to 128 characters.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object"
+      },
+      "PasswordResetConfirmation": {
+        "description": "A new password, with the token of the emailed link.",
+        "properties": {
+          "password": {
+            "description": "The new password: 12 to 128 characters.",
+            "type": "string"
+          },
+          "token": {
+            "description": "The link's `token`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ],
+        "type": "object"
+      },
+      "PasswordResetRequest": {
+        "description": "A request for a link setting a new password.",
+        "properties": {
+          "email": {
+            "description": "The account's address.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
       },
       "Problem": {
         "description": "An error, as RFC 9457 problem details with a stable code and its parameters, never a\nsentence: the interface translates `errors.<code>`.",
@@ -64,6 +158,102 @@
           "params"
         ],
         "type": "object"
+      },
+      "Session": {
+        "description": "A session: the account signed in, and the token its unsafe requests send in `X-CSRF-Token`.",
+        "properties": {
+          "account": {
+            "$ref": "#/components/schemas/Account",
+            "description": "The account signed in."
+          },
+          "csrfToken": {
+            "description": "The CSRF token of the session.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "account",
+          "csrfToken"
+        ],
+        "type": "object"
+      },
+      "SignInRequest": {
+        "description": "A sign-in.",
+        "properties": {
+          "email": {
+            "description": "The address, whatever its case.",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object"
+      },
+      "SignUpRequest": {
+        "description": "A sign-up.",
+        "properties": {
+          "email": {
+            "description": "The address; spaces around it are ignored.",
+            "type": "string"
+          },
+          "language": {
+            "description": "The language code of the interface, one of `languages.json`.",
+            "type": "string"
+          },
+          "password": {
+            "description": "The password: 12 to 128 characters.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "language"
+        ],
+        "type": "object"
+      },
+      "Storage": {
+        "description": "An account's storage.",
+        "properties": {
+          "limitBytes": {
+            "description": "Its quota, in bytes.",
+            "format": "int64",
+            "minimum": 0,
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "usedBytes": {
+            "description": "The bytes of its documents.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "usedBytes"
+        ],
+        "type": "object"
+      },
+      "VerifyEmailRequest": {
+        "description": "The token of an emailed verification link.",
+        "properties": {
+          "token": {
+            "description": "The link's `token`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -94,6 +284,500 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/auth/password": {
+      "put": {
+        "operationId": "changePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordChangeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "The password is changed; the other sessions ended"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.current_password`, `auth.account_suspended`, `auth.csrf`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.password_length` (`min`, `max`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 5 a minute per account, as signing in"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Replaces the signed-in account's password, and ends its other sessions.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset": {
+      "post": {
+        "operationId": "requestPasswordReset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "A link is on its way, if an account has the address"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.csrf`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 5 an hour per address and per email"
+          }
+        },
+        "summary": "Emails a link setting a new password, when an active account has the address. The answer is\nthe same, and as quick, whether it has or not.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/password-reset/confirm": {
+      "post": {
+        "operationId": "confirmPasswordReset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordResetConfirmation"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "The password is set; every session has ended"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.token_invalid`: unknown, used or expired"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.csrf`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.password_length` (`min`, `max`); the token still works"
+          }
+        },
+        "summary": "Sets a new password with the token of an emailed link, and ends every session of the account.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/session": {
+      "get": {
+        "operationId": "getSession",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "The session"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The session the request carries, and its CSRF token.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sign-in": {
+      "post": {
+        "operationId": "signIn",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "Signed in: `Set-Cookie` holds the session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "The session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.invalid_credentials`: an unknown address or a wrong password"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 10 a minute per address, 5 per address signed in to"
+          }
+        },
+        "summary": "Opens a session with an address and its password.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sign-out": {
+      "post": {
+        "operationId": "signOut",
+        "responses": {
+          "204": {
+            "description": "Signed out: `Set-Cookie` clears the session cookie",
+            "headers": {
+              "Set-Cookie": {
+                "description": "The cleared session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.csrf`"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Ends the session the request carries, if any, and clears its cookie.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sign-up": {
+      "post": {
+        "operationId": "signUp",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignUpRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Session"
+                }
+              }
+            },
+            "description": "The account, signed in: `Set-Cookie` holds its session",
+            "headers": {
+              "Set-Cookie": {
+                "description": "The session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.csrf`: from another origin"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.email_taken`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.email_invalid`, `auth.password_length` (`min`, `max`), `account.language` (`available`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 5 an hour per address"
+          }
+        },
+        "summary": "Creates an account, signs it in, and sends the email that verifies its address.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email": {
+      "post": {
+        "operationId": "verifyEmail",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyEmailRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "The address is verified"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.token_invalid`: unknown, used or expired"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.csrf`"
+          }
+        },
+        "summary": "Verifies the address of the account an emailed link was sent to, and spends its token.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/verify-email/resend": {
+      "post": {
+        "operationId": "resendVerificationEmail",
+        "responses": {
+          "202": {
+            "description": "The email is on its way, if the address is unverified"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 3 an hour per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Sends the signed-in account's verification email again, with a new link; nothing once the\naddress is verified.",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/healthz": {
       "get": {
         "operationId": "healthz",
