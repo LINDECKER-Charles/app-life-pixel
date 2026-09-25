@@ -1,0 +1,17 @@
+<div class="timeline">
+  <section class="layers" [attr.aria-label]="'timeline.layers.heading' | transloco">
+    <lp-layer-list />
+  </section>
+  <div class="strip">
+    <section [attr.aria-label]="'timeline.tags.heading' | transloco">
+      <lp-tag-bars />
+    </section>
+    <section [attr.aria-label]="'timeline.frames.heading' | transloco">
+      <lp-frame-list />
+    </section>
+  </div>
+  <section class="playback" [attr.aria-label]="'timeline.playback.heading' | transloco">
+    <lp-playback-preview />
+  </section>
+</div>
+<lp-tag-dialog />

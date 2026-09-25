@@ -1,0 +1,54 @@
+@if (document()) {
+  <div class="toolbar">
+    <button type="button" (click)="addLayer()">{{ 'timeline.layers.add' | transloco }}</button>
+  </div>
+  <ul class="layers" role="list">
+    @for (layer of layers(); track layer.id; let index = $index) {
+      <li
+        class="layer"
+        draggable="true"
+        tabindex="0"
+        (dragstart)="onDragStart(index)"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop(index)"
+        (keydown)="onKeydown(index, $event)"
+      >
+        <button
+          type="button"
+          class="visibility"
+          [attr.aria-pressed]="layer.visible"
+          [attr.aria-label]="
+            (layer.visible ? 'timeline.layers.hide' : 'timeline.layers.show') | transloco
+          "
+          (click)="toggleVisibility(layer.id, layer.visible)"
+        >
+          <span aria-hidden="true">👁</span>
+        </button>
+        <label class="lp-visually-hidden" [attr.for]="'layer-name-' + layer.id">
+          {{ 'timeline.layers.rename_label' | transloco }}
+        </label>
+        <input
+          #nameField
+          [id]="'layer-name-' + layer.id"
+          type="text"
+          autocomplete="off"
+          [value]="layer.name"
+          [attr.maxlength]="limits()?.nameMaxChars"
+          (change)="rename(layer.id, nameField)"
+          (keydown.enter)="nameField.blur()"
+          (keydown.escape)="revert(layer.id, nameField)"
+        />
+        <button
+          type="button"
+          class="delete"
+          [attr.aria-label]="'timeline.layers.delete' | transloco"
+          (click)="deleteLayer(layer.id)"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="empty">{{ 'editor.empty.hint' | transloco }}</p>
+}

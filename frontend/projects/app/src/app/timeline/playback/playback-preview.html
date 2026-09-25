@@ -1,0 +1,8 @@
+@if (document()) {
+  <button type="button" [attr.aria-pressed]="src() !== null" (click)="toggle()">
+    {{ (src() !== null ? 'timeline.playback.stop' : 'timeline.playback.play') | transloco }}
+  </button>
+  @if (src(); as src) {
+    <life-pixel [src]="src" [tag]="tag()" [attr.alt]="''"></life-pixel>
+  }
+}

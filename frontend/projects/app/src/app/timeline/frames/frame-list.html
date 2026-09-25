@@ -1,0 +1,47 @@
+@if (document(); as document) {
+  <div class="toolbar">
+    <button type="button" (click)="addFrame()">{{ 'timeline.frames.add' | transloco }}</button>
+    <button type="button" (click)="duplicateFrame()">
+      {{ 'timeline.frames.duplicate' | transloco }}
+    </button>
+    <button type="button" (click)="deleteFrame()">
+      {{ 'timeline.frames.delete' | transloco }}
+    </button>
+  </div>
+  <ul class="frames" role="list">
+    @for (frame of document.frames; track frame.id; let index = $index) {
+      <li
+        class="frame"
+        draggable="true"
+        (dragstart)="onDragStart(index)"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop(index)"
+      >
+        <button
+          type="button"
+          class="thumbnail-button"
+          [attr.aria-pressed]="isSelected(index)"
+          [attr.aria-label]="'timeline.frames.thumbnail_label' | transloco: { number: index + 1 }"
+          (click)="select(index, $event)"
+          (keydown)="onKeydown(index, $event)"
+        >
+          <lp-frame-thumbnail [frame]="frame.id" [changedAt]="changedAt()" />
+        </button>
+        <label class="duration-label" [attr.for]="'frame-duration-' + frame.id">
+          {{ 'timeline.frames.duration_label' | transloco: { number: index + 1 } }}
+        </label>
+        <input
+          #durationField
+          [id]="'frame-duration-' + frame.id"
+          type="number"
+          inputmode="numeric"
+          step="1"
+          [value]="frame.durationMs"
+          [attr.min]="limits()?.minFrameDurationMs"
+          [attr.max]="limits()?.maxFrameDurationMs"
+          (change)="setDuration(frame.id, durationField.valueAsNumber)"
+        />
+      </li>
+    }
+  </ul>
+}
