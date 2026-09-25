@@ -56,6 +56,7 @@
   "errors.edit.position_out_of_range": "The position must lie between 0 and {max}.",
   "errors.edit.stroke_too_long": "A stroke holds at most {max, number} points.",
   "errors.edit.tag_not_found": "No tag is named “{name}”.",
+  "errors.engine.no_document": "No animation is open. Create or open one first.",
   "errors.export.scale": "The export scale must be between {min} and {max}.",
   "errors.export.tag_not_found": "This animation has no tag named “{name}”.",
   "errors.export.too_large": "The exported image would measure more than {maxSide, number} pixels on a side. Choose a smaller scale or fewer frames.",
