@@ -19,6 +19,11 @@ export const routes: Routes = [
     loadComponent: () => import('./settings/settings-page').then((m) => m.SettingsPage),
   },
   {
+    path: 'legal/:page',
+    title: 'legal.title',
+    loadComponent: () => import('./legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
     path: '**',
     title: 'not_found.title',
     loadComponent: () => import('./not-found/not-found-page').then((m) => m.NotFoundPage),
