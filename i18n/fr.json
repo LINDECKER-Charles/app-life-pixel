@@ -19,6 +19,9 @@
   "errors.document.tag_count": "Une animation contient au plus {max} repères.",
   "errors.document.too_large": "L’animation dépasse {maxBytes, number} octets.",
   "errors.document.unsupported_version": "Cette animation utilise la version {version} du format de fichier, que cette version de Life Pixel ne sait pas ouvrir. Mettez Life Pixel à jour pour l’ouvrir.",
+  "errors.export.scale": "L’échelle d’export est comprise entre {min} et {max}.",
+  "errors.export.tag_not_found": "Cette animation n’a pas de repère nommé « {name} ».",
+  "errors.export.too_large": "L’image exportée dépasserait {maxSide, number} pixels de côté. Choisissez une échelle plus petite ou moins d’images.",
   "errors.grid.character": "Caractère inconnu à la ligne {row}, colonne {column} de la grille.",
   "errors.grid.index": "La couleur {index} à la ligne {row}, colonne {column} n’est pas dans la palette.",
   "errors.grid.size": "La grille doit compter {height} lignes de {width} pixels."

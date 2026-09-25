@@ -1,0 +1,21 @@
+[package]
+name = "life-pixel-compiler"
+description = "Turns a Life Pixel animation into files: GIF, APNG, sprite sheet, PNG frames"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "AGPL-3.0-only"
+
+[dependencies]
+gif.workspace = true
+life-pixel-core.workspace = true
+png.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+zip.workspace = true
+
+[lints]
+workspace = true

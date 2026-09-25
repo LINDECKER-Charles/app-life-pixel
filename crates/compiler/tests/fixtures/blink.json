@@ -1,0 +1,24 @@
+{
+  "format": "life-pixel/animation",
+  "version": 1,
+  "title": "Blink — 2!",
+  "width": 2,
+  "height": 2,
+  "palette": ["#00000000", "#ff0000ff", "#00ff00ff"],
+  "layers": [{ "id": 1, "name": "Eye", "visible": true }],
+  "frames": [
+    { "id": 2, "durationMs": 10 },
+    { "id": 3, "durationMs": 40 },
+    { "id": 4, "durationMs": 1000 },
+    { "id": 5, "durationMs": 65535 },
+    { "id": 6, "durationMs": 100 }
+  ],
+  "cels": [
+    { "layer": 1, "frame": 2, "grid": ["12", "21"] },
+    { "layer": 1, "frame": 3, "grid": ["1.", ".1"] },
+    { "layer": 1, "frame": 5, "grid": ["22", "22"] },
+    { "layer": 1, "frame": 6, "grid": ["2.", ".."] }
+  ],
+  "tags": [{ "name": "blink", "first": 1, "last": 3, "loop": "once" }],
+  "nextId": 7
+}
