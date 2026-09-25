@@ -25,9 +25,21 @@ pub const CODES: &[&str] = &[
     "document.tag_count",
     "document.too_large",
     "document.unsupported_version",
+    "edit.frame_not_found",
+    "edit.last_frame",
+    "edit.last_layer",
+    "edit.layer_not_found",
+    "edit.out_of_canvas",
+    "edit.palette_full",
+    "edit.position_out_of_range",
+    "edit.stroke_too_long",
+    "edit.tag_not_found",
     "grid.character",
     "grid.index",
     "grid.size",
+    "import.image_malformed",
+    "import.image_too_large",
+    "import.sheet_grid",
 ];
 
 /// A broken rule of the document model, or of the text grid. Rows and columns count from 0.

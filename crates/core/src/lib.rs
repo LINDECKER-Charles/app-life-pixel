@@ -3,9 +3,10 @@
 //! An [`Animation`] is built by [`Animation::new`] or read from a document by
 //! [`serialize::read_document`], so an animation in memory is always valid. [`limits`] holds every
 //! product limit, [`error`] the codes a document can fail with, [`serialize`] the JSON document and
-//! the text grid, [`render`] the compositing of a frame. The crate is pure: no I/O, no clock, no
+//! the text grid, [`render`] the compositing of a frame, [`edit`] the editing operations and their undo. The crate is pure: no I/O, no clock, no
 //! randomness, no async.
 
+pub mod edit;
 pub mod error;
 pub mod limits;
 pub mod model;

@@ -19,7 +19,19 @@
   "errors.document.tag_count": "An animation holds at most {max} tags.",
   "errors.document.too_large": "The animation is larger than {maxBytes, number} bytes.",
   "errors.document.unsupported_version": "This animation uses version {version} of the file format, which this version of Life Pixel cannot open. Update Life Pixel to open it.",
+  "errors.edit.frame_not_found": "This frame no longer exists.",
+  "errors.edit.last_frame": "An animation keeps at least one frame.",
+  "errors.edit.last_layer": "An animation keeps at least one layer.",
+  "errors.edit.layer_not_found": "This layer no longer exists.",
+  "errors.edit.out_of_canvas": "This point lies outside the canvas.",
+  "errors.edit.palette_full": "A palette holds at most {max} colours.",
+  "errors.edit.position_out_of_range": "The position must lie between 0 and {max}.",
+  "errors.edit.stroke_too_long": "A stroke holds at most {max, number} points.",
+  "errors.edit.tag_not_found": "No tag is named “{name}”.",
   "errors.grid.character": "Unknown character at row {row}, column {column} of the grid.",
   "errors.grid.index": "Colour {index} at row {row}, column {column} is not in the palette.",
-  "errors.grid.size": "The grid must hold {height} rows of {width} pixels."
+  "errors.grid.size": "The grid must hold {height} rows of {width} pixels.",
+  "errors.import.image_malformed": "This file is not a valid PNG image.",
+  "errors.import.image_too_large": "An imported image measures at most {maxSide, number} pixels on each side and {maxBytes, number} bytes.",
+  "errors.import.sheet_grid": "The sprite sheet does not divide into cells of this size."
 }
