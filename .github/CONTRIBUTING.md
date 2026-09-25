@@ -98,6 +98,21 @@ npm run i18n:check --prefix frontend              # the catalogues of i18n/
 npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
 ```
 
+### Loader
+
+`player-js/` is `@life-pixel/player`, the `<life-pixel>` element. Its build, `life-pixel.js`, is
+committed: a change to `player-js/src/` commits the rebuilt file, and CI fails when they differ.
+Run with the Node.js version of `.nvmrc`, from the root of the repository.
+
+```shell
+npm ci --prefix player-js
+npx --prefix player-js playwright install chromium          # once: the browser of the tests
+npm run build --prefix player-js                            # type-check, then life-pixel.js
+git diff --exit-code -- player-js/life-pixel.js             # the committed build is current
+npm test --prefix player-js                                 # Playwright, on the fake player
+npm run size --prefix player-js                             # at most 2,048 bytes gzipped
+```
+
 ### Local stack
 
 Start it:
