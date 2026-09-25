@@ -10,6 +10,7 @@
     "build": "npm run build:app",
     "test:ci": "ng test app --watch=false && ng test shared --watch=false",
     "test:engine": "node tools/prebuild.mjs && ng test app --configuration=engine --watch=false",
+    "e2e": "playwright test --project=editor",
     "test:tools": "node --test \"tools/**/*.test.mjs\"",
     "lint": "ng lint && prettier --check .",
     "format": "prettier --write .",
