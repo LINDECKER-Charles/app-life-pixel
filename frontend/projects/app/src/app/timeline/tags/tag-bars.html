@@ -1,0 +1,20 @@
+@if (document(); as document) {
+  <div class="toolbar">
+    <button type="button" [disabled]="editor.frameSelection() === null" (click)="addTag()">
+      {{ 'timeline.tags.add' | transloco }}
+    </button>
+  </div>
+  <div class="track" [style.grid-template-columns]="gridColumns()">
+    @for (tag of document.tags; track tag.name) {
+      <button
+        type="button"
+        class="bar"
+        [style.grid-column]="columnsOf(tag)"
+        [attr.aria-label]="'timeline.tags.edit' | transloco: { name: tag.name }"
+        (click)="edit(tag)"
+      >
+        {{ tag.name }}
+      </button>
+    }
+  </div>
+}

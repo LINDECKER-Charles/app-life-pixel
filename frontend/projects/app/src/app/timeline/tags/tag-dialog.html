@@ -1,0 +1,93 @@
+<ion-modal [isOpen]="isOpen()" [attr.aria-label]="titleKey() | transloco" (didDismiss)="close()">
+  <ng-template>
+    @if (target(); as target) {
+      <div class="dialog">
+        <h2 class="heading">{{ titleKey() | transloco }}</h2>
+        <form class="form" novalidate (submit)="submit($event)">
+          <div class="field">
+            <label for="tag-name">{{ 'timeline.tags.dialog.name_label' | transloco }}</label>
+            <input
+              #nameField
+              id="tag-name"
+              type="text"
+              autocomplete="off"
+              required
+              [value]="name()"
+              [attr.maxlength]="limits()?.tagNameMaxChars"
+              [attr.aria-invalid]="!isNameValid()"
+              (input)="name.set(nameField.value)"
+            />
+          </div>
+          <div class="field">
+            <label for="tag-first">{{ 'timeline.tags.dialog.first_label' | transloco }}</label>
+            <input
+              #firstField
+              id="tag-first"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              min="0"
+              [max]="frameCount() - 1"
+              [value]="first()"
+              [attr.aria-invalid]="!isRangeValid()"
+              (input)="first.set(firstField.valueAsNumber)"
+            />
+          </div>
+          <div class="field">
+            <label for="tag-last">{{ 'timeline.tags.dialog.last_label' | transloco }}</label>
+            <input
+              #lastField
+              id="tag-last"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              min="0"
+              [max]="frameCount() - 1"
+              [value]="last()"
+              [attr.aria-invalid]="!isRangeValid()"
+              (input)="last.set(lastField.valueAsNumber)"
+            />
+          </div>
+          <fieldset class="field">
+            <legend>{{ 'timeline.tags.dialog.loop_label' | transloco }}</legend>
+            <label>
+              <input
+                type="radio"
+                name="tag-loop"
+                value="loop"
+                [checked]="loop() === 'loop'"
+                (change)="loop.set('loop')"
+              />
+              {{ 'timeline.tags.dialog.loop_loop' | transloco }}
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="tag-loop"
+                value="once"
+                [checked]="loop() === 'once'"
+                (change)="loop.set('once')"
+              />
+              {{ 'timeline.tags.dialog.loop_once' | transloco }}
+            </label>
+          </fieldset>
+          <div class="actions">
+            @if (isEdit()) {
+              <button type="button" class="danger" (click)="delete()">
+                {{ 'timeline.tags.dialog.delete' | transloco }}
+              </button>
+            }
+            <button type="button" class="secondary" (click)="close()">
+              {{ 'common.cancel' | transloco }}
+            </button>
+            <button type="submit" class="primary" [disabled]="!isValid()">
+              {{ 'timeline.tags.dialog.save' | transloco }}
+            </button>
+          </div>
+        </form>
+      </div>
+    }
+  </ng-template>
+</ion-modal>

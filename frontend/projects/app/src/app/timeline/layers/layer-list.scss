@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  margin-block-end: var(--lp-space-2);
+}
+
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.layer {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-1) var(--lp-space-2);
+  border-radius: var(--lp-radius-small);
+}
+
+.visibility[aria-pressed='false'] {
+  opacity: 0.4;
+}
+
+.layer input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--lp-color-text);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--lp-radius-small);
+}
+
+.layer input:hover,
+.layer input:focus {
+  border-color: var(--lp-color-border);
+}
+
+.empty {
+  color: var(--lp-color-text-muted);
+}

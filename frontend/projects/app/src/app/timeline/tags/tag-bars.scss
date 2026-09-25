@@ -1,0 +1,25 @@
+:host {
+  display: block;
+}
+
+.toolbar {
+  margin-block-end: var(--lp-space-2);
+}
+
+.track {
+  display: grid;
+  gap: var(--lp-space-2);
+  min-height: 24px;
+}
+
+.bar {
+  overflow: hidden;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-on-accent);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: var(--lp-color-accent);
+  border: 0;
+  border-radius: var(--lp-radius-small);
+  cursor: pointer;
+}
