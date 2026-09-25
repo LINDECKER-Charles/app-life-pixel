@@ -13,21 +13,39 @@ repository = "https://github.com/LINDECKER-Charles/app-life-pixel"
 # One line per dependency, sorted. Each task adds those it uses.
 anyhow = "1.0.104"
 async-trait = "0.1.92"
+axum = "0.8.9"
 base64 = "0.23.1"
 bytes = "1.12.1"
 cargo_metadata = "0.23.1"
 clap = { version = "4.6.7", features = ["derive"] }
+dotenvy = "0.15.7"
 gif = { version = "0.14.2", default-features = false, features = ["std"] }
+governor = "0.10.4"
+ipnet = "2.12.2"
 life-pixel-core = { path = "crates/core" }
 life-pixel-format = { path = "crates/format" }
+life-pixel-service = { path = "crates/service" }
+metrics = "0.24.6"
+metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
+opentelemetry = { version = "0.33.0", default-features = false }
+opentelemetry-otlp = { version = "0.33.0", default-features = false }
+opentelemetry_sdk = { version = "0.33.0", default-features = false }
 png = { version = "0.18.1", default-features = false }
+semver = "1.0.28"
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 sha2 = "0.11.0"
+tempfile = "3.27.0"
 thiserror = "2.0.21"
 time = "0.3.55"
 tokio = "1.53.1"
+tower = "0.5.3"
+tower-http = "0.6.11"
 tracing = "0.1.44"
+tracing-opentelemetry = { version = "0.34.0", default-features = false }
+tracing-subscriber = { version = "0.3.23", default-features = false }
+utoipa = "6.0.0"
+utoipa-axum = "0.3.0"
 uuid = "1.26.1"
 wasmi = { version = "2.0.0", default-features = false, features = ["std", "validate"] }
 zip = { version = "8.6.0", default-features = false }
