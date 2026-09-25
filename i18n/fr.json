@@ -30,6 +30,7 @@
   "editor.region.timeline": "Chronologie",
   "editor.region.tools": "Outils",
   "editor.title.label": "Titre de l’animation",
+  "engine.recovered": "L’éditeur a redémarré après une erreur. {lostChanges, plural, =0 {Aucune modification n’a été perdue.} one {La dernière modification a été perdue.} other {Les # dernières modifications ont été perdues.}}",
   "errors.client.update_required": "Cette version de Life Pixel est dépassée. Installez la version {minimum} ou une version plus récente pour continuer.",
   "errors.document.canvas_size": "Le canevas doit mesurer entre {min} et {max} pixels de côté.",
   "errors.document.cel": "Les pixels d’un calque sur une image sont endommagés.",

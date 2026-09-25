@@ -30,6 +30,7 @@
   "editor.region.timeline": "Timeline",
   "editor.region.tools": "Tools",
   "editor.title.label": "Animation title",
+  "engine.recovered": "The editor restarted after an error. {lostChanges, plural, =0 {No change was lost.} one {The last change was lost.} other {The last # changes were lost.}}",
   "errors.client.update_required": "This version of Life Pixel is out of date. Update to version {minimum} or later to continue.",
   "errors.document.canvas_size": "The canvas must measure between {min} and {max} pixels on each side.",
   "errors.document.cel": "The pixels of a layer on one frame are damaged.",

@@ -75,10 +75,10 @@ module.exports = defineConfig([
   },
   {
     // engine/testing/ is test code (editor.md, W0): production files get the engine through
-    // EDITOR_ENGINE and EngineStore, never the mock directly. editor-engine.ts is the one
-    // production file allowed in, since it is where EDITOR_ENGINE provides the mock until W1.
+    // EDITOR_ENGINE and EngineStore, never the mock directly. The unit tests' build swaps
+    // default-engine.ts for testing/default-engine.ts instead (angular.json, `mock-engine`).
     files: ['**/*.ts'],
-    ignores: ['**/*.spec.ts', '**/engine/testing/**', '**/engine/editor-engine.ts'],
+    ignores: ['**/*.spec.ts', '**/engine/testing/**'],
     rules: restrictedImports(engineTestingImports, httpImports),
   },
   {
@@ -87,7 +87,7 @@ module.exports = defineConfig([
     rules: restrictedImports(engineTestingImports),
   },
   {
-    files: ['**/engine/testing/**/*.ts', '**/engine/editor-engine.ts'],
+    files: ['**/engine/testing/**/*.ts'],
     ignores: ['**/*.spec.ts'],
     rules: restrictedImports(httpImports),
   },
