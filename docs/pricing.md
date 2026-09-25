@@ -18,10 +18,20 @@
 
 ## Why storage alone will not sell
 
-Pixel art is small. A 64×64 animation of 12 frames is 49 KB of raw palette indices and usually
-compresses well under 20 KB, so 100 MB holds several thousand animations of that size. A quota
-that almost nobody reaches protects our costs, but it gives nobody a reason to pay. The M1
-prototype will confirm these sizes on real animations.
+Pixel art is small. A 64×64 animation of 12 frames is 49 KB of raw palette indices (64 × 64 × 12
+bytes) and usually compresses well under 20 KB, so 100 MB holds several thousand animations of
+that size. A quota that almost nobody reaches protects our costs, but it gives nobody a reason to
+pay.
+
+The 49 KB figure is exact arithmetic, not a measurement. S1's size checkpoint
+(`cargo xtask measure-sizes`, [docs/export.md](export.md#measured-sizes)) does not measure the
+stored *document*'s size — it measures compiled *exports* — but its numbers still support "well
+under 20 KB": `hero-run`, a comparable 48×48 × 16 frames (36,864 raw palette indices,
+three-quarters that scale), encodes to a 5.6 KB WASM payload before any gzip or brotli; the
+run-length encoding a stored document's cels use ([core.md](v1/core.md#text-grid)'s `rle`) is the
+same kind of encoding, and pixel art's runs of repeated colour compress it comparably. Denser or
+more repetitive art compresses further still (`empty-state`, 128×96 × 12 frames, 147,456 raw
+indices, encodes to a 1.8 KB payload).
 
 ## The model (D25): creating is free, services are paid
 
