@@ -12,7 +12,9 @@ $narrow-max-width: 767px;
   min-height: 0;
   gap: var(--lp-space-2);
   padding: var(--lp-space-2);
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  // The outer columns shrink below their content's width before the canvas column does, so the
+  // canvas keeps its guaranteed minimum instead of being squeezed to zero by wide siblings.
+  grid-template-columns: minmax(0, auto) minmax(16rem, 1fr) minmax(0, auto);
   grid-template-rows: auto minmax(0, 1fr) auto;
   grid-template-areas:
     'header header header'
