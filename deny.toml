@@ -4,6 +4,16 @@ all-features = true
 
 [advisories]
 yanked = "deny"
+# Unmaintained-crate advisories pulled in transitively by Tauri 2, not vulnerabilities
+# exploitable in this project's usage; no safe upgrade is available yet.
+ignore = [
+    "RUSTSEC-2024-0370", # proc-macro-error, via gtk-rs on Linux
+    "RUSTSEC-2025-0075", # unic-char-range, via urlpattern in tauri-utils
+    "RUSTSEC-2025-0080", # unic-common, via urlpattern in tauri-utils
+    "RUSTSEC-2025-0081", # unic-char-property, via urlpattern in tauri-utils
+    "RUSTSEC-2025-0098", # unic-ucd-version, via urlpattern in tauri-utils
+    "RUSTSEC-2025-0100", # unic-ucd-ident, via urlpattern in tauri-utils
+]
 
 [licenses]
 allow = ["Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause", "BSD-3-Clause",
