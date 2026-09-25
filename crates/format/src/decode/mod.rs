@@ -3,7 +3,12 @@
 
 mod apply_frame;
 mod decode_error;
+mod frames;
+mod header;
+mod operations;
 mod payload;
+mod reader;
+mod sections;
 
 pub use apply_frame::apply_frame;
 pub use decode_error::DecodeError;

@@ -1,0 +1,27 @@
+[package]
+name = "life-pixel-format-fuzz"
+description = "The cargo-fuzz targets of life-pixel-format, built on a nightly toolchain"
+version = "0.0.0"
+edition = "2024"
+publish = false
+license = "MIT"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+life-pixel-format = { path = ".." }
+
+# Parses untrusted bytes: `Payload::parse`, then `apply_frame` on every frame of what parses.
+[[bin]]
+name = "decode"
+path = "fuzz_targets/decode.rs"
+test = false
+doc = false
+bench = false
+
+# A workspace of its own: the fuzz project needs nightly and libFuzzer, so it stays out of the
+# repository's workspace, its toolchain and its checks.
+[workspace]
+members = ["."]

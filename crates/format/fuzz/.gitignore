@@ -1,0 +1,5 @@
+# What cargo fuzz builds and finds: the fuzz.yml workflow keeps the corpus as an artifact.
+target/
+corpus/
+artifacts/
+coverage/

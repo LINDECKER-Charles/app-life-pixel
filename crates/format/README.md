@@ -270,3 +270,20 @@ Statuses 1 to 5 are the decoder's [errors](#errors).
 | `encode`, with `AnimationData`, `TagData`, `FrameData` and `EncodeError` | the encoder, behind the `encode` feature |
 
 `cargo doc -p life-pixel-format --all-features --open` documents each item.
+
+## Fixtures and fuzzing
+
+- `tests/fixtures/v1/` holds `sample.lpix`, a payload v1 of 3 frames and 2 tags, and
+  `sample.expected.json`: its header, palette, title and tags, and each frame's duration, kind
+  and indices once applied. `tests/fixture_v1.rs` decodes the one and compares it with the other.
+  A fixture never changes: a new format version adds its own beside it, and the old one keeps
+  playing.
+- `fuzz/` is a [cargo-fuzz](https://github.com/rust-fuzz/cargo-fuzz) project with a workspace of
+  its own. Its target `decode` feeds any bytes to `Payload::parse`, then `apply_frame` to every
+  frame of what parses; it needs the nightly toolchain. CI runs it 60 seconds on each pull request
+  and 30 minutes every week.
+
+```shell
+cargo test -p life-pixel-format --all-features
+cd crates/format && cargo +nightly fuzz run decode -- -max_total_time=60
+```
