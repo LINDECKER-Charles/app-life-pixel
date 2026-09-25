@@ -24,6 +24,7 @@ jobs:
         language:
           # F1. F2 adds `rust`, F3 adds `javascript-typescript`, one per line.
           - actions
+          - javascript-typescript
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,5 +52,27 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
+
+  # F3. L1 adds `player-js`, one directory per line.
+  npm-audit:
+    name: npm audit (${{ matrix.directory }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        directory:
+          - frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Audit the dependencies
+        working-directory: ${{ matrix.directory }}
+        run: npm audit --audit-level=moderate
 
   # F2 adds `cargo-deny`, F3 and L1 add `npm-audit`, each in its own job.
