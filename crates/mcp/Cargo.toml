@@ -1,0 +1,32 @@
+[package]
+name = "life-pixel-mcp"
+description = "The Life Pixel MCP tools over the service's use cases, independent of their transport"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "AGPL-3.0-only"
+
+[dependencies]
+async-trait.workspace = true
+base64.workspace = true
+life-pixel-compiler.workspace = true
+life-pixel-core.workspace = true
+life-pixel-service.workspace = true
+rmcp = { workspace = true, features = ["server"] }
+schemars = { workspace = true, features = ["uuid1"] }
+serde.workspace = true
+serde_json.workspace = true
+time = { workspace = true, features = ["formatting", "serde"] }
+uuid = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+life-pixel-service = { workspace = true, features = ["testing"] }
+png.workspace = true
+rmcp = { workspace = true, features = ["client", "server"] }
+time = { workspace = true, features = ["macros"] }
+tokio = { workspace = true, features = ["io-util", "macros", "rt-multi-thread"] }
+
+[lints]
+workspace = true
