@@ -1,5 +1,6 @@
 //! What the router tests share: the local configuration over a temporary built app and the
-//! repository's catalogues, a database that answers or not, and one request at a time.
+//! repository's catalogues, a database that answers or not, an in-memory library, and one request
+//! at a time.
 
 #![allow(dead_code)] // Each test file uses its own share of the helpers.
 #![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
@@ -18,7 +19,8 @@ use axum::response::Response;
 use life_pixel_server::app;
 use life_pixel_server::config::{Config, ConfigError};
 use life_pixel_server::readiness::Readiness;
-use life_pixel_server::state::AppState;
+use life_pixel_server::state::{AppState, Backends};
+use life_pixel_service::memory::InMemoryLibraryStore;
 use serde_json::Value;
 use tempfile::TempDir;
 use tower::ServiceExt;
@@ -156,10 +158,13 @@ impl TestServer {
         let mut env = local_env(app_dir.path());
         change(&mut env);
         let config = read_config(&env).unwrap();
-        let database = Arc::new(Database {
-            answers: database_answers,
-        });
-        let state = AppState::new(config, database).unwrap();
+        let backends = Backends {
+            readiness: Arc::new(Database {
+                answers: database_answers,
+            }),
+            library_store: Arc::new(InMemoryLibraryStore::new()),
+        };
+        let state = AppState::new(config, backends).unwrap();
         Self {
             state,
             _app_dir: app_dir,

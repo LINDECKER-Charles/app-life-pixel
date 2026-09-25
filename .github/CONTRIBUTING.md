@@ -188,9 +188,9 @@ docker compose down -v
 ### Server
 
 `crates/server` is `life-pixel-server`. Run from the root of the repository, with the local stack
-started: in development it reads `.env`, copied from `.env.example`, checks that the database
-answers, then serves on http://localhost:8460. `npm start --prefix frontend` proxies `/api` and
-`/mcp` to it, so the app on http://localhost:4260 talks to this server.
+started: in development it reads `.env`, copied from `.env.example`, runs the migrations of
+`crates/server/migrations/`, then serves on http://localhost:8460. `npm start --prefix frontend`
+proxies `/api` and `/mcp` to it, so the app on http://localhost:4260 talks to this server.
 
 ```shell
 cargo run -p life-pixel-server                        # serve: the public, metrics and admin listeners
@@ -198,6 +198,26 @@ cargo run -p life-pixel-server -- migrate             # the migrations, then exi
 cargo run -p life-pixel-server -- healthcheck         # exit 0 when /healthz answers 200
 cargo run -p life-pixel-server -- openapi             # the API's description, on stdout
 ```
+
+The stack tests run the server's store, sweeper and migrations against the local stack, each on a
+database of its own that it drops when it ends. They need the stack started and `.env` copied
+from `.env.example`; `LP_TEST_DATABASE_URL` is the admin connection that creates the databases.
+
+```shell
+cargo test -p life-pixel-server --features stack-tests
+cargo clippy -p life-pixel-server --all-targets --features stack-tests -- -D warnings
+```
+
+To try the server by hand, give it a throwaway database rather than `life_pixel`: `create` prints
+its URL, to set as `LP_DATABASE_URL`; `drop` removes it, and refuses any other database.
+
+```shell
+cargo run -p life-pixel-server --features stack-tests -- test-database create
+cargo run -p life-pixel-server --features stack-tests -- test-database drop <url>
+```
+
+A new migration is a file `crates/server/migrations/<UTC timestamp>_<topic>.sql`, compatible
+with the version running before it: it adds, it never renames nor drops what that version reads.
 
 A change to a route or to one of its types regenerates the API's description and its TypeScript
 types, and commits both; CI's `api` job fails when they differ.

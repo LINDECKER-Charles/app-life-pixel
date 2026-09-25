@@ -11,6 +11,8 @@ use axum::response::IntoResponse;
 use metrics::{Unit, describe_counter, describe_histogram};
 use metrics_exporter_prometheus::{BuildError, Matcher, PrometheusBuilder, PrometheusHandle};
 
+use crate::storage::metrics::{DB_QUERY_DURATION_SECONDS, QUERY_DURATION_BUCKETS};
+
 /// Requests answered, by `route`, `method` and `status_class`.
 pub const HTTP_REQUESTS_TOTAL: &str = "http_requests_total";
 /// Time to answer, by `route` and `method`.
@@ -41,6 +43,10 @@ pub fn recorder() -> Result<PrometheusHandle, BuildError> {
         .set_buckets_for_metric(
             Matcher::Full(HTTP_REQUEST_DURATION_SECONDS.to_owned()),
             DURATION_BUCKETS,
+        )?
+        .set_buckets_for_metric(
+            Matcher::Full(DB_QUERY_DURATION_SECONDS.to_owned()),
+            QUERY_DURATION_BUCKETS,
         )?
         .install_recorder()?;
     describe_http_metrics();
