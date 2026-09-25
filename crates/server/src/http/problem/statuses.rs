@@ -91,6 +91,11 @@ const STATUSES: &[(&str, StatusCode)] = &[
     ("internal.error", StatusCode::INTERNAL_SERVER_ERROR),
     ("library.animation_not_found", StatusCode::NOT_FOUND),
     ("library.project_not_found", StatusCode::NOT_FOUND),
+    ("library.unavailable", StatusCode::SERVICE_UNAVAILABLE),
+    (
+        "library.unsupported_version",
+        StatusCode::UNPROCESSABLE_ENTITY,
+    ),
     ("preview.too_large", StatusCode::UNPROCESSABLE_ENTITY),
     ("quota.storage_exceeded", StatusCode::CONFLICT),
     ("rate_limit.exceeded", StatusCode::TOO_MANY_REQUESTS),
