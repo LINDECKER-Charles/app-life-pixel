@@ -1,5 +1,10 @@
 {
   "app.name": "Life Pixel",
+  "canvas.cursor.status": "Pixel {x}, {y}. Couleur {index}.",
+  "canvas.shortcut.zoom_fit": "Ajuster le zoom",
+  "canvas.shortcut.zoom_in": "Zoomer",
+  "canvas.shortcut.zoom_out": "Dézoomer",
+  "canvas.workspace.label": "Zone de dessin",
   "common.cancel": "Annuler",
   "common.close": "Fermer",
   "common.loading": "Chargement…",
