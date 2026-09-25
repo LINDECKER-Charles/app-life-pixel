@@ -69,6 +69,21 @@ cmp CLAUDE.md AGENTS.md
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
+### Local stack
+
+Start it:
+
+```shell
+cp .env.example .env
+docker compose up -d --wait
+```
+
+Reset it, dropping all of its data:
+
+```shell
+docker compose down -v
+```
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
