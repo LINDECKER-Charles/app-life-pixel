@@ -2,8 +2,9 @@
 
 An export has to be three things at once: light, dependency-free, and safe to run inside
 someone else's app. This document describes how the design gets there. The compilation
-mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets and the player ABI are
-drafts, settled by the M1 prototype.
+mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets are drafts, settled by
+the M1 prototype. The payload and the player ABI are specified byte by byte in
+[crates/format/README.md](../crates/format/README.md), their reference.
 
 Everything an export puts into an app — the player, the loader, the integration snippets — is
 MIT-licensed (D15): the snippets are templates kept with the loader in `player-js`.
@@ -50,15 +51,25 @@ hash and its size.
 4. CSS scales the canvas with `image-rendering: pixelated`: pixel-exact at any size, at no
    resampling cost.
 
-Draft player ABI, version 1:
+Player ABI, version 1: the player exports these functions and its `memory`, and imports nothing;
+every value is a 32-bit integer. The statuses and the playback rules are in
+[crates/format/README.md](../crates/format/README.md#player-abi-v1).
 
-| Export | Role |
-|---|---|
-| `alloc(len) -> ptr` | reserve room for the payload |
-| `load(ptr, len) -> status` | decode and check the payload; a non-zero status refuses it |
-| `tick(elapsed_ms) -> changed` | advance time; tells whether a new image is ready |
-| `frame_ptr() -> ptr`, `width()`, `height()` | where to read the RGBA framebuffer |
-| `set_tag(index)`, `seek(frame)` | control playback |
+| Export | Signature | Effect |
+|---|---|---|
+| `abi_version` | `() -> u32` | `1` |
+| `alloc` | `(len) -> ptr` | reserves `len` bytes for the payload and returns their address, `0` if it cannot; once per instance |
+| `load` | `(ptr, len) -> status` | parses and checks the whole payload written at `ptr`, then shows the first frame of the initial range; a non-zero status refuses it |
+| `width`, `height` | `() -> u32` | the canvas size |
+| `frame_ptr` | `() -> ptr` | the framebuffer: `width × height × 4` bytes of RGBA, rows top to bottom, alpha not premultiplied |
+| `tick` | `(elapsed_ms) -> flags` | advances playback; bit 0: the framebuffer changed; bit 1: the range reached its end |
+| `tag_count` | `() -> u32` | number of tags |
+| `tag_name_ptr`, `tag_name_len` | `(index) -> u32` | the tag's UTF-8 name; `0` for an index out of range |
+| `set_tag` | `(index) -> status` | plays tag `index`, or the whole animation for `0xFFFFFFFF`; shows its first frame |
+| `set_loop` | `(mode) -> status` | `0` the range's own mode, `1` loop, `2` once |
+| `seek` | `(frame) -> status` | shows frame `frame` of the current range, counted from its first frame |
+| `frame_index` | `() -> u32` | the animation frame shown |
+| `title_ptr`, `title_len` | `() -> u32` | the UTF-8 title |
 
 The element also:
 
