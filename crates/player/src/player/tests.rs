@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use life_pixel_format::{AnimationData, DecodeError, FrameData, Rgba, encode};
 
 use super::*;
-use crate::{FRAME_CHANGED, RANGE_ENDED};
+use crate::{FRAME_CHANGED, RANGE_ENDED, RANGE_STOPPED};
 
 /// The v1 fixture: 12 × 8, 3 frames of 120, 120 and 240 ms, titled `Sample`, with the tags
 /// `idle` (frames 0 to 1, looping) and `flash` (frame 2, once).
@@ -210,7 +210,7 @@ fn set_tag_plays_a_tag_from_its_first_frame_in_its_own_mode() {
 
     assert_eq!(player.set_tag(1), Ok(()));
     assert_eq!(player.frame_index(), 2);
-    assert_eq!(player.tick(240), RANGE_ENDED);
+    assert_eq!(player.tick(240), RANGE_ENDED | RANGE_STOPPED);
     assert_eq!(player.tick(240), 0);
     assert_eq!(player.set_tag(2), Err(CallError::ArgumentOutOfRange));
     assert_eq!(player.frame_index(), 2);
@@ -249,7 +249,7 @@ fn seek_counts_from_the_range_first_frame_and_restarts_it() {
     assert_eq!(player.seek(1), Err(CallError::ArgumentOutOfRange));
     assert_eq!(player.seek(0), Ok(()));
     assert_eq!(player.frame_index(), 2);
-    assert_eq!(player.tick(240), RANGE_ENDED);
+    assert_eq!(player.tick(240), RANGE_ENDED | RANGE_STOPPED);
 }
 
 #[test]

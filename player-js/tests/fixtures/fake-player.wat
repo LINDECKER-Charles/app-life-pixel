@@ -136,7 +136,9 @@
     (if (i32.and (local.get $flags) (i32.const 1)) (then (call $draw)))
     (local.get $flags))
 
-  ;; Leaves the current frame: the next one, the range's first when it loops, or a stop.
+  ;; Leaves the current frame: the next one, the range's first when it loops, or a stop (bit 2,
+  ;; on top of bit 1: the only reliable way to tell a stop from a loop that lands on the same
+  ;; frame — crates/player/README.md).
   (func $advance (result i32)
     (if (i32.lt_u (global.get $current) (global.get $last))
       (then
@@ -148,7 +150,7 @@
         (return (i32.const 3))))
     (global.set $is_stopped (i32.const 1))
     (global.set $elapsed (i32.const 0))
-    (i32.const 2))
+    (i32.const 6))
 
   (func $is_looping (result i32)
     (if (result i32) (global.get $loop_mode)

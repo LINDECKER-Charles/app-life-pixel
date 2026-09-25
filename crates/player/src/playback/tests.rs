@@ -81,7 +81,7 @@ fn a_range_played_once_stops_on_its_last_frame() {
     let mut playback = playing(range(0, 1, LoopMode::Once));
 
     assert_eq!(playback.tick(100, duration_ms), FRAME_CHANGED);
-    assert_eq!(playback.tick(50, duration_ms), RANGE_ENDED);
+    assert_eq!(playback.tick(50, duration_ms), RANGE_ENDED | RANGE_STOPPED);
     assert_eq!(playback.frame(), 1);
     assert_eq!(playback.tick(10_000, duration_ms), 0);
     assert_eq!(playback.frame(), 1);
@@ -93,17 +93,35 @@ fn a_range_played_once_stops_within_a_single_long_tick() {
 
     assert_eq!(
         playback.tick(u32::MAX, duration_ms),
-        FRAME_CHANGED | RANGE_ENDED
+        FRAME_CHANGED | RANGE_ENDED | RANGE_STOPPED
     );
     assert_eq!(playback.frame(), 3);
 }
 
 #[test]
-fn a_single_frame_range_ends_without_changing_the_frame() {
+fn a_single_frame_range_played_once_stops_without_changing_the_frame() {
+    let mut playback = playing(range(2, 2, LoopMode::Once));
+
+    assert_eq!(playback.tick(200, duration_ms), RANGE_ENDED | RANGE_STOPPED);
+    assert_eq!(playback.frame(), 2);
+}
+
+#[test]
+fn a_single_frame_range_loops_without_changing_the_frame() {
     let mut playback = playing(range(2, 2, LoopMode::Loop));
 
     assert_eq!(playback.tick(200, duration_ms), RANGE_ENDED);
     assert_eq!(playback.frame(), 2);
+}
+
+#[test]
+fn a_long_pause_that_lands_on_the_last_frame_of_a_loop_does_not_report_stopped() {
+    let mut playback = playing(range(0, 3, LoopMode::Loop));
+
+    let flags = playback.tick(WHOLE_MS + 380, duration_ms);
+
+    assert_eq!(flags, FRAME_CHANGED | RANGE_ENDED);
+    assert_eq!(playback.frame(), 3);
 }
 
 #[test]
@@ -182,7 +200,7 @@ fn set_loop_overrides_the_range_mode_until_set_back() {
 
     playback.set_loop(LoopSetting::Own);
     assert_eq!(playback.tick(100, duration_ms), FRAME_CHANGED);
-    assert_eq!(playback.tick(50, duration_ms), RANGE_ENDED);
+    assert_eq!(playback.tick(50, duration_ms), RANGE_ENDED | RANGE_STOPPED);
     assert_eq!(playback.frame(), 1);
     assert_eq!(playback.tick(150, duration_ms), 0);
 }
@@ -196,7 +214,7 @@ fn set_loop_once_stops_a_looping_range_at_its_next_end() {
 
     assert_eq!(
         playback.tick(u32::MAX, duration_ms),
-        FRAME_CHANGED | RANGE_ENDED
+        FRAME_CHANGED | RANGE_ENDED | RANGE_STOPPED
     );
     assert_eq!(playback.frame(), 3);
 }
