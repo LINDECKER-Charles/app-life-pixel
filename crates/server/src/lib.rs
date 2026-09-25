@@ -8,6 +8,7 @@ pub mod commands;
 pub mod config;
 pub mod database;
 pub mod http;
+pub mod mail;
 pub mod openapi;
 pub mod readiness;
 pub mod routes;
