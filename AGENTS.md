@@ -28,6 +28,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 | [docs/v1/](docs/v1/README.md) | V1's technical design: scope, method, and what each task builds and how it is tested |
 | [docs/architecture.md](docs/architecture.md) | components, crates, data flow, distributions |
 | [docs/export.md](docs/export.md) | how an animation becomes a WASM bundle, and how an app plays it |
+| [crates/format/README.md](crates/format/README.md) | the payload and the player ABI, byte by byte |
 | [docs/mcp.md](docs/mcp.md) | MCP tools, transports, authentication, limits |
 | [docs/admin-console.md](docs/admin-console.md) | the admin, support and metrics console |
 | [docs/pricing.md](docs/pricing.md) | plans, storage quota, billing rules |
@@ -328,6 +329,7 @@ cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
 cargo deny check
+cargo xtask check-boundaries
 npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend
 cmp CLAUDE.md AGENTS.md
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color

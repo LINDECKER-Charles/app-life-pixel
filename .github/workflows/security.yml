@@ -24,6 +24,7 @@ jobs:
         language:
           # F1. F2 adds `rust`, F3 adds `javascript-typescript`, one per line.
           - actions
+          - rust
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,5 +52,19 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
+
+  # F2: the dependency policy of deny.toml — advisories, licences, bans, sources.
+  cargo-deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check dependencies
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check
 
   # F2 adds `cargo-deny`, F3 and L1 add `npm-audit`, each in its own job.

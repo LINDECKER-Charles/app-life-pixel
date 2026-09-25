@@ -8,3 +8,7 @@ too-many-lines-threshold = 30
 
 # Clippy has no cyclomatic-complexity lint; cognitive complexity is the closest proxy.
 cognitive-complexity-threshold = 10
+
+# Tests may unwrap: a panic there is a failed test, not a crash on a user's input.
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
