@@ -1,0 +1,32 @@
+<div
+  #host
+  class="workspace"
+  role="application"
+  tabindex="0"
+  [attr.aria-label]="'canvas.workspace.label' | transloco"
+  (keydown)="onKeydown($event)"
+  (keyup)="onKeyup($event)"
+  (focus)="focused.set(true)"
+  (blur)="focused.set(false)"
+>
+  <canvas
+    #view
+    class="view"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerCancel($event)"
+    (wheel)="onWheel($event)"
+    (contextmenu)="$event.preventDefault()"
+  ></canvas>
+  @if (focused()) {
+    <div
+      class="cursor"
+      [style.left.px]="cursorBox().left"
+      [style.top.px]="cursorBox().top"
+      [style.width.px]="cursorBox().size"
+      [style.height.px]="cursorBox().size"
+    ></div>
+  }
+  <div class="lp-visually-hidden" aria-live="polite">{{ liveMessage() }}</div>
+</div>
