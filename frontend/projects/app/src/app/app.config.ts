@@ -9,9 +9,11 @@ import {
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { provideI18n } from 'shared';
 import { routes } from './app.routes';
+import { LegalLinks } from './legal/legal-links';
 import { PreferencesStore } from './settings/preferences-store';
 import { provideAppearance } from './settings/provide-appearance';
 import { WebPreferencesStore } from './settings/web-preferences-store';
+import { FOOTER_SLOT } from './shell/footer-slot';
 import { TranslatedTitleStrategy } from './shell/translated-title-strategy';
 import { provideUnsavedWorkGuard } from './shell/unsaved-work-guard';
 
@@ -28,5 +30,6 @@ export const appConfig: ApplicationConfig = {
     { provide: PreferencesStore, useClass: WebPreferencesStore },
     provideAppearance(),
     provideUnsavedWorkGuard(),
+    { provide: FOOTER_SLOT, useValue: LegalLinks },
   ],
 };
