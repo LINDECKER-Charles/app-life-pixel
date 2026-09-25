@@ -18,12 +18,15 @@ stack-tests = ["dep:rand", "dep:reqwest"]
 anyhow.workspace = true
 async-trait.workspace = true
 axum.workspace = true
+base64.workspace = true
 bytes.workspace = true
 clap.workspace = true
 dotenvy.workspace = true
 futures-util.workspace = true
 governor.workspace = true
+hmac.workspace = true
 ipnet.workspace = true
+lettre = { workspace = true, features = ["aws-lc-rs", "builder", "hostname", "pool", "smtp-transport", "tokio1-rustls", "webpki-roots"] }
 life-pixel-core.workspace = true
 life-pixel-service.workspace = true
 metrics.workspace = true
