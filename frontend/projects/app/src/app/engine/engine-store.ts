@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { EDITOR_ENGINE } from './editor-engine';
+import { canRecover } from './engine-recovery';
 import {
   isEngineError,
   type EditOperation,
@@ -16,7 +17,10 @@ const INITIAL_STATE: EngineState = {
   limits: null,
 };
 
-/** A rejected `EngineError`, turned into something a page can show (editor.md, W0). */
+/**
+ * A rejected `EngineError`, turned into something a page can show (editor.md, W0), or the
+ * `engine.recovered` message of an engine that restarted after a failure (W1).
+ */
 export interface EngineNotification {
   readonly id: number;
   readonly key: string;
@@ -42,6 +46,9 @@ export class EngineStore {
 
   constructor() {
     this.engine.subscribe((state) => this.stateSignal.set(state));
+    if (canRecover(this.engine)) {
+      this.engine.onRecovered(({ lostChanges }) => this.push('engine.recovered', { lostChanges }));
+    }
   }
 
   async create(options: NewAnimationOptions): Promise<void> {
@@ -84,11 +91,11 @@ export class EngineStore {
 
   private notify(error: unknown): void {
     if (!isEngineError(error)) throw error;
-    const notification = {
-      id: this.nextNotificationId++,
-      key: `errors.${error.code}`,
-      params: error.params,
-    };
+    this.push(`errors.${error.code}`, error.params);
+  }
+
+  private push(key: string, params: EngineNotification['params']): void {
+    const notification = { id: this.nextNotificationId++, key, params };
     this.notificationsSignal.update((list) => [...list, notification]);
   }
 }

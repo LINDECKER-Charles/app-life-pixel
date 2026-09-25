@@ -1,7 +1,24 @@
 import { TestBed } from '@angular/core/testing';
+import { EDITOR_ENGINE } from './editor-engine';
+import type { EngineRecovery, RecoveryReport } from './engine-recovery';
 import { EngineStore } from './engine-store';
+import { MockEditorEngine } from './testing/mock-editor-engine';
 
 const NEW_ANIMATION = { title: 'Store', width: 4, height: 4, layerName: 'Base' };
+
+/** The mock, with the recovery of an engine whose worker can fail. */
+class RecoveringEngine extends MockEditorEngine implements EngineRecovery {
+  private readonly recoveryListeners = new Set<(report: RecoveryReport) => void>();
+
+  onRecovered(listener: (report: RecoveryReport) => void): () => void {
+    this.recoveryListeners.add(listener);
+    return () => this.recoveryListeners.delete(listener);
+  }
+
+  recover(report: RecoveryReport): void {
+    for (const listener of this.recoveryListeners) listener(report);
+  }
+}
 
 describe('EngineStore', () => {
   function setup(): EngineStore {
@@ -39,5 +56,17 @@ describe('EngineStore', () => {
     store.dismissNotification(notification.id);
 
     expect(store.notifications()).toHaveLength(0);
+  });
+
+  it('says how many changes an engine that recovered lost', () => {
+    const engine = new RecoveringEngine();
+    TestBed.configureTestingModule({ providers: [{ provide: EDITOR_ENGINE, useValue: engine }] });
+    const store = TestBed.inject(EngineStore);
+
+    engine.recover({ lostChanges: 3 });
+
+    expect(store.notifications()).toEqual([
+      { id: 1, key: 'engine.recovered', params: { lostChanges: 3 } },
+    ]);
   });
 });
