@@ -10,13 +10,23 @@ use life_pixel_server::testing::{TEST_DATABASE_OWNER, TestDatabase};
 use sqlx::postgres::PgConnectOptions;
 
 /// The tables of the schema.
-const TABLES: [&str; 3] = ["accounts", "animations", "projects"];
+const TABLES: [&str; 5] = [
+    "accounts",
+    "animations",
+    "email_tokens",
+    "projects",
+    "sessions",
+];
 /// The indexes of the schema, beside the primary and unique keys.
-const INDEXES: [&str; 4] = [
+const INDEXES: [&str; 8] = [
     "animations_account_updated",
     "animations_project_updated",
     "animations_title_trgm",
+    "email_tokens_account",
+    "email_tokens_expires",
     "projects_account_updated",
+    "sessions_account",
+    "sessions_expires",
 ];
 
 const APPLIED: &str = "select count(*) from _sqlx_migrations where success";
