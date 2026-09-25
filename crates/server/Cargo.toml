@@ -1,0 +1,53 @@
+[package]
+name = "life-pixel-server"
+description = "The Life Pixel server: the HTTP API, the MCP endpoint, the i18n endpoint and the app"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "AGPL-3.0-only"
+
+[features]
+# Tests that need the local stack (H4): Postgres, S3Mock, Mailpit.
+stack-tests = []
+
+[dependencies]
+# One line per dependency, sorted. Each task adds those it uses.
+anyhow.workspace = true
+async-trait.workspace = true
+axum.workspace = true
+bytes.workspace = true
+clap.workspace = true
+dotenvy.workspace = true
+governor.workspace = true
+ipnet.workspace = true
+life-pixel-service.workspace = true
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+opentelemetry = { workspace = true, features = ["trace"] }
+opentelemetry-otlp = { workspace = true, features = ["http-proto", "reqwest-blocking-client", "trace"] }
+opentelemetry_sdk = { workspace = true, features = ["trace"] }
+semver.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+time = { workspace = true, features = ["formatting"] }
+tokio = { workspace = true, features = ["io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tower-http = { workspace = true, features = ["catch-panic"] }
+tracing.workspace = true
+tracing-opentelemetry.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt", "json", "std"] }
+utoipa.workspace = true
+utoipa-axum.workspace = true
+uuid = { workspace = true, features = ["v7"] }
+
+[dev-dependencies]
+# One line per dependency, sorted.
+life-pixel-core.workspace = true
+tempfile.workspace = true
+tower = { workspace = true, features = ["util"] }
+
+[lints]
+workspace = true
