@@ -84,6 +84,32 @@ jobs:
   # H14 adds `docker`, A5 adds `mcp`, T1/T5 add `desktop` — each in its own job, added next to
   # this one without editing it.
 
+  # P2: the WebAssembly player built reproducibly, its hash checked against player.sha256, its
+  # 16 KiB budget, and the v1 fixture played frame by frame in wasmi.
+  player:
+    name: Player
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install the pinned toolchain
+        run: |
+          rustup toolchain install
+          rustup show
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build and check the player
+        run: cargo xtask build-player --check
+      - name: Keep the module that failed
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: player-module
+          path: target/player/wasm32-unknown-unknown/player/life_pixel_player.wasm
+          if-no-files-found: ignore
+
   # F3: npm ci, lint, test:ci, build, i18n:check, then the checks of the tools and the bundle.
   frontend:
     name: Front-end
