@@ -69,6 +69,18 @@ cmp CLAUDE.md AGENTS.md
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
+### Rust
+
+```shell
+cargo fmt --all --check
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+cargo deny check
+cargo xtask check-boundaries
+```
+
+`cargo xtask --help` lists the repository's build commands.
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
