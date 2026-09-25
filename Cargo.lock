@@ -403,10 +403,13 @@ version = "0.1.0"
 dependencies = [
  "gif",
  "life-pixel-core",
+ "life-pixel-format",
  "png",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror",
+ "wasmi",
  "zip",
 ]
 

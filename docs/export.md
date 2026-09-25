@@ -23,13 +23,20 @@ storage quota.
 
 ## Compiling: data, not code
 
-1. **Validate** the document with `core` — the same rules as the editor and the server.
-2. **Flatten** the layers of each frame, keeping palette indices.
+1. **Validate** the document with `core` — the same rules as the editor and the server. Reading a
+   document validates it, so the compiler's `export_wasm` takes an `Animation`, which is valid
+   by construction.
+2. **Flatten** the layers of each frame with `core`'s compositing — the visible layers from
+   bottom to top, index 0 transparent —, keeping palette indices. Palette entry 0, which `core`
+   only requires fully transparent, is written `00 00 00 00`, as the payload requires.
 3. **Encode** the frames (run-length, then delta against the previous frame) into a `format`
-   payload: a header (magic bytes, format version, player ABI version), the palette(s), the
-   frames and their durations, the tags.
+   payload: a header (magic bytes, format version, player ABI version, size, frame count), the
+   palette, the title, the tags with their first and last frames and loop modes, then the frames
+   and their durations. The domain limits of `core` fit within the format's bounds, so every
+   animation the editor accepts encodes.
 4. **Append** the payload to the prebuilt player as a WebAssembly custom section named
-   `life-pixel`.
+   `life-pixel`: byte `0x00`, the LEB128 size of what follows, the LEB128 length of the name,
+   `life-pixel`, the payload.
 
 Custom sections may follow the last section of a module, so step 4 is a plain concatenation:
 the module stays valid and its code stays exactly the code we built and reviewed. A user's
@@ -37,8 +44,15 @@ content can only ever be data, read by a bounds-checked decoder. There is no Rus
 production, an export is deterministic, and the same compiler runs in the browser, on the
 server, in the CLI and on the desktop.
 
-The player embedded in the compiler is built from the same commit, reproducibly; CI checks its
-hash and its size.
+The player embedded in the compiler is built from the same commit, reproducibly: the compiler's
+build script runs the function `cargo xtask build-player` runs (`xtask/src/player_build.rs`),
+into its own target directory, with the workspace and `CARGO_HOME` paths remapped and without
+the outer build's compiler wrappers, flags, target or target directory. Whatever builds the
+compiler — `cargo clippy`, a build for `wasm32-unknown-unknown` —, the module hashes to
+`crates/player/player.sha256`, which a test of the compiler checks; CI checks the hash and the
+size of the player. The loader, `player-js/life-pixel.js`, is embedded as committed. The golden
+exports of `crates/compiler/tests/golden/` are played frame by frame in `wasmi` against
+`core`'s rendering, and in a browser through the loader.
 
 ## Playing
 

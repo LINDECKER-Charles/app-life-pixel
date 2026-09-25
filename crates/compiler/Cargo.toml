@@ -1,6 +1,6 @@
 [package]
 name = "life-pixel-compiler"
-description = "Turns a Life Pixel animation into files: GIF, APNG, sprite sheet, PNG frames"
+description = "Turns a Life Pixel animation into files: WebAssembly bundle, GIF, APNG, sprite sheet, PNG frames"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -11,11 +11,20 @@ license = "AGPL-3.0-only"
 [dependencies]
 gif.workspace = true
 life-pixel-core.workspace = true
+# The payload's encoder; the player that decodes it is embedded by build.rs, not linked.
+life-pixel-format = { workspace = true, features = ["encode"] }
 png.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 zip.workspace = true
+
+[dev-dependencies]
+# The tests hash the embedded player and play every WebAssembly export in wasmi.
+sha2.workspace = true
+# `auto-dispatch` falls back to a loop in unoptimised builds: wasmi's tail-call dispatch, which
+# the workspace's line selects without it, recurses there and overflows the stack of a test.
+wasmi = { workspace = true, features = ["auto-dispatch"] }
 
 [lints]
 workspace = true
