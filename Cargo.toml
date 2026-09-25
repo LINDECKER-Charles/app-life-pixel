@@ -29,6 +29,7 @@ ipnet = "2.12.2"
 life-pixel-compiler = { path = "crates/compiler" }
 life-pixel-core = { path = "crates/core" }
 life-pixel-format = { path = "crates/format" }
+life-pixel-mcp = { path = "crates/mcp" }
 life-pixel-service = { path = "crates/service" }
 metrics = "0.24.6"
 metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
@@ -39,6 +40,8 @@ opentelemetry_sdk = { version = "0.33.0", default-features = false }
 png = { version = "0.18.1", default-features = false }
 rand = "0.9.5"
 reqwest = { version = "0.13.5", default-features = false }
+rmcp = { version = "3.4.1", default-features = false }
+schemars = "1.2.2"
 semver = "1.0.28"
 serde = { version = "1.0.229", features = ["derive"] }
 serde-wasm-bindgen = "0.6.5"
