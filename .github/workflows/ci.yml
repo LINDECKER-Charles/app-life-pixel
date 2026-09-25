@@ -1,0 +1,15 @@
+name: CI
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev, main]
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    uses: ./.github/workflows/_verify.yml
+    permissions:
+      contents: read
