@@ -21,6 +21,9 @@ const FRAME_CHANGED: u32 = 1;
 /// `tick`'s bit 1: the range reached its end.
 const RANGE_ENDED: u32 = 2;
 
+/// `tick`'s bit 2: the range that ended stopped there, rather than looping.
+const RANGE_STOPPED: u32 = 4;
+
 /// A range to play: `set_tag`'s index, its first and last frames, and how it ends.
 struct Range {
     index: u32,
@@ -112,11 +115,14 @@ fn play(player: &mut WasmPlayer, fixture: &Fixture, range: &Range) -> anyhow::Re
 }
 
 /// What a tick over the whole of `frame` returns: the next frame, or the range's end — which
-/// changes the frame when it loops back to another one.
+/// changes the frame when it loops back to another one, and stops it when it does not loop.
 fn expected_flags(range: &Range, frame: u32) -> u32 {
     let is_last = frame == range.last;
     let changes_frame = !is_last || (range.is_looping && range.first != range.last);
-    (u32::from(changes_frame) * FRAME_CHANGED) | (u32::from(is_last) * RANGE_ENDED)
+    let stops = is_last && !range.is_looping;
+    (u32::from(changes_frame) * FRAME_CHANGED)
+        | (u32::from(is_last) * RANGE_ENDED)
+        | (u32::from(stops) * RANGE_STOPPED)
 }
 
 /// Checks that `frame` is shown, and that the framebuffer holds its expected pixels.
@@ -168,7 +174,14 @@ mod tests {
 
         assert_eq!(expected_flags(&looping, 1), FRAME_CHANGED);
         assert_eq!(expected_flags(&looping, 2), FRAME_CHANGED | RANGE_ENDED);
-        assert_eq!(expected_flags(&range(0, 2, false), 2), RANGE_ENDED);
+        assert_eq!(
+            expected_flags(&range(0, 2, false), 2),
+            RANGE_ENDED | RANGE_STOPPED
+        );
         assert_eq!(expected_flags(&range(2, 2, true), 2), RANGE_ENDED);
+        assert_eq!(
+            expected_flags(&range(2, 2, false), 2),
+            RANGE_ENDED | RANGE_STOPPED
+        );
     }
 }
