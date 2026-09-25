@@ -2,6 +2,7 @@
 
 use std::sync::Arc;
 
+use life_pixel_service::ports::LibraryStore;
 use thiserror::Error;
 
 use crate::config::Config;
@@ -21,6 +22,15 @@ pub enum StartError {
     App(#[from] std::io::Error),
 }
 
+/// What the state is built on, made by `serve` from the configuration or by a test: one field
+/// per line.
+pub struct Backends {
+    /// Whether the database answers.
+    pub readiness: Arc<dyn Readiness>,
+    /// The hosted library.
+    pub library_store: Arc<dyn LibraryStore>,
+}
+
 /// The shared state: cheap to clone, one field per line.
 #[derive(Clone)]
 pub struct AppState {
@@ -28,6 +38,8 @@ pub struct AppState {
     pub config: Arc<Config>,
     /// Whether the database answers.
     pub readiness: Arc<dyn Readiness>,
+    /// The hosted library.
+    pub library_store: Arc<dyn LibraryStore>,
     /// The rate limiters.
     pub rate_limits: Arc<RateLimits>,
     /// The catalogues of `/i18n`.
@@ -37,17 +49,18 @@ pub struct AppState {
 }
 
 impl AppState {
-    /// Reads the catalogues and the built app, and gathers the rest.
+    /// Reads the catalogues and the built app, and gathers the rest around `backends`.
     ///
     /// # Errors
     ///
     /// When the catalogues or the app cannot be read.
-    pub fn new(config: Config, readiness: Arc<dyn Readiness>) -> Result<Self, StartError> {
+    pub fn new(config: Config, backends: Backends) -> Result<Self, StartError> {
         let catalogues = Catalogues::load(&config.i18n_dir)?;
         let static_app = StaticApp::load(&config.app_dir)?;
         Ok(Self {
             config: Arc::new(config),
-            readiness,
+            readiness: backends.readiness,
+            library_store: backends.library_store,
             rate_limits: Arc::new(RateLimits::new()),
             catalogues: Arc::new(catalogues),
             static_app: Arc::new(static_app),

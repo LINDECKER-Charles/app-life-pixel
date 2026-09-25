@@ -9,8 +9,9 @@ repository.workspace = true
 license = "AGPL-3.0-only"
 
 [features]
-# Tests that need the local stack (H4): Postgres, S3Mock, Mailpit.
-stack-tests = []
+# Tests that need the local stack (H4): Postgres, S3Mock, Mailpit. It compiles the `testing`
+# module and the `test-database` subcommand.
+stack-tests = ["dep:rand", "dep:reqwest"]
 
 [dependencies]
 # One line per dependency, sorted. Each task adds those it uses.
@@ -20,20 +21,26 @@ axum.workspace = true
 bytes.workspace = true
 clap.workspace = true
 dotenvy.workspace = true
+futures-util.workspace = true
 governor.workspace = true
 ipnet.workspace = true
+life-pixel-core.workspace = true
 life-pixel-service.workspace = true
 metrics.workspace = true
 metrics-exporter-prometheus.workspace = true
+object_store = { workspace = true, features = ["aws", "fs"] }
 opentelemetry = { workspace = true, features = ["trace"] }
 opentelemetry-otlp = { workspace = true, features = ["http-proto", "reqwest-blocking-client", "trace"] }
 opentelemetry_sdk = { workspace = true, features = ["trace"] }
+rand = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true, features = ["json", "query"] }
 semver.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha2.workspace = true
+sqlx = { workspace = true, features = ["macros", "migrate", "postgres", "runtime-tokio", "time", "tls-rustls-aws-lc-rs", "uuid"] }
 thiserror.workspace = true
-time = { workspace = true, features = ["formatting"] }
+time = { workspace = true, features = ["formatting", "parsing"] }
 tokio = { workspace = true, features = ["io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
 tower-http = { workspace = true, features = ["catch-panic"] }
 tracing.workspace = true
@@ -45,9 +52,14 @@ uuid = { workspace = true, features = ["v7"] }
 
 [dev-dependencies]
 # One line per dependency, sorted.
-life-pixel-core.workspace = true
+life-pixel-service = { workspace = true, features = ["testing"] }
 tempfile.workspace = true
 tower = { workspace = true, features = ["util"] }
+
+# The tests of the local stack (H4), in one target: tests/stack/main.rs.
+[[test]]
+name = "stack"
+required-features = ["stack-tests"]
 
 [lints]
 workspace = true
