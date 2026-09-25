@@ -8,6 +8,15 @@ use thiserror::Error;
 /// Every code of this crate, each with its key `errors.<code>` in every catalogue. The codes of
 /// `core` travel through the service unchanged and stay in `life_pixel_core::error::CODES`.
 pub const CODES: &[&str] = &[
+    "account.language",
+    "auth.account_suspended",
+    "auth.current_password",
+    "auth.email_invalid",
+    "auth.email_taken",
+    "auth.invalid_credentials",
+    "auth.password_length",
+    "auth.token_invalid",
+    "auth.unauthenticated",
     "document.version_conflict",
     "draw.too_many_operations",
     "edit.palette_in_use",
