@@ -1,0 +1,45 @@
+<ul class="swatches">
+  @for (color of palette(); track $index; let index = $index) {
+    <li class="swatch-item">
+      <button
+        type="button"
+        class="swatch"
+        [class.checkerboard]="index === 0"
+        [style.backgroundColor]="index === 0 ? null : color"
+        [attr.aria-pressed]="colorIndex() === index"
+        [attr.aria-label]="
+          (index === 0 ? 'palette.swatch_eraser' : 'palette.swatch') | transloco: { index }
+        "
+        [attr.draggable]="index > 0"
+        (click)="select(index)"
+        (dragstart)="onDragStart($event, index)"
+        (dragover)="onDragOver($event)"
+        (drop)="onDrop($event, index)"
+        (keydown)="onSwatchKeydown($event, index)"
+      ></button>
+      @if (index > 0) {
+        <div class="swatch-actions">
+          <button type="button" class="icon-button" (click)="edit(index)">
+            {{ 'palette.edit' | transloco }}
+          </button>
+          <button type="button" class="icon-button" (click)="remove(index)">
+            {{ 'palette.remove' | transloco }}
+          </button>
+        </div>
+      }
+    </li>
+  }
+</ul>
+<button
+  type="button"
+  class="add"
+  [disabled]="isFull()"
+  [attr.aria-describedby]="isFull() ? 'palette-full-hint' : null"
+  (click)="add()"
+>
+  {{ 'palette.add' | transloco }}
+</button>
+@if (isFull()) {
+  <p id="palette-full-hint" class="hint">{{ 'palette.full_hint' | transloco }}</p>
+}
+<lp-palette-entry-dialog />

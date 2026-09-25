@@ -1,0 +1,67 @@
+<form class="form" novalidate (submit)="submit($event)">
+  <fieldset class="size" aria-describedby="sprite-sheet-size-hint">
+    <legend>{{ 'tools.sprite_sheet.cell_size' | transloco }}</legend>
+    <div class="field">
+      <label for="sprite-sheet-cell-width">{{ 'tools.sprite_sheet.cell_width' | transloco }}</label>
+      <input
+        #widthField
+        id="sprite-sheet-cell-width"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        required
+        [min]="cellBounds().min"
+        [max]="cellBounds().max"
+        [value]="cellWidth()"
+        [attr.aria-invalid]="!isCellWidthValid()"
+        (input)="cellWidth.set(widthField.valueAsNumber)"
+      />
+    </div>
+    <div class="field">
+      <label for="sprite-sheet-cell-height">{{
+        'tools.sprite_sheet.cell_height' | transloco
+      }}</label>
+      <input
+        #heightField
+        id="sprite-sheet-cell-height"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        required
+        [min]="cellBounds().min"
+        [max]="cellBounds().max"
+        [value]="cellHeight()"
+        [attr.aria-invalid]="!isCellHeightValid()"
+        (input)="cellHeight.set(heightField.valueAsNumber)"
+      />
+    </div>
+    <p id="sprite-sheet-size-hint" class="hint">
+      {{ 'tools.sprite_sheet.size_hint' | transloco: cellBounds() }}
+    </p>
+  </fieldset>
+  <div class="field">
+    <label for="sprite-sheet-duration">{{ 'tools.sprite_sheet.duration' | transloco }}</label>
+    <input
+      #durationField
+      id="sprite-sheet-duration"
+      type="number"
+      inputmode="numeric"
+      step="1"
+      required
+      [min]="durationRange().min"
+      [max]="durationRange().max"
+      [value]="durationMs()"
+      [attr.aria-invalid]="!isDurationValid()"
+      (input)="durationMs.set(durationField.valueAsNumber)"
+    />
+    <p class="hint">{{ 'tools.sprite_sheet.duration_hint' | transloco: durationRange() }}</p>
+  </div>
+  <div class="actions">
+    <button type="button" class="secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button type="submit" class="primary" [disabled]="!isValid()">
+      {{ 'tools.sprite_sheet.submit' | transloco }}
+    </button>
+  </div>
+</form>
