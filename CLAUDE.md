@@ -332,6 +332,7 @@ cargo test -p life-pixel-server --features stack-tests  # needs the local stack 
 cargo deny check
 cargo xtask check-boundaries
 cargo xtask build-player --check
+cargo xtask build-desktop --debug
 npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend && npm run i18n:check --prefix frontend
 npm run test:engine --prefix frontend
 npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts
