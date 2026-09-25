@@ -9,10 +9,13 @@ use thiserror::Error;
 /// `core` travel through the service unchanged and stay in `life_pixel_core::error::CODES`.
 pub const CODES: &[&str] = &[
     "document.version_conflict",
+    "draw.too_many_operations",
+    "edit.palette_in_use",
     "library.animation_not_found",
     "library.project_not_found",
     "library.unavailable",
     "library.unsupported_version",
+    "preview.too_large",
     "quota.storage_exceeded",
     "request.malformed",
     "service.unavailable",
