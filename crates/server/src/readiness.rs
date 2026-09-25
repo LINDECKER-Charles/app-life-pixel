@@ -2,8 +2,8 @@
 
 use async_trait::async_trait;
 
-/// Whether the database answers. H3 checks that its address accepts a connection; H4 puts the
-/// pool's check in its place.
+/// Whether the database answers: `database::DatabaseReadiness` runs a query through the pool;
+/// the router tests put a stand-in in its place.
 #[async_trait]
 pub trait Readiness: Send + Sync {
     /// Whether the dependency answers now.

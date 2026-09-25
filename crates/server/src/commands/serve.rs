@@ -7,6 +7,8 @@ use std::time::Duration;
 
 use axum::Router;
 use metrics_exporter_prometheus::{BuildError, PrometheusHandle};
+use object_store::ObjectStore;
+use sqlx::PgPool;
 use thiserror::Error;
 use tokio::net::TcpListener;
 use tokio::sync::watch;
@@ -14,17 +16,21 @@ use tokio::time::MissedTickBehavior;
 
 use crate::app;
 use crate::config::Config;
-use crate::database::{self, DatabaseError, DatabaseProbe};
+use crate::database::{self, DatabaseError, DatabaseReadiness};
 use crate::http::rate_limit::RATE_LIMIT_UPKEEP_PERIOD;
-use crate::state::{AppState, StartError};
+use crate::state::{AppState, Backends, StartError};
+use crate::storage::{self, HostedLibraryStore, ObjectStoreSetupError, Sweeper};
 use crate::telemetry::{self, METRICS_UPKEEP_PERIOD};
 
 /// Why the server stopped.
 #[derive(Debug, Error)]
 pub enum ServeError {
-    /// The migrations failed.
+    /// The database does not answer, or the migrations failed.
     #[error(transparent)]
     Database(#[from] DatabaseError),
+    /// The object storage cannot be set up.
+    #[error(transparent)]
+    Objects(#[from] ObjectStoreSetupError),
     /// The metrics recorder could not be installed.
     #[error("the metrics recorder cannot be installed: {0}")]
     Metrics(#[from] BuildError),
@@ -54,14 +60,17 @@ pub enum ServeError {
 ///
 /// # Errors
 ///
-/// When the database does not answer, the state cannot be built, or a listener fails.
+/// When the database does not answer, the object storage cannot be set up, the state cannot be
+/// built, or a listener fails.
 pub async fn serve(config: Config) -> Result<(), ServeError> {
-    database::migrate(&config.database).await?;
-    let readiness = Arc::new(DatabaseProbe::new(&config.database));
+    let (pool, objects) = open_storage(&config).await?;
     let metrics = telemetry::recorder()?;
+    storage::metrics::describe();
+    let backends = backends(&pool, Arc::clone(&objects));
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
-    let state = AppState::new(config, readiness)?;
+    let state = AppState::new(config, backends)?;
     spawn_upkeep(&state, metrics.clone());
+    storage::spawn_upkeep(pool.clone(), Sweeper::new(pool, objects));
     let stop = stop_signal();
     let [public, private, admin] = addresses;
     tokio::try_join!(
@@ -71,6 +80,22 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     )?;
     tracing::info!("stopped");
     Ok(())
+}
+
+/// The migrated database's pool, and the object storage.
+async fn open_storage(config: &Config) -> Result<(PgPool, Arc<dyn ObjectStore>), ServeError> {
+    let pool = database::connect(&config.database).await?;
+    database::migrate(&pool).await?;
+    let objects = storage::object_store(&config.storage)?;
+    Ok((pool, objects))
+}
+
+/// The backends of the database of `pool` and the documents of `objects`.
+fn backends(pool: &PgPool, objects: Arc<dyn ObjectStore>) -> Backends {
+    Backends {
+        readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
+        library_store: Arc::new(HostedLibraryStore::new(pool.clone(), objects)),
+    }
 }
 
 async fn listen(
