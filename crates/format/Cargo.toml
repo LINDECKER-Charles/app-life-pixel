@@ -1,0 +1,16 @@
+[package]
+name = "life-pixel-format"
+description = "The versioned binary format of a compiled Life Pixel animation, with its no_std decoder"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "MIT"
+
+[features]
+# The encoder, which allocates; the decoder never does.
+encode = []
+
+[lints]
+workspace = true
