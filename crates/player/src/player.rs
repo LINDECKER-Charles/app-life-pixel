@@ -99,8 +99,8 @@ impl Player {
         self.animation().map_or(0, Animation::frame_address)
     }
 
-    /// `tick`: advances playback by `elapsed_ms`; returns [`FRAME_CHANGED`](crate::FRAME_CHANGED)
-    /// and [`RANGE_ENDED`](crate::RANGE_ENDED).
+    /// `tick`: advances playback by `elapsed_ms`; returns [`FRAME_CHANGED`](crate::FRAME_CHANGED),
+    /// [`RANGE_ENDED`](crate::RANGE_ENDED) and [`RANGE_STOPPED`](crate::RANGE_STOPPED).
     pub fn tick(&mut self, elapsed_ms: u32) -> u32 {
         self.animation_mut()
             .map_or(0, |animation| animation.tick(elapsed_ms))
