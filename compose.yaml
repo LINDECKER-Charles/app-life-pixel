@@ -1,0 +1,25 @@
+name: life-pixel
+
+services:
+  # H0 — Postgres, shared by every environment.
+  postgres:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    environment:
+      POSTGRES_PASSWORD: ${LP_POSTGRES_PASSWORD:?}
+      LP_DB_PASSWORD: ${LP_DB_PASSWORD:?}
+      LPA_DB_PASSWORD: ${LPA_DB_PASSWORD:?}
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/postgres/init.sh:/docker-entrypoint-initdb.d/10-life-pixel.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { memory: 512M }
+    restart: unless-stopped
+
+volumes:
+  pgdata:

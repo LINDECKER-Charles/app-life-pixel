@@ -1,0 +1,36 @@
+services:
+  postgres:
+    ports: ["127.0.0.1:5460:5432"]
+
+  # H0 — S3-compatible object storage for local development.
+  objectstore:
+    image: adobe/s3mock@sha256:ab01a6946750f451ca215a47e91030695b260e4003b8a5a6201d25029b8fca92
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: life-pixel-local
+    ports: ["127.0.0.1:5461:9090"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:9090/"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { memory: 512M }
+    restart: unless-stopped
+
+  # H0 — mail catcher with an HTTP API for local development.
+  mail:
+    image: axllent/mailpit@sha256:74d609a42ec279aa63c6b4622a6fa9b5408d1ad5b1d76a1c4be40a265ce0863d
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "1"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "1"
+    ports: ["127.0.0.1:5462:1025", "127.0.0.1:5463:8025"]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8025/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { memory: 128M }
+    restart: unless-stopped

@@ -98,6 +98,21 @@ npm run i18n:check --prefix frontend              # the catalogues of i18n/
 npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
 ```
 
+### Local stack
+
+Start it:
+
+```shell
+cp .env.example .env
+docker compose up -d --wait
+```
+
+Reset it, dropping all of its data:
+
+```shell
+docker compose down -v
+```
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
