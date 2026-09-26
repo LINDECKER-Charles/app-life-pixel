@@ -65,6 +65,10 @@ async function choose(fixture: ComponentFixture<SettingsPage>, selector: string)
   await fixture.whenStable();
 }
 
+function checkedTheme(fixture: ComponentFixture<SettingsPage>): string | undefined {
+  return fixture.nativeElement.querySelector('input[name="theme"]:checked')?.value;
+}
+
 describe('SettingsPage', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
@@ -84,16 +88,36 @@ describe('SettingsPage', () => {
     expect(TestBed.inject(DOCUMENT).documentElement.lang).toBe('fr');
   });
 
-  it('applies the theme chosen to the whole page', async () => {
+  it('applies the theme chosen to the whole page, without reloading it', async () => {
     const fixture = await openSettings();
     const root = TestBed.inject(DOCUMENT).documentElement;
+    const heading = fixture.nativeElement.querySelector('h1');
     expect(root.dataset['theme']).toBe('system');
 
     await choose(fixture, 'input[name="theme"][value="dark"]');
     expect(root.dataset['theme']).toBe('dark');
+    expect(checkedTheme(fixture)).toBe('dark');
 
     await choose(fixture, 'input[name="theme"][value="light"]');
     expect(root.dataset['theme']).toBe('light');
+    expect(checkedTheme(fixture)).toBe('light');
+    // The same page stays on screen: nothing was reloaded or rebuilt.
+    expect(fixture.nativeElement.querySelector('h1')).toBe(heading);
+  });
+
+  it('groups the settings by purpose, each theme card with its hint', async () => {
+    const fixture = await openSettings();
+    const page: HTMLElement = fixture.nativeElement;
+
+    expect(Array.from(page.querySelectorAll('h2'), (h2) => h2.textContent?.trim())).toEqual([
+      en['settings.language.label'],
+      'Appearance',
+      en['settings.motion.legend'],
+    ]);
+    expect(page.querySelector('main')).toBeNull();
+    const dark = page.querySelector<HTMLInputElement>('input[name="theme"][value="dark"]');
+    const hint = page.querySelector(`#${dark?.getAttribute('aria-describedby')}`);
+    expect(hint?.textContent?.trim()).toBe('Dark surfaces, easy on the eyes at night.');
   });
 
   it('reduces motion, Ionic animations included', async () => {
@@ -197,7 +221,7 @@ describe('SettingsPage on the desktop', () => {
   it('links to the setup of local AI agents (desktop.md, T3)', async () => {
     const fixture = await openDesktopSettings();
 
-    const link = fixture.nativeElement.querySelector('.library-folder a');
+    const link = fixture.nativeElement.querySelector('.agents a');
     expect(link?.getAttribute('href')).toBe('/settings/agents');
   });
 

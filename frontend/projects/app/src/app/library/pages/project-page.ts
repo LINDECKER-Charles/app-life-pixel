@@ -8,10 +8,13 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { ProjectDirectory } from '../actions/project-directory';
 import { toLibraryFailure, type LibraryFailure, type Project } from '../library-types';
 import { AnimationList } from '../lists/animation-list';
+import { Icon } from '../../ui/icon/icon';
+import { StatusBanner } from '../../ui/status-banner/status-banner';
 
 /** What the page knows of its project: still reading, found, or a failure to show. */
 type ProjectLookup =
@@ -24,26 +27,33 @@ const NOT_FOUND: LibraryFailure = { code: 'library.project_not_found', params: {
 /** A project of the library, from `library/projects/:projectId`: its name and its animations. */
 @Component({
   selector: 'lp-project-page',
-  imports: [AnimationList, RouterLink, TranslocoPipe],
+  imports: [AnimationList, Icon, IonContent, RouterLink, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="page">
-      <a routerLink="/library">{{ 'library.project.back' | transloco }}</a>
-      @switch (lookup().kind) {
-        @case ('found') {
-          <h1>{{ name() }}</h1>
-          <lp-animation-list [projectId]="projectId()" />
+    <ion-content>
+      <div class="lp-page">
+        <a class="back" routerLink="/library">
+          <lp-icon name="chevron-left" size="small" />
+          {{ 'library.project.back' | transloco }}
+        </a>
+        @switch (lookup().kind) {
+          @case ('found') {
+            <h1 class="lp-page-header__title">{{ name() }}</h1>
+            <lp-animation-list [projectId]="projectId()" />
+          }
+          @case ('failed') {
+            <h1 class="lp-page-header__title">{{ 'library.title' | transloco }}</h1>
+            <lp-status-banner variant="danger">
+              {{ 'errors.' + failure().code | transloco: failure().params }}
+            </lp-status-banner>
+          }
+          @default {
+            <h1 class="lp-page-header__title">{{ 'library.title' | transloco }}</h1>
+            <p role="status">{{ 'common.loading' | transloco }}</p>
+          }
         }
-        @case ('failed') {
-          <h1>{{ 'library.title' | transloco }}</h1>
-          <p role="alert">{{ 'errors.' + failure().code | transloco: failure().params }}</p>
-        }
-        @default {
-          <h1>{{ 'library.title' | transloco }}</h1>
-          <p role="status">{{ 'common.loading' | transloco }}</p>
-        }
-      }
-    </main>
+      </div>
+    </ion-content>
   `,
   styleUrl: './library-page.scss',
 })

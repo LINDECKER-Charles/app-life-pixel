@@ -1,6 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-/** The library (accounts.md, H8): its projects, its animations, and their actions. */
+/**
+ * The library (accounts.md, H8): its projects, its animations, and their actions — Rename, Move
+ * and Duplicate in each row's "Actions for …" menu, Delete as a separate button.
+ */
 export class LibraryPage {
   readonly animations: Locator;
   readonly projects: Locator;
@@ -40,7 +43,7 @@ export class LibraryPage {
   }
 
   async rename(title: string, newTitle: string): Promise<void> {
-    await this.animations.getByRole('button', { name: `Rename ${title}`, exact: true }).click();
+    await this.chooseAction(title, `Rename ${title}`);
     const alert = this.alert('Rename the animation');
     await alert.getByRole('textbox', { name: 'Title' }).fill(newTitle);
     await alert.getByRole('button', { name: 'Rename', exact: true }).click();
@@ -48,7 +51,7 @@ export class LibraryPage {
   }
 
   async duplicate(title: string): Promise<void> {
-    await this.animations.getByRole('button', { name: `Duplicate ${title}`, exact: true }).click();
+    await this.chooseAction(title, `Duplicate ${title}`);
   }
 
   async delete(title: string): Promise<void> {
@@ -56,6 +59,14 @@ export class LibraryPage {
     const alert = this.alert('Delete this animation?');
     await alert.getByRole('button', { name: 'Delete', exact: true }).click();
     await expect(alert).toBeHidden();
+  }
+
+  /** Opens the actions menu of the animation `title`, then chooses its item named `item`. */
+  async chooseAction(title: string, item: string): Promise<void> {
+    await this.animations
+      .getByRole('button', { name: `Actions for ${title}`, exact: true })
+      .click();
+    await this.animations.getByRole('menuitem', { name: item, exact: true }).click();
   }
 
   /** An Ionic alert the library opens, by its heading. */

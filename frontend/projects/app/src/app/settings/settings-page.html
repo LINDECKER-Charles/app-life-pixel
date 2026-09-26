@@ -1,12 +1,21 @@
 <ion-content>
-  <div class="page">
-    <h1>{{ 'settings.title' | transloco }}</h1>
+  <div class="lp-page lp-page--reading">
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'settings.title' | transloco }}</h1>
+        <p class="lp-page-header__lead">{{ 'settings.lead' | transloco }}</p>
+      </div>
+    </header>
     @if (languages().length > 0) {
-      <div class="field">
-        <label for="settings-language">{{ 'settings.language.label' | transloco }}</label>
+      <section class="lp-card" aria-labelledby="settings-language-heading">
+        <h2 id="settings-language-heading" class="lp-card__title">
+          {{ 'settings.language.label' | transloco }}
+        </h2>
         <select
           #languageField
           id="settings-language"
+          class="lp-input language"
+          aria-labelledby="settings-language-heading"
           (change)="preferences.setLanguage(languageField.value)"
         >
           @for (language of languages(); track language.code) {
@@ -19,58 +28,109 @@
             </option>
           }
         </select>
-      </div>
+      </section>
     }
-    <fieldset class="choices">
-      <legend>{{ 'settings.theme.legend' | transloco }}</legend>
-      @for (choice of themes; track choice.value) {
-        <label class="choice">
-          <input
-            type="radio"
-            name="theme"
-            [value]="choice.value"
-            [checked]="preferences.theme() === choice.value"
-            (change)="preferences.setTheme(choice.value)"
-          />
-          {{ choice.label | transloco }}
-        </label>
-      }
-    </fieldset>
-    <fieldset class="choices">
-      <legend>{{ 'settings.motion.legend' | transloco }}</legend>
-      @for (choice of motions; track choice.value) {
-        <label class="choice">
-          <input
-            type="radio"
-            name="motion"
-            [value]="choice.value"
-            [checked]="preferences.motion() === choice.value"
-            (change)="preferences.setMotion(choice.value)"
-          />
-          {{ choice.label | transloco }}
-        </label>
-      }
-    </fieldset>
+    <section class="lp-card" aria-labelledby="settings-appearance-heading">
+      <h2 id="settings-appearance-heading" class="lp-card__title">
+        {{ 'settings.appearance.heading' | transloco }}
+      </h2>
+      <fieldset class="lp-fieldset">
+        <legend>{{ 'settings.theme.legend' | transloco }}</legend>
+        <div class="themes">
+          @for (choice of themes; track choice.value) {
+            <label class="theme">
+              <input
+                class="theme__input"
+                type="radio"
+                name="theme"
+                [value]="choice.value"
+                [checked]="preferences.theme() === choice.value"
+                [attr.aria-describedby]="'settings-theme-' + choice.value + '-hint'"
+                (change)="preferences.setTheme(choice.value)"
+              />
+              <span class="theme__name">{{ choice.label | transloco }}</span>
+              <span class="theme__hint" [id]="'settings-theme-' + choice.value + '-hint'">
+                {{ choice.hint | transloco }}
+              </span>
+            </label>
+          }
+        </div>
+      </fieldset>
+      <p class="note">{{ 'settings.theme.canvas_note' | transloco }}</p>
+    </section>
+    <section class="lp-card" aria-labelledby="settings-motion-heading">
+      <h2 id="settings-motion-heading" class="lp-card__title">
+        {{ 'settings.motion.legend' | transloco }}
+      </h2>
+      <fieldset class="lp-fieldset" aria-labelledby="settings-motion-heading">
+        @for (choice of motions; track choice.value) {
+          <label class="lp-check">
+            <input
+              type="radio"
+              name="motion"
+              [value]="choice.value"
+              [checked]="preferences.motion() === choice.value"
+              (change)="preferences.setMotion(choice.value)"
+            />
+            {{ choice.label | transloco }}
+          </label>
+        }
+      </fieldset>
+    </section>
     @if (desktop) {
-      <div class="field library-folder">
-        <h2>{{ 'settings.library_folder.legend' | transloco }}</h2>
-        <p>{{ 'settings.library_folder.hint' | transloco }}</p>
-        @if (platformInfo(); as info) {
-          <p class="current-path">{{ info.libraryPath }}</p>
-        }
-        <button type="button" (click)="chooseLibraryFolder()">
-          {{ 'settings.library_folder.choose' | transloco }}
-        </button>
-        @if (platformInfo(); as info) {
-          <p class="platform-info">
-            {{ 'platform.version' | transloco: { version: info.version, os: info.os } }}
-          </p>
-        }
-        <a routerLink="/settings/agents">{{ 'mcp.agents.link' | transloco }}</a>
-      </div>
+      <section class="lp-card library-folder" aria-labelledby="settings-folder-heading">
+        <h2 id="settings-folder-heading" class="lp-card__title">
+          {{ 'settings.library_folder.legend' | transloco }}
+        </h2>
+        <div class="lp-stack">
+          <p>{{ 'settings.library_folder.hint' | transloco }}</p>
+          @if (platformInfo(); as info) {
+            <p class="path">{{ info.libraryPath }}</p>
+          }
+          <div class="lp-cluster">
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="chooseLibraryFolder()"
+            >
+              {{ 'settings.library_folder.choose' | transloco }}
+            </button>
+          </div>
+          @if (platformInfo(); as info) {
+            <p class="note">
+              {{ 'platform.version' | transloco: { version: info.version, os: info.os } }}
+            </p>
+          }
+        </div>
+      </section>
+      <section class="lp-card agents" aria-labelledby="settings-agents-heading">
+        <h2 id="settings-agents-heading" class="lp-card__title">
+          {{ 'mcp.agents.title' | transloco }}
+        </h2>
+        <div class="lp-stack">
+          <p>{{ 'settings.agents.hint' | transloco }}</p>
+          <div class="lp-cluster">
+            <a class="lp-button lp-button--secondary" routerLink="/settings/agents">
+              {{ 'mcp.agents.link' | transloco }}
+            </a>
+          </div>
+        </div>
+      </section>
     }
     @if (account()) {
-      <a routerLink="/settings/tokens">{{ 'tokens.title' | transloco }}</a>
+      <section class="lp-card tokens" aria-labelledby="settings-tokens-heading">
+        <h2 id="settings-tokens-heading" class="lp-card__title">
+          {{ 'mcp.agents.title' | transloco }}
+        </h2>
+        <div class="lp-stack">
+          <p>{{ 'tokens.intro' | transloco }}</p>
+          <div class="lp-cluster">
+            <a class="lp-button lp-button--secondary" routerLink="/settings/tokens">
+              {{ 'tokens.title' | transloco }}
+            </a>
+          </div>
+        </div>
+      </section>
     }
   </div>
 </ion-content>

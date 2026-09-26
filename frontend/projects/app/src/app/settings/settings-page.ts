@@ -14,10 +14,15 @@ interface Choice<Value> {
   readonly label: string;
 }
 
-const THEME_CHOICES: readonly Choice<ThemePreference>[] = [
-  { value: 'system', label: 'settings.theme.system' },
-  { value: 'light', label: 'settings.theme.light' },
-  { value: 'dark', label: 'settings.theme.dark' },
+/** A theme to choose: its label's and its hint's i18n keys. */
+interface ThemeChoice extends Choice<ThemePreference> {
+  readonly hint: string;
+}
+
+const THEME_CHOICES: readonly ThemeChoice[] = [
+  { value: 'system', label: 'settings.theme.system', hint: 'settings.theme.system_hint' },
+  { value: 'light', label: 'settings.theme.light', hint: 'settings.theme.light_hint' },
+  { value: 'dark', label: 'settings.theme.dark', hint: 'settings.theme.dark_hint' },
 ];
 
 const MOTION_CHOICES: readonly Choice<MotionPreference>[] = [
@@ -25,7 +30,11 @@ const MOTION_CHOICES: readonly Choice<MotionPreference>[] = [
   { value: 'reduce', label: 'settings.motion.reduce' },
 ];
 
-/** Language, theme and motion, each applied as soon as it is chosen. */
+/**
+ * Settings grouped by purpose (design-system/docs/journeys.md, §7): language, appearance, motion
+ * — each applied as soon as it is chosen, without reloading —, then the desktop's library folder
+ * and agents, or a signed-in account's access tokens.
+ */
 @Component({
   selector: 'lp-settings-page',
   imports: [IonContent, RouterLink, TranslocoPipe],

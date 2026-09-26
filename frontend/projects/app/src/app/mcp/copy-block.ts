@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { Icon } from '../ui/icon/icon';
 import { Clipboard } from './clipboard';
 
 /** Where copying stands: not yet, done, or refused by the system. */
@@ -8,18 +9,23 @@ type CopyStatus = 'idle' | 'copied' | 'failed';
 /** A text to paste elsewhere — a command, a configuration —, shown whole with a copy button. */
 @Component({
   selector: 'lp-copy-block',
-  imports: [TranslocoPipe],
+  imports: [Icon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <pre><code>{{ text() }}</code></pre>
     <div class="actions">
-      <button type="button" (click)="copy()">{{ copyLabel() | transloco }}</button>
-      <span role="status">
+      <button type="button" class="lp-button lp-button--secondary" (click)="copy()">
+        <lp-icon name="copy" />
+        {{ copyLabel() | transloco }}
+      </button>
+      <span class="status" role="status">
         @switch (status()) {
           @case ('copied') {
+            <span class="copied"><lp-icon name="check" size="small" /></span>
             {{ 'mcp.agents.copied' | transloco }}
           }
           @case ('failed') {
+            <span class="failed"><lp-icon name="error" size="small" /></span>
             {{ 'mcp.agents.copy_failed' | transloco }}
           }
         }
@@ -36,17 +42,31 @@ type CopyStatus = 'idle' | 'copied' | 'failed';
       padding: var(--lp-space-3);
       margin: 0;
       overflow-x: auto;
+      font-family: var(--lp-font-family-mono);
       font-size: var(--lp-font-size-small);
       white-space: pre-wrap;
       overflow-wrap: anywhere;
-      background: var(--lp-color-surface);
-      border: 1px solid var(--lp-color-border);
-      border-radius: var(--lp-radius-small);
+      background: var(--lp-color-surface-soft);
+      border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+      border-radius: var(--lp-radius-medium);
     }
     .actions {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: var(--lp-space-3);
+    }
+    .status {
+      display: inline-flex;
+      gap: var(--lp-space-1);
+      align-items: center;
+      font-size: var(--lp-font-size-small);
+    }
+    .copied {
+      color: var(--lp-color-success);
+    }
+    .failed {
+      color: var(--lp-color-danger);
     }
   `,
 })

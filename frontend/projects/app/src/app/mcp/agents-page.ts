@@ -1,7 +1,10 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { PlatformService, type PlatformInfo } from '../platform/platform';
+import { Icon } from '../ui/icon/icon';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import { claudeCommand, mcpServersEntry } from './agent-setup';
 import { CopyBlock } from './copy-block';
 
@@ -27,7 +30,7 @@ const ABILITIES = [
  */
 @Component({
   selector: 'lp-agents-page',
-  imports: [CopyBlock, IonContent, TranslocoPipe],
+  imports: [CopyBlock, Icon, IonContent, RouterLink, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './agents-page.html',
   styleUrl: './agents-page.scss',
