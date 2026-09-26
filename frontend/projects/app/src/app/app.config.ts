@@ -16,14 +16,10 @@ import { API_HEADERS, SESSION_EVENTS, provideI18n, sessionInterceptor } from 'sh
 import { AccountMenu } from './account/account-menu';
 import { SessionStore } from './account/session-store';
 import { routes } from './app.routes';
-import { HostedExportObserver } from './events/hosted-export-observer';
-import { EXPORT_OBSERVER } from './export/export-observer';
 import { LegalLinks } from './legal/legal-links';
-import { HttpLibraryStore } from './library/http/http-library-store';
-import { LIBRARY_STORE } from './library/library-store';
-import { PreferencesStore } from './settings/preferences-store';
+import { isDesktop } from './platform/platform';
+import { providePlatform } from './platform/provide-platform';
 import { provideAppearance } from './settings/provide-appearance';
-import { WebPreferencesStore } from './settings/web-preferences-store';
 import { ACCOUNT_MENU_SLOT } from './shell/account-menu-slot';
 import { FOOTER_SLOT } from './shell/footer-slot';
 import { TranslatedTitleStrategy } from './shell/translated-title-strategy';
@@ -39,11 +35,12 @@ export const appConfig: ApplicationConfig = {
     { provide: TitleStrategy, useClass: TranslatedTitleStrategy },
     provideHttpClient(withFetch(), withInterceptors([sessionInterceptor])),
     provideI18n(),
-    { provide: PreferencesStore, useClass: WebPreferencesStore },
+    providePlatform(),
     provideAppearance(),
     provideUnsavedWorkGuard(),
-    { provide: FOOTER_SLOT, useValue: LegalLinks },
-    { provide: ACCOUNT_MENU_SLOT, useValue: AccountMenu },
+    // No footer or account menu on the desktop (desktop.md, T2): no legal links, no account at all.
+    ...(isDesktop() ? [] : [{ provide: FOOTER_SLOT, useValue: LegalLinks }]),
+    ...(isDesktop() ? [] : [{ provide: ACCOUNT_MENU_SLOT, useValue: AccountMenu }]),
     { provide: API_HEADERS, useFactory: () => inject(SessionStore).csrfHeader, multi: true },
     {
       provide: SESSION_EVENTS,
@@ -56,9 +53,7 @@ export const appConfig: ApplicationConfig = {
       },
       multi: true,
     },
-    // The hosted app's start-up load; T2 will guard this one call for the desktop, which never runs it.
-    provideAppInitializer(() => inject(SessionStore).load()),
-    { provide: EXPORT_OBSERVER, useClass: HostedExportObserver },
-    { provide: LIBRARY_STORE, useExisting: HttpLibraryStore },
+    // The hosted app's start-up load; SessionStore.load() never runs on the desktop (desktop.md, T2).
+    provideAppInitializer(() => (isDesktop() ? undefined : inject(SessionStore).load())),
   ],
 };
