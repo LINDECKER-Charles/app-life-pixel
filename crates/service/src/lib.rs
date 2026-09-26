@@ -19,6 +19,7 @@ pub mod paging;
 pub mod plans;
 pub mod ports;
 pub mod quota;
+pub mod support;
 
 #[cfg(feature = "testing")]
 pub mod memory;
