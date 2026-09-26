@@ -10,7 +10,7 @@ interface ActionKeys {
   readonly messageKey: string;
   readonly confirmKey: string;
   readonly doneKey: string;
-  /** Whether the admin API records a reason for it: the export's route takes none (H10). */
+  /** Whether the admin API records a reason for it: every action does, export included (H10). */
   readonly needsReason: boolean;
 }
 
@@ -37,7 +37,7 @@ export const USER_ACTIONS: Readonly<Record<UserAction, ActionKeys>> = {
     messageKey: 'admin.user.export.message',
     confirmKey: 'admin.user.export.confirm',
     doneKey: 'admin.user.export.done',
-    needsReason: false,
+    needsReason: true,
   },
   delete: {
     labelKey: 'admin.user.delete.label',

@@ -110,7 +110,7 @@ export class UserPage {
 
   private async run(action: UserAction, user: AdminUserDetail, reason: string): Promise<void> {
     if (action === 'export') {
-      const file = await this.api.export(user.id);
+      const file = await this.api.export(user.id, reason);
       this.saver.save(file.blob, file.fileName ?? `life-pixel-export-${user.id}.zip`);
       return;
     }

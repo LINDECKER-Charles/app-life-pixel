@@ -1,4 +1,10 @@
-import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpHeaders,
+  HttpParams,
+  HttpResponse,
+} from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ApiProblem } from 'shared';
 import { firstValueFrom } from 'rxjs';
@@ -91,7 +97,7 @@ export class AdminClient {
     return (answer ?? undefined) as ResponseOf<Operation<P, M>>;
   }
 
-  /** Downloads the file `GET path` answers, such as a user's export or a screenshot. */
+  /** Downloads the file `GET path` answers, such as a screenshot. */
   async download<P extends PathsWith<'get'>>(
     path: P,
     parameters: Readonly<Record<string, string>>,
@@ -100,7 +106,24 @@ export class AdminClient {
       observe: 'response',
       responseType: 'blob',
     });
-    const response = await this.settle(firstValueFrom(request));
+    return this.toDownloadedFile(await this.settle(firstValueFrom(request)));
+  }
+
+  /** Downloads the file `POST path` answers, sending the session's CSRF token and `options`' body: a user's export. */
+  async downloadPost<P extends PathsWith<'post'>>(
+    path: P,
+    ...[options]: OptionsArgument<Operation<P, 'post'>>
+  ): Promise<DownloadedFile> {
+    const raw = (options ?? {}) as RawOptions;
+    const request = this.http.post(expandPath(path, raw.path), raw.body, {
+      headers: this.headersFor('post'),
+      observe: 'response',
+      responseType: 'blob',
+    });
+    return this.toDownloadedFile(await this.settle(firstValueFrom(request)));
+  }
+
+  private toDownloadedFile(response: HttpResponse<Blob>): DownloadedFile {
     const blob = response.body ?? new Blob([]);
     return { blob, fileName: fileNameOf(response.headers.get('Content-Disposition')) };
   }
