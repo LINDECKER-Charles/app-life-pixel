@@ -1,0 +1,249 @@
+name: Release
+# T4 (desktop.md): on a `v*.*.*` tag, builds and signs the desktop installers for Windows, macOS
+# and Linux, publishes `@life-pixel/player` and the Docker version tags, then turns the draft
+# GitHub Release into a published one with provenance attestations on every installer. By hand,
+# `dry_run` (the default) builds and signs everything without publishing anything, for a
+# rehearsal; setting it to `false` from an existing tag's ref republishes that tag, for recovery.
+# Every job that publishes runs in the `release` environment (D32), which requires the
+# maintainer's approval and holds the signing material devops.md's "Release" section lists.
+# Android is left out until M6 (docs/v1/desktop.md, T4).
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and sign every artifact without publishing anything
+        type: boolean
+        default: true
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  # Job-level `if:` cannot read `env:` (only `github`, `inputs`, `needs`, `vars`), so this job
+  # turns the dispatch input into an output every other job's `if:` and `env:` can read.
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    permissions: {}
+    outputs:
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - name: Show the plan
+        run: echo "dry run = ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}"
+
+  # The desktop matrix: macOS (universal binary), Windows and Ubuntu 22.04. Each leg builds its
+  # own editor engine and sidecar, then `tauri-apps/tauri-action` builds and signs the app with
+  # both config overlays (`bundle.conf.json` for the sidecar, `release.conf.json` for the
+  # updater artifacts), publishing a draft release with `latest.json` unless this run is a dry
+  # run, in which case the installers are kept as a workflow artifact instead.
+  desktop:
+    name: Desktop (${{ matrix.os }})
+    needs: plan
+    runs-on: ${{ matrix.os }}
+    environment: release
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: universal-apple-darwin
+            args: --target universal-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            args: ""
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            args: ""
+    env:
+      DRY_RUN: ${{ needs.plan.outputs.dry_run }}
+      # Read by tauri-plugin-updater's registration (option_env!, desktop.md) and by the CLI's
+      # own updater-artifact signing.
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+      LP_UPDATER_PUBKEY: ${{ secrets.TAURI_UPDATER_PUBKEY }}
+      # Not secret: where every build checks for updates, computed so a fork's release checks its
+      # own releases.
+      LP_UPDATER_ENDPOINT: ${{ github.server_url }}/${{ github.repository }}/releases/latest/download/latest.json
+      # Read by tauri-bundler's macOS signing and notarisation (docs/decisions.md, D32).
+      APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+      APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      APPLE_ID: ${{ secrets.APPLE_ID }}
+      APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Tauri's system packages
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev
+      - name: Install the pinned toolchain
+        run: |
+          rustup toolchain install
+          rustup show
+      - name: Add both macOS targets
+        if: matrix.os == 'macos-14'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: release-${{ matrix.target }}
+      - name: Install the wasm-bindgen of Cargo.lock
+        shell: bash
+        run: |
+          version="$(cargo pkgid --locked wasm-bindgen)"
+          cargo install wasm-bindgen-cli --version "${version##*@}" --locked
+      - name: Build the editor's engine
+        run: cargo xtask build-editor
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install the front-end
+        run: npm ci --prefix frontend
+      - name: Install the Tauri CLI
+        run: cargo install tauri-cli --version ^2 --locked
+      - name: Build the sidecar
+        run: cargo xtask build-sidecar --target ${{ matrix.target }}
+      # D32: the Windows signing service is chosen at M5; until then this stays empty and the
+      # Windows installer builds unsigned. `signCommand` runs whichever CLI the chosen service
+      # needs, so both a cloud HSM and Azure Trusted Signing fit without a code change.
+      - name: Configure the Windows signing command
+        if: matrix.os == 'windows-latest' && env.WINDOWS_SIGN_COMMAND != ''
+        shell: bash
+        env:
+          WINDOWS_SIGN_COMMAND: ${{ secrets.WINDOWS_SIGN_COMMAND }}
+        run: |
+          jq --arg cmd "$WINDOWS_SIGN_COMMAND" '.bundle.windows.signCommand = $cmd' \
+            tauri/release.conf.json > tauri/release.conf.json.tmp
+          mv tauri/release.conf.json.tmp tauri/release.conf.json
+      - name: Build and publish the desktop app
+        uses: tauri-apps/tauri-action@1deb371b0cd8bd54025b384f1cd735e725c4060f # v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: tauri
+          tauriScript: cargo tauri
+          args: --config bundle.conf.json --config release.conf.json ${{ matrix.args }}
+          tagName: ${{ env.DRY_RUN == 'true' && '' || github.ref_name }}
+          releaseName: ${{ env.DRY_RUN == 'true' && '' || format('Life Pixel {0}', github.ref_name) }}
+          releaseDraft: true
+          includeUpdaterJson: true
+      - name: Keep the installers of a dry run
+        if: env.DRY_RUN == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: installers-${{ matrix.target }}
+          path: |
+            target/*/release/bundle/**
+            target/release/bundle/**
+          if-no-files-found: ignore
+
+  # Checks that player-js's committed build is current, then publishes it through trusted
+  # publishing: no token, `id-token: write` proves the identity to npm.
+  npm:
+    name: npm
+    if: needs.plan.outputs.dry_run != 'true'
+    needs: [plan, desktop]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: player-js
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+          cache: npm
+          cache-dependency-path: player-js/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Check that the committed build is current
+        run: git diff --exit-code -- life-pixel.js
+      - name: Publish
+        run: npm publish --provenance --access public
+
+  # Tags the `app` and `admin` images already built for this commit (H14's _build.yml) as
+  # :vX.Y.Z and :latest, without rebuilding them.
+  docker:
+    name: Docker
+    if: needs.plan.outputs.dry_run != 'true'
+    needs: [plan, desktop]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      packages: write
+    steps:
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Tag :<sha> as the version and :latest
+        env:
+          SHA: ${{ github.sha }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          for image in app admin; do
+            repository="ghcr.io/lindecker-charles/life-pixel/$image"
+            docker buildx imagetools create --tag "$repository:$VERSION" --tag "$repository:latest" \
+              "$repository:$SHA"
+          done
+
+  # Provenance attestations on the installers the desktop job published to the draft release.
+  attest:
+    name: Attest
+    if: needs.plan.outputs.dry_run != 'true'
+    needs: [plan, desktop]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download the installers from the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir installers --skip-existing
+      - name: Attest the provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: installers/*
+
+  # Once every publishing job has passed, the draft release becomes the release.
+  publish:
+    name: Publish the release
+    if: needs.plan.outputs.dry_run != 'true'
+    needs: [plan, desktop, npm, docker, attest]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Publish the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false
