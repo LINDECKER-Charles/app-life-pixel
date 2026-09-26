@@ -2042,7 +2042,7 @@
       }
     },
     "/internal/admin/v1/users/{id}/export": {
-      "get": {
+      "post": {
         "operationId": "exportUser",
         "parameters": [
           {
@@ -2056,6 +2056,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -2104,6 +2114,16 @@
               }
             },
             "description": "`admin.user_not_found`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`admin.reason_length`, with `min` and `max`"
           }
         },
         "summary": "The data of the account `id`: the zip of `GET /api/v1/account/export`.",
