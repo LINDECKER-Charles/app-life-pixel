@@ -1,0 +1,28 @@
+/* Shared by every account form page: sign-in, sign-up, verification and password reset. */
+
+.page {
+  max-width: 28rem;
+  padding: var(--lp-space-6) var(--lp-space-4);
+  margin-inline: auto;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-4);
+}
+
+.banner {
+  padding: var(--lp-space-3);
+  border: 1px solid var(--ion-color-danger, #c00);
+  border-radius: var(--lp-radius-2, 4px);
+}
+
+.hint {
+  margin-block-start: calc(var(--lp-space-3) * -1);
+  font-size: var(--lp-font-size-small, 0.875rem);
+}
+
+.legal a {
+  margin-inline-end: var(--lp-space-3);
+}

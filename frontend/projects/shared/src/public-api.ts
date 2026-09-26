@@ -2,11 +2,15 @@
  * Public API Surface of shared: one export per line.
  */
 
+export * from './lib/api/account-api';
 export * from './lib/api/api-client';
 export * from './lib/api/api-headers';
 export * from './lib/api/api-problem';
 export * from './lib/api/api-types';
+export * from './lib/api/auth-api';
 export type * from './lib/api/schema';
+export * from './lib/api/session-events';
+export * from './lib/api/session-interceptor';
 export * from './lib/appearance/appearance';
 export * from './lib/appearance/apply-appearance';
 export * from './lib/i18n/available-languages';

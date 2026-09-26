@@ -88,6 +88,14 @@ module.exports = defineConfig([
     rules: restrictedImports(engineTestingImports),
   },
   {
+    // account/testing/ is test-only infrastructure (accounts.md, H7): every account page's spec
+    // needs the same session and i18n catalogue bootstrap, so it lives here once instead of
+    // duplicated per spec file.
+    files: ['**/account/testing/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: restrictedImports(engineTestingImports),
+  },
+  {
     files: ['**/engine/testing/**/*.ts'],
     ignores: ['**/*.spec.ts'],
     rules: restrictedImports(httpImports),

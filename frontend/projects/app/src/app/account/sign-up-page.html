@@ -1,0 +1,63 @@
+<main class="page">
+  <h1>{{ 'auth.sign_up.title' | transloco }}</h1>
+  <form novalidate (submit)="submit($event)">
+    @if (form.of('form'); as error) {
+      <p #formBanner class="banner" role="alert" tabindex="-1">
+        {{ 'errors.' + error.code | transloco: error.params }}
+      </p>
+    }
+    <ion-input
+      #emailField
+      [label]="'auth.sign_up.email_label' | transloco"
+      labelPlacement="stacked"
+      type="email"
+      autocomplete="email"
+      [attr.maxlength]="limits.emailMaxChars"
+      [value]="email()"
+      [errorText]="errorText('email')"
+      [class.ion-invalid]="!!form.of('email')"
+      [class.ion-touched]="!!form.of('email')"
+      (ionInput)="onEmailInput($event)"
+    />
+    <lp-password-field
+      #passwordField
+      [label]="'auth.sign_up.password_label' | transloco"
+      autocomplete="new-password"
+      [maxChars]="limits.passwordMaxChars"
+      [value]="password()"
+      [errorText]="errorText('password')"
+      (valueChange)="password.set($event)"
+    />
+    <p class="hint">
+      {{
+        'auth.sign_up.password_hint'
+          | transloco: { min: limits.passwordMinChars, max: limits.passwordMaxChars }
+      }}
+    </p>
+    <ion-select
+      [label]="'auth.sign_up.language_label' | transloco"
+      labelPlacement="stacked"
+      interface="popover"
+      [value]="language()"
+      (ionChange)="onLanguageChange($event)"
+    >
+      @for (item of languages(); track item.code) {
+        <ion-select-option [value]="item.code">{{ item.name }}</ion-select-option>
+      }
+    </ion-select>
+    <p class="legal">
+      {{ 'auth.sign_up.legal_intro' | transloco }}
+      <a routerLink="/legal/terms">{{ 'legal.footer.terms' | transloco }}</a>
+      <a routerLink="/legal/privacy">{{ 'legal.footer.privacy' | transloco }}</a>
+    </p>
+    <button type="submit" class="primary" [disabled]="pending()">
+      {{ 'auth.sign_up.submit' | transloco }}
+    </button>
+  </form>
+  <p>
+    {{ 'auth.sign_up.has_account' | transloco }}
+    <a routerLink="/sign-in" [queryParams]="{ returnUrl: returnUrl() }">
+      {{ 'auth.sign_up.sign_in_link' | transloco }}
+    </a>
+  </p>
+</main>
