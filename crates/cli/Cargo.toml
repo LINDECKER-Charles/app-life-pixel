@@ -1,0 +1,39 @@
+[package]
+name = "life-pixel-cli"
+description = "The life-pixel binary: MCP over stdio on the local library, list and export"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "AGPL-3.0-only"
+
+[[bin]]
+name = "life-pixel"
+path = "src/main.rs"
+
+[dependencies]
+async-trait.workspace = true
+clap.workspace = true
+dirs.workspace = true
+life-pixel-compiler.workspace = true
+life-pixel-mcp.workspace = true
+life-pixel-service.workspace = true
+rmcp = { workspace = true, features = ["server", "transport-io"] }
+schemars.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+time = { workspace = true, features = ["formatting"] }
+tokio = { workspace = true, features = ["io-std", "macros", "rt-multi-thread"] }
+thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber = { workspace = true, features = ["fmt", "std"] }
+uuid.workspace = true
+
+[dev-dependencies]
+life-pixel-service = { workspace = true, features = ["testing"] }
+rmcp = { workspace = true, features = ["client", "server", "transport-child-process", "transport-io"] }
+tempfile.workspace = true
+
+[lints]
+workspace = true

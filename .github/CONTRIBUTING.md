@@ -265,6 +265,29 @@ try the app, so that it leaves your library alone. The icons come from the pixel
 `cargo tauri icon icons/source.png` in `tauri/`, then delete what it makes for mobile and the
 Windows Store — `android/`, `ios/`, `Square*Logo.png`, `StoreLogo.png`.
 
+### CLI
+
+`crates/cli` is `life-pixel-cli`, the `life-pixel` binary: `mcp`, `list` and `export` on a local
+library folder, with `service` in-process, no server involved.
+
+```shell
+cargo run -p life-pixel-cli -- mcp --allow-dir <dir>   # serves crates/mcp's tools over stdio
+cargo run -p life-pixel-cli -- list --json             # the library's animations
+cargo run -p life-pixel-cli -- export <id> --format gif # writes its files, prints their paths
+```
+
+`--library` chooses the library folder of a command, then `LIFE_PIXEL_LIBRARY`, then the OS
+documents folder: set one of the two to a temporary folder when you try the CLI by hand, so that
+it leaves your own library alone. `mcp`'s `--allow-dir` widens where an `export` call started by a
+model may write, beyond the working directory it already may; a symbolic link target is refused
+outright, and an existing file needs the call's own `overwrite`. Messages are French when
+`LC_ALL`, `LC_MESSAGES` or `LANG` starts with `fr`, English otherwise.
+
+```shell
+cargo test -p life-pixel-cli
+cargo clippy -p life-pixel-cli --all-targets -- -D warnings
+```
+
 ## Code conventions
 
 The full conventions live in [AGENTS.md](../AGENTS.md) (identical to `CLAUDE.md`). The
