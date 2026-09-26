@@ -53,6 +53,10 @@ CLI, so that a local agent reaches the same library over stdio.
   `cargo build --workspace` needs neither the sidecar nor a key, nor — in debug, where Tauri
   embeds no assets — the front-end build; if Tauri's context macro still requires `frontendDist`
   to exist, T1 makes that hold without building the app.
+- The CSP allows no `'unsafe-eval'`, only `'wasm-unsafe-eval'` for the engine: nothing in the
+  front end may evaluate code. ICU messages are therefore formatted by the shared i18n's
+  `IcuTranspiler`, which walks `@messageformat/parser`'s syntax tree with `Intl`, not by
+  `@messageformat/core`, whose compiled messages need `new Function`.
 - From T1 on, CI's `rust` job installs Tauri's Linux system packages (WebKitGTK and its
   companions), since `cargo clippy --workspace` and `cargo test --workspace` now compile
   `tauri/`; on macOS and Windows, the system provides the webview.

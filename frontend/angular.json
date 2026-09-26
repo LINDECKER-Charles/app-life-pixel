@@ -23,7 +23,7 @@
           "options": {
             "browser": "projects/app/src/main.ts",
             "tsConfig": "projects/app/tsconfig.app.json",
-            "allowedCommonJsDependencies": ["@messageformat/core"],
+            "allowedCommonJsDependencies": ["@messageformat/parser"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {
@@ -158,7 +158,7 @@
           "options": {
             "browser": "projects/admin/src/main.ts",
             "tsConfig": "projects/admin/tsconfig.app.json",
-            "allowedCommonJsDependencies": ["@messageformat/core"],
+            "allowedCommonJsDependencies": ["@messageformat/parser"],
             "inlineStyleLanguage": "scss",
             "assets": [
               {
