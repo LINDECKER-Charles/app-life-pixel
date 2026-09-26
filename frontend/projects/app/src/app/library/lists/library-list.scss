@@ -1,0 +1,60 @@
+/* Shared by the library's lists: projects, and animations. */
+
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-4);
+}
+
+.create,
+.search {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+  align-items: center;
+  padding: var(--lp-space-3);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
+  background: var(--lp-color-surface);
+}
+
+.name {
+  flex: 1 1 12rem;
+  font-weight: var(--lp-font-weight-bold);
+}
+
+.meta {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-small);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+}
+
+.danger {
+  color: var(--lp-color-on-danger);
+  background: var(--lp-color-danger);
+}
+
+.more {
+  align-self: flex-start;
+}

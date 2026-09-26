@@ -11,6 +11,9 @@ import { TranslocoPipe } from '@jsverse/transloco';
 import { Canvas } from '../canvas/canvas';
 import { EngineStore } from '../engine/engine-store';
 import { ExportButton } from '../export/export-button';
+import { OpenAnimationFlow } from '../library/open/open-animation-flow';
+import { OpenStatus } from '../library/open/open-status';
+import { SaveButton } from '../library/save/save-button';
 import { PalettePanel } from '../palette/palette-panel';
 import { Timeline } from '../timeline/timeline';
 import { ToolBar } from '../tools/tool-bar';
@@ -20,9 +23,9 @@ import { Shortcuts } from './shortcuts';
 import { AnimationTitle } from './title/animation-title';
 
 /**
- * The editor: a header with the title and "New", and the regions U2 to U5 fill. With no document
- * — a first visit —, it opens the new-animation dialog; it hands key presses to the shortcuts
- * while it is the page shown.
+ * The editor: a header with the title, "New" and Save, and the regions U2 to U5 fill. With no
+ * document — a first visit —, it opens the new-animation dialog; with an animation id, it opens
+ * that saved animation (H8); it hands key presses to the shortcuts while it is the page shown.
  */
 @Component({
   selector: 'lp-editor-page',
@@ -32,7 +35,9 @@ import { AnimationTitle } from './title/animation-title';
     ExportButton,
     IonButton,
     NewAnimationDialog,
+    OpenStatus,
     PalettePanel,
+    SaveButton,
     Timeline,
     ToolBar,
     TranslocoPipe,
@@ -45,6 +50,7 @@ import { AnimationTitle } from './title/animation-title';
 export class EditorPage implements ViewDidEnter, ViewWillLeave {
   private readonly engine = inject(EngineStore);
   private readonly shortcuts = inject(Shortcuts);
+  private readonly openAnimation = inject(OpenAnimationFlow);
   private isShown = true;
 
   protected readonly newAnimation = inject(NewAnimationFlow);
@@ -56,6 +62,10 @@ export class EditorPage implements ViewDidEnter, ViewWillLeave {
     effect(() => {
       if (this.engine.state().status !== 'empty' || this.animationId() !== undefined) return;
       untracked(() => void this.newAnimation.start());
+    });
+    effect(() => {
+      const id = this.animationId();
+      if (id !== undefined) untracked(() => void this.openAnimation.open(id));
     });
   }
 
