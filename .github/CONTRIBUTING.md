@@ -165,6 +165,7 @@ npm run build --prefix frontend                   # the app, then the admin cons
 npm run i18n:check --prefix frontend              # the catalogues of i18n/
 npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
 npm run e2e --prefix frontend                     # the editor's end-to-end path, in Chromium
+npm run e2e:hosted --prefix frontend              # after build: the hosted journeys, on the stack
 ```
 
 `e2e` runs the Playwright project `editor` (`frontend/e2e/editor/`): draw, animate, export, then
@@ -172,6 +173,28 @@ play the export with its loader, the same drawing with the keyboard alone, and a
 editor's screens. It starts the app with `npm start` on port 4260 — which must be free, or already
 serve the app —, so the first run builds the engine; traces of failed tests land in
 `frontend/e2e/editor/test-results/`.
+
+### Hosted end to end
+
+`e2e:hosted` runs the Playwright project `hosted` (`frontend/e2e/hosted/`): M3's journeys on the
+built app and the admin console — sign-up and saving, the library, two pages saving one
+animation, the quota, the data export, a password reset, a support request answered from the
+console, a suspension, an account deleted — and axe on every page they open. It needs the local
+stack up with its `.env` (see "Local stack"), a `build` of the app and the console, and ports
+8460–8464 free.
+
+```shell
+npm run build --prefix frontend       # the app, then the admin console
+npm run e2e:hosted --prefix frontend  # the hosted journeys, in Chromium
+```
+
+Its global setup builds `life-pixel-server` and `life-pixel-admin-server` with their
+`stack-tests` feature, creates a test database for each with `test-database create`, serves both
+with a free plan of 200,000 bytes on a temporary `file://` storage, and creates an admin with
+`create-admin --password-stdin`; its teardown stops them and drops the databases. The journeys
+read their emails from Mailpit, at random addresses under `test.life-pixel.invalid`. Traces of
+failed tests land in `frontend/e2e/hosted/test-results/`, the servers' logs in
+`frontend/e2e/hosted/logs/`.
 
 ### Loader
 
