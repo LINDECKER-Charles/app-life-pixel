@@ -2816,11 +2816,14 @@ name = "life-pixel-cli"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base64 0.23.1",
  "clap",
  "dirs 7.0.0",
  "life-pixel-compiler",
+ "life-pixel-core",
  "life-pixel-mcp",
  "life-pixel-service",
+ "png 0.18.1",
  "rmcp",
  "schemars 1.2.2",
  "serde",
@@ -2832,6 +2835,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+ "wasmi",
 ]
 
 [[package]]
