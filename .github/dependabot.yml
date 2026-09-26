@@ -20,6 +20,11 @@ updates:
     schedule: { interval: weekly }
     groups:
       player-js: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /tauri/tests/e2e
+    schedule: { interval: weekly }
+    groups:
+      desktop-e2e: { patterns: ["*"] }
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
