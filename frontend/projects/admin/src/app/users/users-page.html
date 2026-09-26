@@ -1,0 +1,77 @@
+<h1>{{ 'admin.users.title' | transloco }}</h1>
+
+<form class="filters" role="search" (submit)="submit($event)">
+  <label>
+    <span>{{ 'admin.users.search_label' | transloco }}</span>
+    <input name="q" type="search" [value]="search().q ?? ''" />
+  </label>
+  <label>
+    <span>{{ 'admin.users.status' | transloco }}</span>
+    <select name="status">
+      <option value="" [selected]="!search().status">
+        {{ 'admin.users.any_status' | transloco }}
+      </option>
+      <option value="active" [selected]="search().status === 'active'">
+        {{ statusKeys.active | transloco }}
+      </option>
+      <option value="suspended" [selected]="search().status === 'suspended'">
+        {{ statusKeys.suspended | transloco }}
+      </option>
+    </select>
+  </label>
+  <button type="submit">{{ 'admin.users.search' | transloco }}</button>
+</form>
+
+<section aria-labelledby="users-list">
+  <div class="table-header">
+    <h2 id="users-list">{{ 'admin.users.found' | transloco: { count: table.rows().length } }}</h2>
+    @if (table.rows().length > 0) {
+      <button type="button" (click)="exportCsv()">
+        {{ 'admin.table.export_csv' | transloco }}
+      </button>
+    }
+  </div>
+  @if (list.problem(); as problem) {
+    <lp-empty-state nothing="admin.users.empty" [problem]="problem" />
+  } @else if (list.loading() && table.rows().length === 0) {
+    <p role="status">{{ 'admin.loading' | transloco }}</p>
+  } @else if (table.rows().length === 0) {
+    <lp-empty-state [nothing]="search().q ? 'admin.users.no_match' : 'admin.users.empty'" />
+  }
+  @if (table.rows().length > 0) {
+    <table>
+      <thead>
+        <tr>
+          @for (column of columns; track column.key) {
+            <th scope="col" [attr.aria-sort]="table.ariaSort(column.key)">
+              <lp-sort-button
+                [direction]="table.ariaSort(column.key)"
+                (toggled)="table.toggle(column.key)"
+                >{{ column.labelKey | transloco }}</lp-sort-button
+              >
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (user of table.rows(); track user.id) {
+          <tr>
+            <th scope="row">
+              <a [routerLink]="['/users', user.id]" [queryParams]="params()">{{ user.email }}</a>
+            </th>
+            <td>{{ user.plan }}</td>
+            <td>{{ statusKeys[user.status] | transloco }}</td>
+            <td>{{ bytes(user.storageUsedBytes) }}</td>
+            <td>{{ date(user.createdAt) }}</td>
+            <td>{{ date(user.lastSeenAt) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (list.hasMore()) {
+      <button type="button" [disabled]="list.loading()" (click)="more()">
+        {{ 'admin.table.more' | transloco }}
+      </button>
+    }
+  }
+</section>

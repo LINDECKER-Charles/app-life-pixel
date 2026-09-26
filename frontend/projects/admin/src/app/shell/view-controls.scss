@@ -1,0 +1,16 @@
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+}
+
+label {
+  display: flex;
+  gap: var(--lp-space-2);
+  align-items: center;
+}
+
+span {
+  color: var(--lp-color-text-muted);
+  font-size: var(--lp-font-size-small);
+}

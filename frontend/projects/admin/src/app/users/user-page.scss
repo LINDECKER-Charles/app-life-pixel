@@ -1,0 +1,34 @@
+h1 {
+  margin-bottom: var(--lp-space-1);
+  overflow-wrap: anywhere;
+}
+
+.status {
+  margin-top: 0;
+  font-weight: var(--lp-font-weight-bold);
+
+  &[data-status='suspended'] {
+    color: var(--lp-color-danger);
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--lp-space-1) var(--lp-space-4);
+
+  dt {
+    color: var(--lp-color-text-muted);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}
