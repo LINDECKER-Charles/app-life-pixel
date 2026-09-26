@@ -14,7 +14,7 @@ const CATALOGUES: [&str; 2] = ["en", "fr"];
 
 /// The status of every code outside `core`: the service's, the compiler's, those later tasks
 /// create, and the server's own.
-const STATUSES: [(&str, u16); 32] = [
+const STATUSES: [(&str, u16); 37] = [
     ("account.language", 422),
     ("auth.account_suspended", 403),
     ("auth.csrf", 403),
@@ -47,6 +47,11 @@ const STATUSES: [(&str, u16); 32] = [
     ("request.too_large", 413),
     ("request.unsupported_media_type", 415),
     ("service.unavailable", 503),
+    ("support.category", 422),
+    ("support.message_length", 422),
+    ("support.request_closed", 409),
+    ("support.request_not_found", 404),
+    ("support.screenshot", 422),
 ];
 
 /// The params of the server's own codes.

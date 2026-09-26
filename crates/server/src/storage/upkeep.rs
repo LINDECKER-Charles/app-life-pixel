@@ -24,7 +24,7 @@ pub fn spawn_upkeep(pool: PgPool, sweeper: Sweeper) {
         let sweeper = sweeper.clone();
         async move {
             match sweeper.sweep().await {
-                Ok(deleted) => tracing::info!(deleted, "the orphaned documents are swept"),
+                Ok(deleted) => tracing::info!(deleted, "the orphaned objects are swept"),
                 Err(error) => tracing::warn!(%error, "the sweep stopped"),
             }
         }

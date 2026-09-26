@@ -1,0 +1,64 @@
+/* Shared by the support pages and the new request's form. */
+
+.page {
+  max-width: 40rem;
+  padding: var(--lp-space-6) var(--lp-space-4);
+  margin-inline: auto;
+}
+
+section {
+  margin-block-end: var(--lp-space-6);
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-4);
+}
+
+.banner {
+  padding: var(--lp-space-3);
+  border: 1px solid var(--ion-color-danger, #c00);
+  border-radius: var(--lp-radius-2, 4px);
+}
+
+.hint {
+  font-size: var(--lp-font-size-small, 0.875rem);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2, 0.5rem);
+}
+
+textarea {
+  padding: var(--lp-space-2, 0.5rem);
+  font: inherit;
+  resize: vertical;
+}
+
+textarea[aria-invalid='true'] {
+  border-color: var(--ion-color-danger, #c00);
+}
+
+.requests,
+.messages {
+  padding: 0;
+  list-style: none;
+}
+
+.requests li,
+.messages li {
+  padding-block: var(--lp-space-3);
+  border-block-end: 1px solid var(--lp-color-border, currentcolor);
+}
+
+.team {
+  padding-inline-start: var(--lp-space-3);
+  border-inline-start: 3px solid var(--lp-color-accent, currentcolor);
+}
+
+.body {
+  white-space: pre-wrap;
+}

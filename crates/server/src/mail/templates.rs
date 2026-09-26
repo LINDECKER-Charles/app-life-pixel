@@ -197,7 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn the_repository_catalogues_have_every_account_email() {
+    fn the_repository_catalogues_have_every_email() {
         let dir = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n");
         let templates = EmailTemplates::load(&dir).unwrap();
         let link = || "https://life-pixel.test/x?token=abc".to_owned();
@@ -206,6 +206,7 @@ mod tests {
                 Message::VerifyEmail { link: link() },
                 Message::ResetPassword { link: link() },
                 Message::PasswordChanged,
+                Message::SupportReply { link: link() },
             ];
             for message in messages {
                 let key = message.key();
