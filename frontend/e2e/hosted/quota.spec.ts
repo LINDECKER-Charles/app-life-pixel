@@ -47,9 +47,7 @@ test('a save beyond the quota is explained, and works once space is freed', asyn
     await editor.saveInProject(PROJECT);
     const dialog = editor.saveDialog('Storage full');
     await expect(dialog).toBeVisible();
-    await expect(
-      page.getByText(/Your storage is full: [\d,]+ of 200,000 bytes are used\./),
-    ).toBeVisible();
+    await expect(dialog.getByText(/[\d,]+ of 200,000 bytes used\./)).toBeVisible();
     await expectAccessible(page, 'the storage-full dialog');
   });
 
