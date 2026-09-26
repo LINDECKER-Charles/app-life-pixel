@@ -39,19 +39,21 @@ impl Admin {
             .await
     }
 
-    /// The data export of the account `id`, as its owner would get it (H6); the read is audited
-    /// before the export is made.
+    /// The data export of the account `id` for `reason`, as its owner would get it (H6); the
+    /// read is audited, with the reason, before the export is made.
     ///
     /// # Errors
     ///
-    /// `admin.user_not_found`, `service.unavailable`.
+    /// `admin.reason_length`, `admin.user_not_found`, `service.unavailable`.
     pub async fn export_user(
         &self,
         admin: &AdminIdentity,
-        id: AccountId,
+        (id, reason): (AccountId, &str),
     ) -> Result<DataExport, AdminError> {
+        let reason = Reason::parse(reason)?;
         self.existing(id).await?;
-        let draft = self.draft(admin, (AuditAction::UserExport, id.to_string()));
+        let mut draft = self.draft(admin, (AuditAction::UserExport, id.to_string()));
+        draft.reason = Some(reason);
         self.audit().append(draft.entry(None, None)).await?;
         Ok(self
             .ports

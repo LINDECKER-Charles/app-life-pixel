@@ -122,7 +122,7 @@ one too. After an erasure, the entry keeps the account id and the reason, never 
 | `GET /users?q&status&cursor&limit` | users found by address or id: `id`, `email`, `emailVerified`, `plan`, `status`, `storageUsedBytes`, `createdAt`, `lastSeenAt` |
 | `GET /users/{id}` | the same, plus language, project and animation counts, events of the last 30 days by name, sessions, support requests; A3 adds tokens |
 | `POST /users/{id}/suspend`, `POST /users/{id}/reactivate` | `{ reason }` → `204`; suspending ends the sessions |
-| `GET /users/{id}/export` | the zip of H6 |
+| `POST /users/{id}/export` | `{ reason }` → the zip of H6; a `POST` with a body, not a `GET`, because the admin console asks a reason for every user action and the audit entry keeps it |
 | `DELETE /users/{id}` | `{ reason }` → `204`, H6's deletion |
 | `GET /support-requests?status&category&assignee&cursor&limit` | the queue, with the account's address and each request's age |
 | `GET /support-requests/{id}` | the thread with internal notes, the context, `hasScreenshot` |
