@@ -297,6 +297,49 @@ git diff --exit-code -- crates/admin-server/openapi.json \
   frontend/projects/shared/src/lib/admin-api/schema.d.ts
 ```
 
+### Images
+
+`docker/app.Dockerfile` builds the `app` image — the server and the app —, and
+`docker/admin.Dockerfile` the `admin` image — the admin server and the console —, both from the
+root of the repository, which `.dockerignore` reduces to the paths they copy. Their Rust stage
+runs Cargo with 4 jobs (`--build-arg CARGO_BUILD_JOBS=<n>` changes it); the app's installs the
+`wasm-bindgen` of `Cargo.lock` unless `--build-arg WASM_BINDGEN_VERSION=<version>` names it.
+
+```shell
+docker build -f docker/app.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/app:local .
+docker build -f docker/admin.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/admin:local .
+```
+
+`docker compose up` starts only the stack; the `app` profile adds both images, on the same
+`.env`: `compose.override.yaml` replaces what differs inside a container — the images' listeners
+and folders, the stack's addresses. The server answers on http://localhost:8460 and the console
+on http://localhost:8463, as when they run from Cargo: stop those first.
+
+```shell
+docker compose --profile app up -d --wait            # builds the images when they are missing
+docker compose --profile app up -d --wait --build    # rebuilds them
+curl -f http://127.0.0.1:8460/healthz
+docker compose --profile app rm -sf server admin     # the app's containers, the stack stays
+```
+
+The checks of the images, the Compose files and the deployment script, which CI's `docker` job
+runs too:
+
+```shell
+docker run --rm -v "$PWD":/repo -w /repo hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d hadolint docker/app.Dockerfile docker/admin.Dockerfile
+docker compose --env-file .env.example --profile app config --quiet
+docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.staging.example config --quiet
+docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.example config --quiet
+docker compose -f docker/selfhost/compose.yaml --env-file docker/selfhost/.env.example config --quiet
+docker run --rm -v "$PWD":/repo -w /repo koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d scripts/deploy/deploy.sh
+DEPLOY_DRY_RUN=1 DEPLOY_SHA=HEAD DEPLOY_PATH=/opt/life-pixel-staging \
+  DEPLOY_ENV_FILE=.env.staging.example DEPLOY_REGISTRY_USER=ci DEPLOY_REGISTRY_TOKEN_FILE=/dev/null \
+  scripts/deploy/deploy.sh
+```
+
+`scripts/deploy/deploy.sh` runs only on the VPS, from `_deploy.yml`; its dry run prints the
+commands of the six steps. `docker/selfhost/` is the self-hosting example, with its own README.
+
 ### Desktop
 
 `tauri/` is `life-pixel-desktop`: the app in a Tauri 2 window, with `service` in-process on a
