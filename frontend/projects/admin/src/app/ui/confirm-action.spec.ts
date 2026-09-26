@@ -52,10 +52,8 @@ describe('ConfirmAction', () => {
     expect(confirmed).toHaveBeenCalledWith('Spam, reported twice');
   });
 
-  it('confirms without a reason when none is recorded', async () => {
-    const fixture = await openConfirmation(
-      confirmationOf('export', { email: 'lee@example.com' }, 'staging'),
-    );
+  it('confirms without a reason when the request records none', async () => {
+    const fixture = await openConfirmation({ ...suspend, needsReason: false });
     const confirmed = vi.fn();
     fixture.componentInstance.confirmed.subscribe(confirmed);
 

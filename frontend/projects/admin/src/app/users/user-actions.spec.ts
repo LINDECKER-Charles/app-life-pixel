@@ -22,7 +22,6 @@ describe('user actions', () => {
 
     expect(confirmationOf('suspend', user, 'staging').needsReason).toBe(true);
     expect(confirmationOf('reactivate', user, 'staging').needsReason).toBe(true);
-    // The export route of the admin API takes no reason (support-admin.md, H10).
-    expect(confirmationOf('export', user, 'staging').needsReason).toBe(false);
+    expect(confirmationOf('export', user, 'staging').needsReason).toBe(true);
   });
 });

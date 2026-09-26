@@ -6,11 +6,12 @@ import { AdminClient } from '../core/admin-client';
 export interface FakeAdminClient {
   readonly request: ReturnType<typeof vi.fn>;
   readonly download: ReturnType<typeof vi.fn>;
+  readonly downloadPost: ReturnType<typeof vi.fn>;
 }
 
 /** Provides a fake admin client, and returns it. */
 export function useFakeAdminClient(): FakeAdminClient {
-  const client: FakeAdminClient = { request: vi.fn(), download: vi.fn() };
+  const client: FakeAdminClient = { request: vi.fn(), download: vi.fn(), downloadPost: vi.fn() };
   TestBed.configureTestingModule({ providers: [{ provide: AdminClient, useValue: client }] });
   return client;
 }
