@@ -144,14 +144,42 @@ export interface EditorEngine {
 | `settings/agents` | local MCP setup, desktop only | T3 |
 | `**` | not found | U1 |
 
-- **Editor page** (`editor/editor-page.ts`): a grid of regions filled by `<lp-tool-bar>`,
-  `<lp-palette-panel>`, `<lp-canvas>`, `<lp-timeline>` and `<lp-export-button>`. U1 creates each as
-  an empty stub in the folder of the task that fills it (`tools/`, `palette/`, `canvas/`,
-  `timeline/`, `export/`), so that the page never changes afterwards. The page's header holds the
-  animation's title, editable in place (`setTitle`), and a "New" action. With no document — a
-  first visit, or "New" —, a dialog asks for the title and the size, 32 × 32 by default and bounded
-  by the limits, then creates the animation with the translated default layer name; "New" asks
-  first when there is unsaved work.
+- **Editor page** (`editor/editor-page.ts`), laid out after Rose Atelier (D38,
+  `design-system/docs/journeys.md` §2) as a grid of named areas:
+  - `docbar`, the document bar: the animation's title, editable in place (`setTitle`), the save
+    state (`library/save/state/`, see below), the opening status of a saved animation, then New,
+    Save and Export — Export the primary action. All three are native buttons.
+  - `rail`: `<lp-tool-bar>`.
+  - `stage`: `<lp-canvas>` on the neutral canvas surround, and a row under it for the view bar
+    (zoom, grid, onion skin, position), a commented insertion point that the canvas task fills with
+    `<lp-view-bar>` (`canvas/view-bar/`). The stage takes the height left, never less than half
+    the window (`50dvh`): at 1366 × 768 and 1024 × 768 it measures 405 pixels, and a 32 × 32
+    animation at zoom 8 is seen whole.
+  - `inspector`, 17 rem wide on the right: Palette (`<lp-palette-panel>`), Layers
+    (`<lp-layer-list>`) and the playback preview (`<lp-playback-preview>`), each under its heading.
+  - `timeline`, up to 11 rem under the rail and the stage: `<lp-timeline>`, the tags over the
+    frame strip and its durations. It gives way to the stage first, and scrolls within itself.
+
+  Below 48 rem the areas stack in that order and the page scrolls. Each feature fills its
+  component in its own folder (`tools/`, `palette/`, `canvas/`, `timeline/`, `export/`,
+  `library/`), so that the page never changes afterwards.
+- **First visit** (`editor/welcome/`): with no document and no saved animation to open, the stage
+  shows a welcome instead of the canvas, which it makes inert: what can be made, Pip, and one
+  action, "Create animation". A visitor also reads that drawing and exporting need no account and
+  that unsaved work is lost when the page closes or reloads (D37); a signed-in person or the desktop
+  does not. Nothing opens on its own. "Create animation" or "New" opens the new-animation dialog:
+  the title, its default selected and focused, then the width and height in pixels ("px"), 32 × 32
+  by default, each field saying the engine's limits and, when a value falls outside them, why,
+  next to it and keeping what was typed. It creates the animation with the translated default
+  layer name, and the welcome gives way to the canvas; "New" asks first when there is unsaved work.
+- **Save state** (`library/save/state/save-state.ts`), a pure function of `SaveFlow.status`,
+  `EngineStore.hasUnsavedWork` and `CurrentAnimation`, shown as a pill in a live region beside the
+  title: "Not saved" for work the library does not hold, "Unsaved changes" for a saved animation
+  changed since, "Saving…" while a write runs, "Saved" for a saved animation unchanged since it was
+  written or opened — never before the write succeeded —, "Could not save" once a write failed.
+  `SaveFlow` keeps `failed` until the next attempt or the next change to the work; the work stays
+  open and the failure's reason is said in the save dialog, as before. Saving is explicit: nothing
+  claims autosave.
 - **EditorStore** (`editor/editor-store.ts`), the editor's UI state as signals, shared by U2 to U5:
   `tool` (`pencil`, `eraser`, `fill`, `line`, `rectangle`, `select`), `rectangleFilled`,
   `colorIndex`, `activeLayer`, `activeFrame`, `frameSelection` (a range, for tags), `zoom`, `pan`,
@@ -219,7 +247,8 @@ and fit arithmetic; the grid threshold; drawing a pixel with the keyboard alone.
 
 ## U3 — Timeline
 
-`timeline/`: `lp-timeline`.
+`timeline/`: `lp-timeline` holds the tags and the frames. The layers (`timeline/layers/`) and the
+playback preview (`timeline/playback/`) keep their folder but sit in the editor's inspector (C7).
 
 - **Frames**: thumbnails rendered by the engine into 48-pixel boxes, refreshed at most once per
   animation frame after a change; the active frame highlighted; a duration field per frame,
