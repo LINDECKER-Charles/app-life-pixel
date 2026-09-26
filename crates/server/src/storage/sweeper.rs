@@ -1,6 +1,7 @@
 //! The sweeper: deletes the documents no row references — left by a write whose transaction
 //! failed and whose cleanup failed too, or by a crash between the two —, once they are old enough
-//! that no write in progress can still point a row at them.
+//! that no write in progress can still point a row at them. It does the same for the support
+//! screenshots whose request is gone (H9).
 
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -12,7 +13,7 @@ use object_store::{ObjectStore, ObjectStoreExt};
 use sqlx::PgPool;
 use thiserror::Error;
 
-use super::keys::DOCUMENTS_PREFIX;
+use super::keys::{DOCUMENTS_PREFIX, SUPPORT_PREFIX};
 use super::metrics::{count_orphans_deleted, timed};
 
 /// How often the sweeper runs.
@@ -22,8 +23,26 @@ pub const ORPHAN_MIN_AGE: Duration = Duration::from_secs(24 * 60 * 60);
 /// How many keys the sweeper checks against the index at once.
 pub const SWEEP_BATCH_KEYS: usize = 1_000;
 
-/// Which of a batch of keys a row references.
-const REFERENCED_KEYS: &str = "select document_key from animations where document_key = any($1)";
+/// A prefix the sweeper lists, and the query of which of a batch of its keys a row references.
+struct Swept {
+    prefix: &'static str,
+    referenced: &'static str,
+    query_name: &'static str,
+}
+
+/// Every prefix the sweeper lists: one line per prefix.
+const SWEPT: [Swept; 2] = [
+    Swept {
+        prefix: DOCUMENTS_PREFIX,
+        referenced: "select document_key from animations where document_key = any($1)",
+        query_name: "referenced_document_keys",
+    },
+    Swept {
+        prefix: SUPPORT_PREFIX,
+        referenced: "select screenshot_key from support_requests where screenshot_key = any($1)",
+        query_name: "referenced_screenshot_keys",
+    },
+];
 
 /// Why a sweep stopped.
 #[derive(Debug, Error)]
@@ -36,7 +55,7 @@ pub enum SweepError {
     Database(#[from] sqlx::Error),
 }
 
-/// Deletes the old objects under `documents/` that no row references.
+/// Deletes the old objects under `documents/` and `support/` that no row references.
 #[derive(Clone)]
 pub struct Sweeper {
     pool: PgPool,
@@ -69,8 +88,17 @@ impl Sweeper {
     ///
     /// When the objects cannot be listed or the index cannot be read.
     pub async fn sweep(&self) -> Result<u64, SweepError> {
+        let mut deleted = 0;
+        for swept in &SWEPT {
+            deleted += self.sweep_prefix(swept).await?;
+        }
+        Ok(deleted)
+    }
+
+    /// Deletes the old unreferenced objects under the prefix of `swept`; returns how many.
+    async fn sweep_prefix(&self, swept: &Swept) -> Result<u64, SweepError> {
         let cutoff = cutoff_millis(self.min_age);
-        let prefix = Path::from(DOCUMENTS_PREFIX);
+        let prefix = Path::from(swept.prefix);
         let mut listing = self.objects.list(Some(&prefix));
         let (mut batch, mut deleted) = (Vec::with_capacity(SWEEP_BATCH_KEYS), 0);
         while let Some(object) = listing.try_next().await? {
@@ -79,19 +107,19 @@ impl Sweeper {
             }
             batch.push(object.location);
             if batch.len() == SWEEP_BATCH_KEYS {
-                deleted += self.sweep_batch(std::mem::take(&mut batch)).await?;
+                deleted += self.sweep_batch(swept, std::mem::take(&mut batch)).await?;
             }
         }
-        deleted += self.sweep_batch(batch).await?;
+        deleted += self.sweep_batch(swept, batch).await?;
         Ok(deleted)
     }
 
     /// Deletes the keys of `batch` no row references; returns how many it deleted.
-    async fn sweep_batch(&self, batch: Vec<Path>) -> Result<u64, SweepError> {
+    async fn sweep_batch(&self, swept: &Swept, batch: Vec<Path>) -> Result<u64, SweepError> {
         if batch.is_empty() {
             return Ok(0);
         }
-        let referenced = self.referenced(&batch).await?;
+        let referenced = self.referenced(swept, &batch).await?;
         let mut deleted = 0;
         for key in batch
             .iter()
@@ -104,10 +132,14 @@ impl Sweeper {
     }
 
     /// The keys of `batch` a row references.
-    async fn referenced(&self, batch: &[Path]) -> Result<HashSet<String>, sqlx::Error> {
+    async fn referenced(
+        &self,
+        swept: &Swept,
+        batch: &[Path],
+    ) -> Result<HashSet<String>, sqlx::Error> {
         let keys: Vec<String> = batch.iter().map(ToString::to_string).collect();
-        let query = sqlx::query_scalar::<_, String>(REFERENCED_KEYS).bind(&keys);
-        let referenced = timed("referenced_document_keys", query.fetch_all(&self.pool)).await?;
+        let query = sqlx::query_scalar::<_, String>(swept.referenced).bind(&keys);
+        let referenced = timed(swept.query_name, query.fetch_all(&self.pool)).await?;
         Ok(referenced.into_iter().collect())
     }
 

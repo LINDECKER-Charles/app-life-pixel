@@ -25,6 +25,7 @@ use crate::mail::{EmailTemplates, MailSetupError, SmtpMailer, TemplateError};
 use crate::routes;
 use crate::state::{AppState, Backends, StartError};
 use crate::storage::{self, HostedLibraryStore, ObjectStoreSetupError, Sweeper};
+use crate::support;
 use crate::telemetry::{self, METRICS_UPKEEP_PERIOD};
 
 /// Why the server stopped.
@@ -76,16 +77,14 @@ pub enum ServeError {
 pub async fn serve(config: Config) -> Result<(), ServeError> {
     let (pool, objects) = open_storage(&config).await?;
     let metrics = telemetry::recorder()?;
-    storage::metrics::describe();
-    accounts::metrics::describe();
-    routes::library::metrics::describe();
-    events::metrics::describe();
+    describe_metrics();
     let events_sink = PostgresEventSink::spawn(pool.clone(), config.secrets.events.clone());
     let backends = Backends {
         readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
         library_store: Arc::new(HostedLibraryStore::new(pool.clone(), Arc::clone(&objects))),
         accounts: accounts::hosted_ports(&pool, mailer(&config)?, Arc::clone(&events_sink)),
         events: events_sink,
+        support: support::hosted_stores(&pool, Arc::clone(&objects)),
     };
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;
@@ -102,6 +101,14 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     )?;
     tracing::info!("stopped");
     Ok(())
+}
+
+/// Describes the metrics of each area to the recorder.
+fn describe_metrics() {
+    storage::metrics::describe();
+    accounts::metrics::describe();
+    routes::library::metrics::describe();
+    events::metrics::describe();
 }
 
 /// The migrated database's pool, and the object storage.
