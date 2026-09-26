@@ -755,5 +755,9 @@
   "tools.tool.pencil": "Pencil",
   "tools.tool.rectangle": "Rectangle",
   "tools.tool.select": "Select and move",
-  "tools.undo": "Undo"
+  "tools.undo": "Undo",
+  "updater.install_and_restart": "Install and restart",
+  "updater.later": "Later",
+  "updater.message": "Life Pixel {version} is ready. Install it and restart the app?",
+  "updater.title": "Update available"
 }
