@@ -2959,6 +2959,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
+ "png 0.18.1",
  "rand 0.9.5",
  "reqwest",
  "rmcp",
@@ -2981,6 +2982,7 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "uuid",
+ "wasmi",
  "zip",
 ]
 
@@ -4443,6 +4445,7 @@ dependencies = [
  "pin-project-lite",
  "process-wrap",
  "rand 0.10.3",
+ "reqwest",
  "schemars 1.2.2",
  "serde",
  "serde_json",
