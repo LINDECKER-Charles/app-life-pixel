@@ -9,6 +9,8 @@ import {
 import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 import { provideI18n } from 'shared';
 import { routes } from './app.routes';
+import { HostedExportObserver } from './events/hosted-export-observer';
+import { EXPORT_OBSERVER } from './export/export-observer';
 import { LegalLinks } from './legal/legal-links';
 import { PreferencesStore } from './settings/preferences-store';
 import { provideAppearance } from './settings/provide-appearance';
@@ -31,5 +33,6 @@ export const appConfig: ApplicationConfig = {
     provideAppearance(),
     provideUnsavedWorkGuard(),
     { provide: FOOTER_SLOT, useValue: LegalLinks },
+    { provide: EXPORT_OBSERVER, useClass: HostedExportObserver },
   ],
 };
