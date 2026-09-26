@@ -31,9 +31,13 @@ tracing-subscriber = { workspace = true, features = ["fmt", "std"] }
 uuid.workspace = true
 
 [dev-dependencies]
+base64.workspace = true
+life-pixel-core.workspace = true
 life-pixel-service = { workspace = true, features = ["testing"] }
+png.workspace = true
 rmcp = { workspace = true, features = ["client", "server", "transport-child-process", "transport-io"] }
 tempfile.workspace = true
+wasmi.workspace = true
 
 [lints]
 workspace = true
