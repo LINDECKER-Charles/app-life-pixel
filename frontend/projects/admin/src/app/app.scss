@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--lp-space-2);
+  left: var(--lp-space-2);
+  z-index: 10;
+  padding: var(--lp-space-2) var(--lp-space-3);
+  color: var(--lp-color-on-accent);
+  background: var(--lp-color-accent);
+  border-radius: var(--lp-radius-small);
+  transform: translateY(-200%);
+
+  &:focus {
+    transform: none;
+  }
+}
+
+main {
+  max-width: 90rem;
+  padding: var(--lp-space-4);
+  margin-inline: auto;
+
+  &:focus {
+    outline: none;
+  }
+}

@@ -1,0 +1,33 @@
+<div class="controls">
+  @if (environments().length > 0) {
+    <label>
+      <span>{{ 'admin.controls.environment' | transloco }}</span>
+      <select [value]="state().env" (change)="onEnvironment($event)">
+        @for (environment of environments(); track environment) {
+          <option [value]="environment" [selected]="environment === state().env">
+            @if (environmentKeys[environment]; as key) {
+              {{ key | transloco }}
+            } @else {
+              {{ environment }}
+            }
+          </option>
+        }
+      </select>
+    </label>
+  }
+  <label>
+    <span>{{ 'admin.controls.range' | transloco }}</span>
+    <select [value]="selectedRange()" (change)="onRange($event)">
+      @for (preset of presets; track preset) {
+        <option [value]="preset" [selected]="preset === selectedRange()">
+          {{ rangeKeys[preset] | transloco }}
+        </option>
+      }
+      @if (custom(); as custom) {
+        <option [value]="custom" selected>
+          {{ 'admin.range.custom' | transloco: { from: state().from, to: state().to } }}
+        </option>
+      }
+    </select>
+  </label>
+</div>

@@ -1,0 +1,32 @@
+.request {
+  padding: var(--lp-space-3) var(--lp-space-4);
+  margin-bottom: var(--lp-space-4);
+  background: var(--lp-color-surface);
+  border-radius: var(--lp-radius-medium);
+
+  h2 {
+    margin-top: 0;
+  }
+}
+
+.message {
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  overflow-wrap: anywhere;
+}
+
+[data-level='error'] .level,
+[data-level='ERROR'] .level {
+  color: var(--lp-color-danger);
+  font-weight: var(--lp-font-weight-bold);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--lp-space-1) var(--lp-space-3);
+}
+
+dd {
+  margin: 0;
+}

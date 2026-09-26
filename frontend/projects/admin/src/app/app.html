@@ -1,0 +1,7 @@
+<a class="skip-link" href="#main">{{ 'admin.nav.skip' | transloco }}</a>
+@if (signedIn()) {
+  <lp-app-header />
+}
+<main id="main" tabindex="-1">
+  <router-outlet />
+</main>

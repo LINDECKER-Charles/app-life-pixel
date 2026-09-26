@@ -13,7 +13,8 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "paths": {
-      "shared": ["./projects/shared/src/public-api.ts"]
+      "shared": ["./projects/shared/src/public-api.ts"],
+      "admin-api": ["./projects/shared/src/lib/admin-api/schema.d.ts"]
     },
     "target": "ES2022",
     "module": "preserve"
@@ -40,6 +41,12 @@
     },
     {
       "path": "./tsconfig.e2e.json"
+    },
+    {
+      "path": "./projects/admin/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/admin/tsconfig.spec.json"
     }
   ]
 }
