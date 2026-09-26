@@ -7,6 +7,7 @@ pub mod errors;
 pub mod settings;
 pub mod sidecar;
 pub mod state;
+pub mod updater;
 pub mod watcher;
 
 use std::path::PathBuf;
@@ -30,16 +31,20 @@ const APPIMAGE_VARIABLE: &str = "APPIMAGE";
 /// What the log keeps when `RUST_LOG` says nothing.
 const DEFAULT_LOG_FILTER: &str = "warn";
 
-/// Starts the app: the log, the dialog plugin, the state and its watcher, the commands, the
-/// window.
+/// Starts the app: the log, the dialog plugin, the updater when this build has one, the state and
+/// its watcher, the commands, the window.
 pub fn run() {
     init_log();
-    let started = tauri::Builder::default()
-        .plugin(tauri_plugin_dialog::init())
+    let mut builder = tauri::Builder::default().plugin(tauri_plugin_dialog::init());
+    if let Some(plugin) = updater::plugin() {
+        builder = builder.plugin(plugin);
+    }
+    let started = builder
         .setup(|app| {
             let state = DesktopState::open(state_options(app)?, dialogs(app));
             app.manage(state);
             watch_library(app);
+            updater::start_checking(app.handle().clone());
             Ok(())
         })
         .invoke_handler(commands::handler())
