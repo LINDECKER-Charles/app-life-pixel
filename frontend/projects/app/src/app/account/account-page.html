@@ -1,0 +1,117 @@
+<main class="page">
+  <h1>{{ 'account.title' | transloco }}</h1>
+  @if (account(); as account) {
+    <section aria-labelledby="account-address-heading">
+      <h2 id="account-address-heading">{{ 'account.address.heading' | transloco }}</h2>
+      <p>{{ account.email }}</p>
+      @if (account.emailVerified) {
+        <p>{{ 'account.address.verified' | transloco }}</p>
+      } @else {
+        <p>{{ 'account.address.unverified' | transloco }}</p>
+        @if (resendSent()) {
+          <p role="status">{{ 'account.address.resend_sent' | transloco }}</p>
+        } @else {
+          <button type="button" [disabled]="resendPending()" (click)="resendVerification()">
+            {{ 'account.address.resend' | transloco }}
+          </button>
+          @if (resendError(); as error) {
+            <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+          }
+        }
+      }
+    </section>
+
+    <section aria-labelledby="account-usage-heading">
+      <h2 id="account-usage-heading">{{ 'account.usage.heading' | transloco }}</h2>
+      @if (account.storage.limitBytes === null) {
+        <p>
+          {{ 'account.usage.summary_unlimited' | transloco: { used: account.storage.usedBytes } }}
+        </p>
+      } @else {
+        <p>
+          {{
+            'account.usage.summary'
+              | transloco: { used: account.storage.usedBytes, limit: account.storage.limitBytes }
+          }}
+        </p>
+      }
+    </section>
+
+    <section aria-labelledby="account-language-heading">
+      <h2 id="account-language-heading">{{ 'account.language.heading' | transloco }}</h2>
+      <ion-select
+        [label]="'account.language.label' | transloco"
+        labelPlacement="stacked"
+        interface="popover"
+        [value]="account.language"
+        [disabled]="languagePending()"
+        (ionChange)="changeLanguage($event)"
+      >
+        @for (item of languages(); track item.code) {
+          <ion-select-option [value]="item.code">{{ item.name }}</ion-select-option>
+        }
+      </ion-select>
+      @if (languageError(); as error) {
+        <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+      }
+    </section>
+
+    <section aria-labelledby="account-export-heading">
+      <h2 id="account-export-heading">{{ 'account.export.heading' | transloco }}</h2>
+      <a class="button" [href]="accountApi.exportUrl" download>
+        {{ 'account.export.action' | transloco }}
+      </a>
+    </section>
+
+    <section aria-labelledby="account-delete-heading">
+      <h2 id="account-delete-heading">{{ 'account.delete.heading' | transloco }}</h2>
+      @if (!deleting()) {
+        <button type="button" class="danger" (click)="startDeletion()">
+          {{ 'account.delete.action' | transloco }}
+        </button>
+      } @else {
+        <form novalidate (submit)="confirmDeletion($event, account)">
+          @if (deletion.of('form'); as error) {
+            <p #deletionBanner class="banner" role="alert" tabindex="-1">
+              {{ 'errors.' + error.code | transloco: error.params }}
+            </p>
+          }
+          <lp-password-field
+            #deletionPasswordField
+            [label]="'account.delete.password_label' | transloco"
+            autocomplete="current-password"
+            [value]="deletionPassword()"
+            [errorText]="deletionErrorText('password')"
+            (valueChange)="deletionPassword.set($event)"
+          />
+          <ion-input
+            [label]="'account.delete.confirm_label' | transloco: { email: account.email }"
+            labelPlacement="stacked"
+            type="email"
+            autocomplete="off"
+            [value]="deletionConfirmation()"
+            [helperText]="'account.delete.confirm_hint' | transloco"
+            (ionInput)="onDeletionConfirmationInput($event)"
+          />
+          <div class="actions">
+            <button type="button" (click)="cancelDeletion()">
+              {{ 'common.cancel' | transloco }}
+            </button>
+            <button
+              type="submit"
+              class="danger"
+              [disabled]="deletionPending() || !deletionConfirmed(account)"
+            >
+              {{ 'account.delete.confirm_action' | transloco }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+
+    <section aria-labelledby="account-sign-out-heading">
+      <h2 id="account-sign-out-heading">{{ 'account.sign_out.heading' | transloco }}</h2>
+      <button type="button" (click)="signOut()">{{ 'account.sign_out.action' | transloco }}</button>
+    </section>
+  }
+</main>
