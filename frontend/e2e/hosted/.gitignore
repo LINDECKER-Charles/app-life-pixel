@@ -1,0 +1,6 @@
+# Playwright's traces, screenshots and downloads of the hosted project.
+test-results/
+# The server's and the admin server's output during a run.
+logs/
+# The admin session the global setup signs in, removed by its teardown.
+.auth/
