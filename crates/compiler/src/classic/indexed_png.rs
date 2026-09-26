@@ -3,7 +3,7 @@
 use std::io::Write;
 
 use life_pixel_core::Palette;
-use png::{BitDepth, ColorType, Encoder};
+use png::{BitDepth, ColorType, Compression, Encoder};
 
 use crate::ExportError;
 
@@ -22,12 +22,19 @@ pub(crate) struct IndexedImage<'palette> {
 
 impl IndexedImage<'_> {
     /// An encoder of such images: 8-bit indices, the palette's full alpha kept.
+    ///
+    /// `Compression::Fast` picks the `png` crate's `fdeflate` backend rather than its default
+    /// `flate2`/`miniz_oxide` one: the latter was observed to make build-dependent,
+    /// non-byte-reproducible compressed output for identical pixel data under a heavily loaded,
+    /// full-workspace build (still valid PNGs, decoding to the same frames, but failing golden's
+    /// byte-for-byte comparison).
     pub fn encoder<W: Write>(&self, writer: W) -> Encoder<'static, W> {
         let mut encoder = Encoder::new(writer, self.width, self.height);
         encoder.set_color(ColorType::Indexed);
         encoder.set_depth(BitDepth::Eight);
         encoder.set_palette(rgb(self.palette));
         encoder.set_trns(alpha(self.palette));
+        encoder.set_compression(Compression::Fast);
         encoder
     }
 
