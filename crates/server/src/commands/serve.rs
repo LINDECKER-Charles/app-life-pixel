@@ -16,6 +16,7 @@ use tokio::sync::watch;
 use tokio::time::MissedTickBehavior;
 
 use crate::accounts;
+use crate::admin;
 use crate::app;
 use crate::config::Config;
 use crate::database::{self, DatabaseError, DatabaseReadiness};
@@ -85,6 +86,7 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
         accounts: accounts::hosted_ports(&pool, mailer(&config)?, Arc::clone(&events_sink)),
         events: events_sink,
         support: support::hosted_stores(&pool, Arc::clone(&objects)),
+        admin: admin::hosted_stores(&pool, config.secrets.events.clone()),
     };
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;

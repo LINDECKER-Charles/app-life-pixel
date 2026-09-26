@@ -5,6 +5,9 @@ use axum::http::StatusCode;
 
 /// The codes the server itself answers with, as constants.
 pub mod codes {
+    /// A call of the internal admin API without the admin server's secret or the acting admin's
+    /// identity.
+    pub const ADMIN_UNAUTHENTICATED: &str = "admin.unauthenticated";
     /// An unsafe request carrying the session cookie from another origin, or without the
     /// session's CSRF token.
     pub const AUTH_CSRF: &str = "auth.csrf";
@@ -33,6 +36,7 @@ pub mod codes {
 /// Every code of this crate, each with its key `errors.<code>` in every catalogue.
 /// `request.malformed` and `service.unavailable` belong to `service::error::CODES`.
 pub const CODES: &[&str] = &[
+    codes::ADMIN_UNAUTHENTICATED,
     codes::AUTH_CSRF,
     codes::CLIENT_UPDATE_REQUIRED,
     codes::DOCUMENT_VERSION_REQUIRED,
@@ -47,6 +51,10 @@ pub const CODES: &[&str] = &[
 /// Code to status: one line per code, sorted. A task that creates a code adds its line.
 const STATUSES: &[(&str, StatusCode)] = &[
     ("account.language", StatusCode::UNPROCESSABLE_ENTITY),
+    ("admin.reason_length", StatusCode::UNPROCESSABLE_ENTITY),
+    ("admin.screenshot_not_found", StatusCode::NOT_FOUND),
+    ("admin.unauthenticated", StatusCode::UNAUTHORIZED),
+    ("admin.user_not_found", StatusCode::NOT_FOUND),
     ("auth.account_suspended", StatusCode::FORBIDDEN),
     ("auth.csrf", StatusCode::FORBIDDEN),
     ("auth.current_password", StatusCode::FORBIDDEN),

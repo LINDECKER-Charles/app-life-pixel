@@ -1,5 +1,5 @@
-//! `life-pixel-server`: `serve` (the default), `openapi`, `migrate` and `healthcheck`; with the
-//! `stack-tests` feature, `test-database`.
+//! `life-pixel-server`: `serve` (the default), `openapi`, `admin-openapi`, `migrate` and
+//! `healthcheck`; with the `stack-tests` feature, `test-database`.
 
 use std::process::ExitCode;
 
@@ -8,7 +8,7 @@ use clap::{Parser, Subcommand};
 use life_pixel_server::commands::{healthcheck, serve};
 use life_pixel_server::config::{self, Config};
 use life_pixel_server::telemetry::Telemetry;
-use life_pixel_server::{database, openapi};
+use life_pixel_server::{admin, database, openapi};
 
 /// The Life Pixel server.
 #[derive(Parser)]
@@ -24,6 +24,8 @@ enum Command {
     Serve,
     /// Prints the public API's description, as crates/server/openapi.json.
     Openapi,
+    /// Prints the internal admin API's description, as crates/server/admin-openapi.json.
+    AdminOpenapi,
     /// Runs the migrations, then exits.
     Migrate,
     /// Requests /healthz on the local listener: exits 0 when it answers 200, 1 otherwise.
@@ -50,6 +52,7 @@ enum TestDatabaseCommand {
 fn main() -> anyhow::Result<ExitCode> {
     match Cli::parse().command.unwrap_or(Command::Serve) {
         Command::Openapi => print_openapi(),
+        Command::AdminOpenapi => print_admin_openapi(),
         Command::Healthcheck => check_health(),
         #[cfg(feature = "stack-tests")]
         Command::TestDatabase(command) => test_database(&command),
@@ -59,6 +62,11 @@ fn main() -> anyhow::Result<ExitCode> {
 
 fn print_openapi() -> anyhow::Result<ExitCode> {
     print!("{}", openapi::to_json()?);
+    Ok(ExitCode::SUCCESS)
+}
+
+fn print_admin_openapi() -> anyhow::Result<ExitCode> {
+    print!("{}", admin::openapi::to_json()?);
     Ok(ExitCode::SUCCESS)
 }
 
