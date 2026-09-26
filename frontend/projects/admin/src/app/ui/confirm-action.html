@@ -1,0 +1,54 @@
+<dialog
+  #dialog
+  class="confirm"
+  aria-labelledby="confirm-title"
+  aria-describedby="confirm-message"
+  (cancel)="cancel($event)"
+>
+  <form novalidate (submit)="submit($event)">
+    <h2 id="confirm-title">{{ request().titleKey | transloco }}</h2>
+    <dl class="scope">
+      <div>
+        <dt>{{ 'admin.confirm.environment' | transloco }}</dt>
+        <dd class="environment"><lp-environment-name [environment]="request().environment" /></dd>
+      </div>
+      <div>
+        <dt>{{ 'admin.confirm.target' | transloco }}</dt>
+        <dd class="target">{{ request().target }}</dd>
+      </div>
+    </dl>
+    <p id="confirm-message">
+      {{
+        request().messageKey
+          | transloco: { target: request().target, environment: request().environment }
+      }}
+    </p>
+    @if (request().needsReason) {
+      <div class="field">
+        <label for="confirm-reason">{{ 'admin.confirm.reason_label' | transloco }}</label>
+        <textarea
+          id="confirm-reason"
+          rows="3"
+          required
+          [attr.maxlength]="limits.max"
+          aria-describedby="confirm-reason-hint"
+          [value]="reason()"
+          [disabled]="pending()"
+          (input)="onReason($event)"
+        ></textarea>
+        <p id="confirm-reason-hint" class="hint">
+          {{ 'admin.confirm.reason_hint' | transloco: { max: limits.max } }}
+        </p>
+      </div>
+    }
+    @if (error(); as error) {
+      <p class="error" role="alert">{{ error.key | transloco: error.params }}</p>
+    }
+    <div class="actions">
+      <button type="button" (click)="cancel()">{{ 'admin.confirm.cancel' | transloco }}</button>
+      <button type="submit" class="danger" [disabled]="!ready()">
+        {{ request().confirmKey | transloco: { environment: request().environment } }}
+      </button>
+    </div>
+  </form>
+</dialog>

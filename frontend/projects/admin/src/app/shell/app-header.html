@@ -1,0 +1,34 @@
+<header>
+  <lp-environment-banner [environment]="environment()" />
+  <div class="bar">
+    <a class="brand" routerLink="/" [queryParams]="params()">{{ 'admin.name' | transloco }}</a>
+    <nav [attr.aria-label]="'admin.nav.label' | transloco">
+      <ul>
+        @for (item of nav; track item.path) {
+          <li>
+            <a
+              [routerLink]="item.path"
+              [queryParams]="params()"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              [routerLinkActiveOptions]="{
+                paths: item.exact ? 'exact' : 'subset',
+                queryParams: 'ignored',
+                matrixParams: 'ignored',
+                fragment: 'ignored',
+              }"
+              >{{ item.labelKey | transloco }}</a
+            >
+          </li>
+        }
+      </ul>
+    </nav>
+    <div class="account">
+      @if (admin(); as admin) {
+        <span class="who">{{ admin.email }}</span>
+      }
+      <button type="button" (click)="signOut()">{{ 'admin.sign_out' | transloco }}</button>
+    </div>
+  </div>
+  <lp-view-controls />
+</header>

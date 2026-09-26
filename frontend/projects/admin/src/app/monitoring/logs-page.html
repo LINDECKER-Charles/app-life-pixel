@@ -1,0 +1,111 @@
+<h1>
+  {{ 'admin.logs.title' | transloco }} ·
+  <lp-environment-name [environment]="state().env" />
+</h1>
+
+<form class="filters" role="search" (submit)="search($event)">
+  <label>
+    <span>{{ 'admin.logs.level' | transloco }}</span>
+    <select name="level">
+      <option value="" [selected]="!filters().level">
+        {{ 'admin.logs.any_level' | transloco }}
+      </option>
+      @for (level of levels; track level) {
+        <option [value]="level" [selected]="level === filters().level">
+          {{ levelKeys[level] | transloco }}
+        </option>
+      }
+    </select>
+  </label>
+  <label>
+    <span>{{ 'admin.logs.text' | transloco }}</span>
+    <input name="q" type="search" [value]="filters().q ?? ''" />
+  </label>
+  <button type="submit">{{ 'admin.logs.search' | transloco }}</button>
+</form>
+
+@if (request(); as request) {
+  <section class="request" aria-labelledby="logs-request">
+    <h2 id="logs-request">{{ 'admin.logs.request_title' | transloco: { requestId: request } }}</h2>
+    <p>{{ 'admin.logs.request_lead' | transloco }}</p>
+    @if (grafana(); as url) {
+      <p>
+        <a [href]="url" target="_blank" rel="noopener noreferrer">
+          {{ 'admin.logs.open_trace' | transloco }}
+        </a>
+      </p>
+    } @else if (grafanaProblem(); as problem) {
+      <lp-empty-state nothing="admin.logs.trace_empty" [problem]="problem" />
+    }
+  </section>
+}
+
+<section aria-labelledby="logs-lines">
+  <div class="table-header">
+    <h2 id="logs-lines">{{ 'admin.logs.lines' | transloco: { count: lines().length } }}</h2>
+    @if (lines().length > 0) {
+      <button type="button" (click)="exportCsv()">
+        {{ 'admin.table.export_csv' | transloco }}
+      </button>
+    }
+  </div>
+  @if (loading() && lines().length === 0) {
+    <p role="status">{{ 'admin.loading' | transloco }}</p>
+  } @else if (lines().length === 0) {
+    <lp-empty-state nothing="admin.logs.empty" [problem]="problem()" />
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('time')">
+            <lp-sort-button [direction]="table.ariaSort('time')" (toggled)="table.toggle('time')">
+              {{ 'admin.logs.time' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('level')">
+            <lp-sort-button [direction]="table.ariaSort('level')" (toggled)="table.toggle('level')">
+              {{ 'admin.logs.level' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col">{{ 'admin.logs.message' | transloco }}</th>
+          <th scope="col">{{ 'admin.logs.request_id' | transloco }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (line of table.rows(); track $index) {
+          <tr [attr.data-level]="line.level">
+            <td>
+              <time [attr.datetime]="line.time">{{ time(line.time) }}</time>
+            </td>
+            <td class="level">{{ line.level }}</td>
+            <td class="message">
+              {{ line.message }}
+              @if (fieldsOf(line).length > 0) {
+                <details>
+                  <summary>{{ 'admin.logs.fields' | transloco }}</summary>
+                  <dl>
+                    @for (field of fieldsOf(line); track field[0]) {
+                      <dt>{{ field[0] }}</dt>
+                      <dd>{{ field[1] }}</dd>
+                    }
+                  </dl>
+                </details>
+              }
+            </td>
+            <td>
+              @if (line.requestId; as requestId) {
+                <a
+                  [routerLink]="[]"
+                  [queryParams]="{ q: requestId, request: requestId, level: null }"
+                  queryParamsHandling="merge"
+                  [attr.aria-label]="'admin.logs.open_request' | transloco: { requestId }"
+                  ><code>{{ requestId }}</code></a
+                >
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>

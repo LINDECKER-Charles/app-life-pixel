@@ -148,18 +148,20 @@ Run with the Node.js version of `.nvmrc`, from the root of the repository. `star
 `test:engine` first build the editor's engine with `cargo xtask build-editor` — skipped when
 `LP_ENGINE_PREBUILT=1` and both its outputs exist —; `start` and `build` then copy the catalogues
 of `i18n/` into the app, which serves them at `/i18n/`. `test:ci` runs on the mock engine, and
-needs no Rust.
+needs no Rust. `start:admin` serves the admin console and proxies `/api` and `/i18n` to the admin
+server on http://localhost:8463, which must run; `build` builds the app, then the console.
 
 ```shell
 npm ci --prefix frontend
 npx --prefix frontend playwright install chromium # once: the browser of test:engine
 npm start --prefix frontend                       # the app on http://localhost:4260
+npm run start:admin --prefix frontend             # the admin console on http://localhost:4263
 npm run format --prefix frontend                  # Prettier, in place
 npm run lint --prefix frontend                    # ESLint, then Prettier's check
-npm run test:ci --prefix frontend                 # unit tests of app and shared (Vitest)
+npm run test:ci --prefix frontend                 # unit tests of app, shared and admin (Vitest)
 npm run test:engine --prefix frontend             # W0's contract suite on the engine, in Chromium
 npm run test:tools --prefix frontend              # tests of frontend/tools/
-npm run build --prefix frontend
+npm run build --prefix frontend                   # the app, then the admin console
 npm run i18n:check --prefix frontend              # the catalogues of i18n/
 npm run i18n:check-bundle --prefix frontend       # after build: no catalogue in the bundle
 npm run e2e --prefix frontend                     # the editor's end-to-end path, in Chromium

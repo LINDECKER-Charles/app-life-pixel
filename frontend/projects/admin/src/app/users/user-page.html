@@ -1,0 +1,143 @@
+<nav class="crumbs" [attr.aria-label]="'admin.nav.breadcrumbs' | transloco">
+  <a routerLink="/users" [queryParams]="params()">{{ 'admin.users.title' | transloco }}</a>
+  <span aria-hidden="true">›</span>
+  <span>{{ user()?.email ?? id() }}</span>
+</nav>
+
+@if (notice(); as notice) {
+  <p class="notice" role="status">{{ notice | transloco }}</p>
+}
+
+@if (problem(); as problem) {
+  <lp-empty-state nothing="admin.user.empty" [problem]="problem" />
+} @else if (user(); as user) {
+  <h1>{{ user.email }}</h1>
+  <p class="status" [attr.data-status]="user.status">{{ statusKeys[user.status] | transloco }}</p>
+
+  <section aria-labelledby="user-actions">
+    <h2 id="user-actions">{{ 'admin.user.actions' | transloco }}</h2>
+    <div class="actions">
+      @for (action of available(); track action) {
+        <button type="button" [class.danger]="action === 'delete'" (click)="ask(action)">
+          {{ actions[action].labelKey | transloco }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section aria-labelledby="user-profile">
+    <h2 id="user-profile">{{ 'admin.user.profile' | transloco }}</h2>
+    <dl class="facts">
+      <dt>{{ 'admin.users.id' | transloco }}</dt>
+      <dd>
+        <code>{{ user.id }}</code>
+      </dd>
+      <dt>{{ 'admin.users.email_verified' | transloco }}</dt>
+      <dd>{{ (user.emailVerified ? 'admin.value.yes' : 'admin.value.no') | transloco }}</dd>
+      <dt>{{ 'admin.users.plan' | transloco }}</dt>
+      <dd>{{ user.plan }}</dd>
+      <dt>{{ 'admin.user.language' | transloco }}</dt>
+      <dd>{{ user.language }}</dd>
+      <dt>{{ 'admin.users.storage' | transloco }}</dt>
+      <dd>{{ bytes(user.storageUsedBytes) }}</dd>
+      <dt>{{ 'admin.user.library' | transloco }}</dt>
+      <dd>
+        {{
+          'admin.user.library_counts'
+            | transloco: { projects: user.projectCount, animations: user.animationCount }
+        }}
+      </dd>
+      <dt>{{ 'admin.users.created' | transloco }}</dt>
+      <dd>{{ date(user.createdAt) }}</dd>
+      <dt>{{ 'admin.users.last_seen' | transloco }}</dt>
+      <dd>{{ date(user.lastSeenAt) || ('admin.value.never' | transloco) }}</dd>
+    </dl>
+  </section>
+
+  <section aria-labelledby="user-events">
+    <h2 id="user-events">{{ 'admin.user.events' | transloco }}</h2>
+    @if (user.events.length === 0) {
+      <lp-empty-state nothing="admin.user.no_events" />
+    } @else {
+      <ul class="plain">
+        @for (event of user.events; track event.name) {
+          <li>
+            <code>{{ event.name }}</code> · {{ event.count }}
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section aria-labelledby="user-sessions">
+    <h2 id="user-sessions">{{ 'admin.user.sessions' | transloco }}</h2>
+    @if (user.sessions.length === 0) {
+      <lp-empty-state nothing="admin.user.no_sessions" />
+    } @else {
+      <ul class="plain">
+        @for (session of user.sessions; track $index) {
+          <li>
+            {{
+              'admin.user.session'
+                | transloco
+                  : {
+                      created: date(session.createdAt),
+                      seen: date(session.lastSeenAt),
+                      expires: date(session.expiresAt),
+                    }
+            }}
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section aria-labelledby="user-support">
+    <h2 id="user-support">{{ 'admin.user.support' | transloco }}</h2>
+    @if (user.supportRequests.length === 0) {
+      <lp-empty-state nothing="admin.user.no_support" />
+    } @else {
+      <ul class="plain">
+        @for (request of user.supportRequests; track request.id) {
+          <li>
+            <a [routerLink]="['/support', request.id]" [queryParams]="params()">
+              {{ categoryKeys[request.category] | transloco }}
+            </a>
+            · {{ supportStatusKeys[request.status] | transloco }} · {{ date(request.updatedAt) }}
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <section aria-labelledby="user-tokens">
+    <h2 id="user-tokens">{{ 'admin.user.tokens' | transloco }}</h2>
+    @if (user.tokens.length === 0) {
+      <lp-empty-state nothing="admin.user.no_tokens" />
+    } @else {
+      <ul class="plain">
+        @for (token of user.tokens; track token.id) {
+          <li>
+            <strong>{{ token.name }}</strong> · <code>{{ token.prefix }}</code> ·
+            {{ token.scopes.join(', ') }} ·
+            @if (token.revokedAt) {
+              {{ 'admin.user.token_revoked' | transloco: { date: date(token.revokedAt) } }}
+            } @else {
+              {{ 'admin.user.token_expires' | transloco: { date: date(token.expiresAt) } }}
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}
+
+@if (confirmation(); as request) {
+  <lp-confirm-action
+    [request]="request"
+    [pending]="running()"
+    [problem]="actionProblem()"
+    (confirmed)="confirm($event)"
+    (cancelled)="cancel()"
+  />
+}

@@ -1,0 +1,10 @@
+.sign-in {
+  max-width: 24rem;
+  margin: var(--lp-space-6) auto;
+  padding: 0 var(--lp-space-4);
+}
+
+form {
+  display: grid;
+  gap: var(--lp-space-4);
+}
