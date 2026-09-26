@@ -1,0 +1,75 @@
+<form novalidate (submit)="submit($event)">
+  @if (errors.of('form'); as error) {
+    <p #banner class="banner" role="alert" tabindex="-1">
+      {{ 'errors.' + error.code | transloco: error.params }}
+    </p>
+  }
+  <div class="field">
+    <label for="token-name">{{ 'tokens.create.name_label' | transloco }}</label>
+    <input
+      #nameField
+      id="token-name"
+      type="text"
+      autocomplete="off"
+      required
+      aria-describedby="token-name-hint"
+      [value]="name()"
+      [attr.maxlength]="limits.nameMaxChars"
+      [attr.aria-invalid]="errors.of('name') ? true : null"
+      (input)="name.set(nameField.value)"
+    />
+    <p id="token-name-hint" class="hint">
+      {{ 'tokens.create.name_hint' | transloco: { max: limits.nameMaxChars } }}
+    </p>
+    @if (errors.of('name'); as error) {
+      <p class="error" role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+    }
+  </div>
+  <fieldset class="field">
+    <legend>{{ 'tokens.create.scopes_label' | transloco }}</legend>
+    @for (scope of scopeOptions; track scope) {
+      <label class="option">
+        <input
+          #scopeField
+          type="checkbox"
+          [value]="scope"
+          [checked]="scopes().has(scope)"
+          (change)="toggleScope(scope, scopeField.checked)"
+        />
+        <span>
+          {{ scopeLabels[scope] | transloco }}
+          <span class="hint">{{ scopeHints[scope] | transloco }}</span>
+        </span>
+      </label>
+    }
+    @if (scopes().size === 0) {
+      <p class="error">{{ 'tokens.create.scopes_required' | transloco }}</p>
+    }
+  </fieldset>
+  <div class="field">
+    <label for="token-expiry">{{ 'tokens.create.expiry_label' | transloco }}</label>
+    <select
+      #expiryField
+      id="token-expiry"
+      [value]="expiryDays()"
+      (change)="expiryDays.set(+expiryField.value)"
+    >
+      @for (days of limits.expiryDays; track days) {
+        <option [value]="days" [selected]="days === expiryDays()">
+          {{ 'tokens.create.expiry_days' | transloco: { days } }}
+        </option>
+      }
+    </select>
+    @if (errors.of('expiry'); as error) {
+      <p class="error" role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+    }
+  </div>
+  <div class="actions">
+    <button type="button" class="secondary" (click)="cancelled.emit()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+    <button type="submit" class="primary" [disabled]="pending() || !isValid()">
+      {{ 'tokens.create.submit' | transloco }}
+    </button>
+  </div>
+</form>

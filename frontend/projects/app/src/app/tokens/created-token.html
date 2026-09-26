@@ -1,0 +1,26 @@
+<p class="warning" role="status">{{ 'tokens.created.once' | transloco }}</p>
+<div class="field">
+  <span id="created-token-label">{{ 'tokens.created.token_label' | transloco }}</span>
+  <pre class="code" aria-labelledby="created-token-label"><code>{{ token().token }}</code></pre>
+  <button type="button" class="secondary" (click)="copy('token')">
+    {{ 'tokens.created.copy_token' | transloco }}
+  </button>
+</div>
+<div class="field">
+  <span id="created-command-label">{{ 'tokens.created.command_label' | transloco }}</span>
+  <pre class="code" aria-labelledby="created-command-label"><code>{{ command() }}</code></pre>
+  <button type="button" class="secondary" (click)="copy('command')">
+    {{ 'tokens.created.copy_command' | transloco }}
+  </button>
+  <p class="hint">{{ 'tokens.created.command_hint' | transloco }}</p>
+</div>
+<p class="lp-visually-hidden" aria-live="polite">
+  @if (copied()) {
+    {{ 'tokens.created.copied' | transloco }}
+  }
+</p>
+<div class="actions">
+  <button type="button" class="primary" (click)="done.emit()">
+    {{ 'tokens.created.done' | transloco }}
+  </button>
+</div>
