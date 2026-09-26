@@ -1,14 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { ProjectActions } from '../actions/project-actions';
+import { LibraryChanges } from '../changes/library-changes';
 import { LIBRARY_STORE } from '../library-store';
 import type { Project } from '../library-types';
 import { PagedList } from './paged-list';
 
 /**
  * The library's projects with their counts (accounts.md, H8), 50 at a time with "Load more": a
- * form creates one; each can be opened, renamed, duplicated or deleted.
+ * form creates one; each can be opened, renamed, duplicated or deleted. The list reads again when
+ * the library changes outside the app (desktop.md, T3).
  */
 @Component({
   selector: 'lp-project-list',
@@ -26,6 +29,9 @@ export class ProjectList {
 
   constructor() {
     void this.list.reload();
+    inject(LibraryChanges)
+      .changes.pipe(takeUntilDestroyed())
+      .subscribe(() => void this.list.reload());
   }
 
   protected onNameInput(event: Event): void {

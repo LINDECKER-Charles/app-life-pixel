@@ -7,9 +7,11 @@ import {
   signal,
   untracked,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AnimationActions } from '../actions/animation-actions';
+import { concernsProject, LibraryChanges, type LibraryChange } from '../changes/library-changes';
 import { LIBRARY_STORE } from '../library-store';
 import type { AnimationSummary } from '../library-types';
 import { PagedList } from './paged-list';
@@ -17,7 +19,8 @@ import { PagedList } from './paged-list';
 /**
  * Animations of the library (accounts.md, H8) — across projects with a search field, or those of
  * one project —, 50 at a time with "Load more". Each opens in the editor, and can be renamed,
- * moved, duplicated or deleted.
+ * moved, duplicated or deleted. The list reads again when the library changes outside the app
+ * (desktop.md, T3).
  */
 @Component({
   selector: 'lp-animation-list',
@@ -44,6 +47,14 @@ export class AnimationList {
       this.projectId();
       untracked(() => void this.list.reload());
     });
+    inject(LibraryChanges)
+      .changes.pipe(takeUntilDestroyed())
+      .subscribe((change) => this.onLibraryChanged(change));
+  }
+
+  private onLibraryChanged(change: LibraryChange): void {
+    const projectId = this.projectId();
+    if (projectId === undefined || concernsProject(change, projectId)) void this.list.reload();
   }
 
   protected onQueryInput(event: Event): void {
