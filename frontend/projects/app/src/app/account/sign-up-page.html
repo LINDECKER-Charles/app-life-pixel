@@ -1,63 +1,84 @@
-<main class="page">
-  <h1>{{ 'auth.sign_up.title' | transloco }}</h1>
-  <form novalidate (submit)="submit($event)">
-    @if (form.of('form'); as error) {
-      <p #formBanner class="banner" role="alert" tabindex="-1">
-        {{ 'errors.' + error.code | transloco: error.params }}
+<ion-content>
+  <div class="lp-page lp-page--reading account-form-page">
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'auth.sign_up.title' | transloco }}</h1>
+        <p class="lp-page-header__lead">{{ 'auth.sign_up.lead' | transloco }}</p>
+      </div>
+    </header>
+    <form class="lp-card lp-stack account-form" novalidate (submit)="submit($event)">
+      <lp-error-summary [entries]="form.entries()" [targets]="targets" />
+      <div class="lp-field">
+        <label class="lp-field__label" for="sign-up-email">
+          {{ 'auth.sign_up.email_label' | transloco }}
+        </label>
+        <input
+          #emailInput
+          id="sign-up-email"
+          class="lp-input"
+          type="email"
+          autocomplete="email"
+          [attr.maxlength]="limits.emailMaxChars"
+          [value]="email()"
+          [attr.aria-invalid]="form.of('email') ? 'true' : null"
+          [attr.aria-describedby]="form.of('email') ? 'sign-up-email-error' : null"
+          (input)="onEmail(emailInput.value)"
+        />
+        @if (form.of('email'); as error) {
+          <p class="lp-field__error" id="sign-up-email-error">
+            <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+          </p>
+        }
+      </div>
+      <lp-password-field
+        fieldId="sign-up-password"
+        [label]="'auth.sign_up.password_label' | transloco"
+        [hint]="
+          'auth.sign_up.password_hint'
+            | transloco: { min: limits.passwordMinChars, max: limits.passwordMaxChars }
+        "
+        autocomplete="new-password"
+        [maxChars]="limits.passwordMaxChars"
+        [value]="password()"
+        [error]="form.of('password')"
+        (valueChange)="onPassword($event)"
+      />
+      <div class="lp-field">
+        <label class="lp-field__label" for="sign-up-language">
+          {{ 'auth.sign_up.language_label' | transloco }}
+        </label>
+        <select
+          #languageSelect
+          id="sign-up-language"
+          class="lp-input"
+          (change)="language.set(languageSelect.value)"
+        >
+          @for (item of languages(); track item.code) {
+            <option [value]="item.code" [selected]="item.code === language()">
+              {{ item.name }}
+            </option>
+          }
+        </select>
+      </div>
+      <p class="account-form__note">
+        {{ 'auth.sign_up.legal_intro' | transloco }}
+        <a routerLink="/legal/terms">{{ 'legal.footer.terms' | transloco }}</a
+        >,
+        <a routerLink="/legal/privacy">{{ 'legal.footer.privacy' | transloco }}</a>
       </p>
-    }
-    <ion-input
-      #emailField
-      [label]="'auth.sign_up.email_label' | transloco"
-      labelPlacement="stacked"
-      type="email"
-      autocomplete="email"
-      [attr.maxlength]="limits.emailMaxChars"
-      [value]="email()"
-      [errorText]="errorText('email')"
-      [class.ion-invalid]="!!form.of('email')"
-      [class.ion-touched]="!!form.of('email')"
-      (ionInput)="onEmailInput($event)"
-    />
-    <lp-password-field
-      #passwordField
-      [label]="'auth.sign_up.password_label' | transloco"
-      autocomplete="new-password"
-      [maxChars]="limits.passwordMaxChars"
-      [value]="password()"
-      [errorText]="errorText('password')"
-      (valueChange)="password.set($event)"
-    />
-    <p class="hint">
-      {{
-        'auth.sign_up.password_hint'
-          | transloco: { min: limits.passwordMinChars, max: limits.passwordMaxChars }
-      }}
+      <button
+        type="submit"
+        class="lp-button lp-button--primary account-form__submit"
+        [attr.aria-busy]="pending() ? 'true' : null"
+      >
+        {{ 'auth.sign_up.submit' | transloco }}
+      </button>
+    </form>
+    <p class="account-form__aside">
+      {{ 'auth.sign_up.has_account' | transloco }}
+      <a routerLink="/sign-in" [queryParams]="{ returnUrl: returnUrl() }">
+        {{ 'auth.sign_up.sign_in_link' | transloco }}
+      </a>
     </p>
-    <ion-select
-      [label]="'auth.sign_up.language_label' | transloco"
-      labelPlacement="stacked"
-      interface="popover"
-      [value]="language()"
-      (ionChange)="onLanguageChange($event)"
-    >
-      @for (item of languages(); track item.code) {
-        <ion-select-option [value]="item.code">{{ item.name }}</ion-select-option>
-      }
-    </ion-select>
-    <p class="legal">
-      {{ 'auth.sign_up.legal_intro' | transloco }}
-      <a routerLink="/legal/terms">{{ 'legal.footer.terms' | transloco }}</a>
-      <a routerLink="/legal/privacy">{{ 'legal.footer.privacy' | transloco }}</a>
-    </p>
-    <button type="submit" class="primary" [disabled]="pending()">
-      {{ 'auth.sign_up.submit' | transloco }}
-    </button>
-  </form>
-  <p>
-    {{ 'auth.sign_up.has_account' | transloco }}
-    <a routerLink="/sign-in" [queryParams]="{ returnUrl: returnUrl() }">
-      {{ 'auth.sign_up.sign_in_link' | transloco }}
-    </a>
-  </p>
-</main>
+  </div>
+</ion-content>

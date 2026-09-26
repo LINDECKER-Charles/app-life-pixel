@@ -1,18 +1,7 @@
-.page {
-  max-width: 40rem;
-  padding: var(--lp-space-6) var(--lp-space-4);
-  margin-inline: auto;
-}
+// The page template, cards, pills and fields are global (_page.scss, _surfaces.scss,
+// _feedback.scss, _fields.scss).
 
-section {
-  margin-block-end: var(--lp-space-6);
-}
-
-.danger {
-  color: var(--ion-color-danger, #c00);
-}
-
-.actions {
-  display: flex;
-  gap: var(--lp-space-3);
+.address {
+  font-weight: var(--lp-font-weight-bold);
+  overflow-wrap: anywhere;
 }

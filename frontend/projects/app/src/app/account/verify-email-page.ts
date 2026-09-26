@@ -8,8 +8,10 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ApiProblem, AuthApi } from 'shared';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import { SessionStore } from './session-store';
 
 type Status = 'pending' | 'checking' | 'success' | 'failure';
@@ -20,30 +22,48 @@ type Status = 'pending' | 'checking' | 'success' | 'failure';
  */
 @Component({
   selector: 'lp-verify-email-page',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [IonContent, RouterLink, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="page">
-      <h1>{{ 'auth.verify_email.title' | transloco }}</h1>
-      @switch (status()) {
-        @case ('pending') {
-          <p>{{ 'auth.verify_email.pending' | transloco }}</p>
+    <ion-content>
+      <div class="lp-page lp-page--reading account-form-page">
+        <header class="lp-page-header">
+          <div class="lp-page-header__text">
+            <h1 class="lp-page-header__title">{{ 'auth.verify_email.title' | transloco }}</h1>
+          </div>
+        </header>
+        @switch (status()) {
+          @case ('pending') {
+            <p>{{ 'auth.verify_email.pending' | transloco }}</p>
+          }
+          @case ('checking') {
+            <p role="status">{{ 'common.loading' | transloco }}</p>
+          }
+          @case ('success') {
+            <lp-status-banner variant="success">
+              <p>{{ 'auth.verify_email.success' | transloco }}</p>
+            </lp-status-banner>
+            <p>
+              <a class="lp-button lp-button--primary" routerLink="/account">
+                {{ 'auth.verify_email.account_link' | transloco }}
+              </a>
+            </p>
+          }
+          @case ('failure') {
+            <lp-status-banner variant="danger">
+              <p>{{ errorMessage() }}</p>
+            </lp-status-banner>
+            <p>
+              <a class="lp-button lp-button--secondary" routerLink="/sign-in">
+                {{ 'auth.verify_email.sign_in_link' | transloco }}
+              </a>
+            </p>
+          }
         }
-        @case ('checking') {
-          <p>{{ 'common.loading' | transloco }}</p>
-        }
-        @case ('success') {
-          <p role="status">{{ 'auth.verify_email.success' | transloco }}</p>
-          <a routerLink="/account">{{ 'auth.verify_email.account_link' | transloco }}</a>
-        }
-        @case ('failure') {
-          <p role="alert">{{ errorMessage() }}</p>
-          <a routerLink="/sign-in">{{ 'auth.verify_email.sign_in_link' | transloco }}</a>
-        }
-      }
-    </main>
+      </div>
+    </ion-content>
   `,
-  styleUrl: './account-form.scss',
+  styleUrl: './form/account-form.scss',
 })
 export class VerifyEmailPage {
   private readonly authApi = inject(AuthApi);

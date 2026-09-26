@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  ElementRef,
   inject,
   input,
   signal,
@@ -10,24 +9,21 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import {
-  IonInput,
-  IonSelect,
-  IonSelectOption,
-  type InputCustomEvent,
-  type SelectCustomEvent,
-} from '@ionic/angular';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { AvailableLanguages } from 'shared';
+import { Icon } from '../ui/icon/icon';
 import { ACCOUNT_LIMITS } from './account-limits';
-import { FieldMap, FormErrors } from './form-errors';
-import { PasswordField } from './password-field';
+import { ErrorSummary } from './form/error-summary';
+import { fieldError } from './form/field-error';
+import { type FieldCheck, type FieldMap, FormErrors } from './form/form-errors';
+import { PasswordField } from './form/password-field';
 import { SessionStore } from './session-store';
 
 type Field = 'email' | 'password' | 'form';
 
 // `account.language` cannot happen from the select, whose options are always the available
-// languages: it lands on the form banner like the other codes with no field of their own.
+// languages: it lands on the summary like the other codes with no field of their own.
 const FIELD_BY_CODE: FieldMap<Field> = {
   'auth.email_invalid': 'email',
   'auth.email_taken': 'email',
@@ -42,23 +38,21 @@ const FIELD_BY_CODE: FieldMap<Field> = {
  */
 @Component({
   selector: 'lp-sign-up-page',
-  imports: [IonInput, IonSelect, IonSelectOption, PasswordField, RouterLink, TranslocoPipe],
+  imports: [ErrorSummary, Icon, IonContent, PasswordField, RouterLink, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sign-up-page.html',
-  styleUrl: './account-form.scss',
+  styleUrl: './form/account-form.scss',
 })
 export class SignUpPage {
   private readonly session = inject(SessionStore);
   private readonly router = inject(Router);
   private readonly transloco = inject(TranslocoService);
-
-  private readonly emailField = viewChild.required<IonInput>('emailField');
-  private readonly passwordField = viewChild.required<PasswordField>('passwordField');
-  private readonly formBanner = viewChild<ElementRef<HTMLElement>>('formBanner');
+  private readonly summary = viewChild.required(ErrorSummary);
 
   readonly returnUrl = input<string>();
 
   protected readonly limits = ACCOUNT_LIMITS;
+  protected readonly targets = { email: 'sign-up-email', password: 'sign-up-password' };
   protected readonly languages = inject(AvailableLanguages).languages;
   protected readonly email = signal('');
   protected readonly password = signal('');
@@ -73,17 +67,14 @@ export class SignUpPage {
     });
   }
 
-  protected onEmailInput(event: InputCustomEvent): void {
-    this.email.set(event.detail.value ?? '');
+  protected onEmail(value: string): void {
+    this.email.set(value);
+    this.form.recheck('email', this.checks()[0][1]);
   }
 
-  protected onLanguageChange(event: SelectCustomEvent<string>): void {
-    this.language.set(event.detail.value);
-  }
-
-  protected errorText(field: Field): string | undefined {
-    const error = this.form.of(field);
-    return error ? this.transloco.translate(`errors.${error.code}`, error.params) : undefined;
+  protected onPassword(value: string): void {
+    this.password.set(value);
+    this.form.recheck('password', this.checks()[1][1]);
   }
 
   protected async submit(event: SubmitEvent): Promise<void> {
@@ -91,24 +82,31 @@ export class SignUpPage {
     if (this.pending()) {
       return;
     }
-    this.form.clear();
+    if (!this.form.check(this.checks())) {
+      this.summary().focusFirstError();
+      return;
+    }
     this.pending.set(true);
     try {
       await this.session.signUp(this.email(), this.password(), this.language());
     } catch (error) {
-      await this.focus(this.form.set(error));
+      this.form.set(error);
+      this.summary().focusFirstError();
     } finally {
       this.pending.set(false);
     }
   }
 
-  private async focus(field: Field): Promise<void> {
-    if (field === 'email') {
-      await this.emailField().setFocus();
-    } else if (field === 'password') {
-      await this.passwordField().focus();
-    } else {
-      this.formBanner()?.nativeElement.focus();
-    }
+  /** The address is required; the password's length is the server's rule, said in the hint. */
+  private checks(): FieldCheck<Field>[] {
+    const { passwordMinChars: min, passwordMaxChars: max } = this.limits;
+    const length = [...this.password()].length;
+    return [
+      ['email', fieldError(this.email().trim() !== '', 'auth.form.email_required')],
+      [
+        'password',
+        fieldError(length >= min && length <= max, 'errors.auth.password_length', { min, max }),
+      ],
+    ];
   }
 }

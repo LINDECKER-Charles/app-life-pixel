@@ -1,0 +1,12 @@
+{
+  "account.delete.consequence": "Supprimer le compte supprime définitivement ses animations, projets, jetons d’accès et demandes d’assistance, et déconnecte tous les appareils. Téléchargez d’abord vos données pour en garder une copie.",
+  "auth.form.email_required": "Saisissez votre adresse e-mail.",
+  "auth.form.password_required": "Saisissez votre mot de passe.",
+  "auth.form.summary": "Le formulaire n’a pas pu être envoyé :",
+  "auth.reset_password.lead": "Saisissez l’adresse de votre compte : nous y enverrons un lien pour définir un nouveau mot de passe.",
+  "auth.sign_in.lead": "Connectez-vous pour conserver vos animations dans votre bibliothèque.",
+  "auth.sign_up.lead": "Un compte gratuit conserve vos animations dans votre bibliothèque. Dessiner et exporter ne demandent aucun compte.",
+  "support.new.category_placeholder": "Choisissez une catégorie",
+  "tokens.created.copy_failed": "La copie a échoué : le texte est sélectionné, copiez-le vous-même.",
+  "tokens.revoke.done": "« {name} » est révoqué."
+}
