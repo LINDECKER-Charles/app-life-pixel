@@ -46,6 +46,155 @@
         ],
         "type": "object"
       },
+      "AccountChange": {
+        "description": "A change of the account: its language.",
+        "properties": {
+          "language": {
+            "description": "The language code of its emails and interface, one of `languages.json`.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "language"
+        ],
+        "type": "object"
+      },
+      "AccountDeletionRequest": {
+        "description": "The confirmation of a deletion.",
+        "properties": {
+          "password": {
+            "description": "The account's password, asked again.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "password"
+        ],
+        "type": "object"
+      },
+      "AccountExport": {
+        "description": "A data export: a zip laid out like a local library, plus `account.json`.",
+        "format": "binary",
+        "type": "string"
+      },
+      "Animation": {
+        "description": "An animation of the account's library, without its document.",
+        "properties": {
+          "createdAt": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "documentBytes": {
+            "description": "The size of its document, in bytes: what it counts against the quota.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "frameCount": {
+            "description": "Its frames.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "height": {
+            "description": "The canvas height, in pixels.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "projectId": {
+            "description": "The project holding it.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "description": "Its title.",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "When its document last changed, or it moved.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "version": {
+            "description": "Its version: the `ETag` of its document, which a write names in `If-Match`.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "width": {
+            "description": "The canvas width, in pixels.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "projectId",
+          "title",
+          "width",
+          "height",
+          "frameCount",
+          "documentBytes",
+          "version",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "AnimationChange": {
+        "description": "A change of an animation: its title — a save, under `If-Match` —, its project, or both.",
+        "properties": {
+          "projectId": {
+            "description": "The project to move it to.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "The new title.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "AnimationCopy": {
+        "description": "A copy of an animation.",
+        "properties": {
+          "projectId": {
+            "description": "The project of the copy; the original's when absent.",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "description": "The copy's title.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "type": "object"
+      },
+      "AnimationDocument": {
+        "description": "A document, as the model serializes it: the format of the local library's files.",
+        "type": "object"
+      },
       "Health": {
         "description": "The server's health.",
         "properties": {
@@ -65,6 +214,156 @@
           "ok"
         ],
         "type": "string"
+      },
+      "Page_Animation": {
+        "description": "A page of a list, from the most recently updated item.",
+        "properties": {
+          "items": {
+            "description": "The items.",
+            "items": {
+              "description": "An animation of the account's library, without its document.",
+              "properties": {
+                "createdAt": {
+                  "description": "When it was created.",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "documentBytes": {
+                  "description": "The size of its document, in bytes: what it counts against the quota.",
+                  "format": "int64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "frameCount": {
+                  "description": "Its frames.",
+                  "format": "int32",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "height": {
+                  "description": "The canvas height, in pixels.",
+                  "format": "int32",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "id": {
+                  "description": "Its id.",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "projectId": {
+                  "description": "The project holding it.",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "title": {
+                  "description": "Its title.",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "When its document last changed, or it moved.",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "Its version: the `ETag` of its document, which a write names in `If-Match`.",
+                  "format": "int64",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "width": {
+                  "description": "The canvas width, in pixels.",
+                  "format": "int32",
+                  "minimum": 0,
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "projectId",
+                "title",
+                "width",
+                "height",
+                "frameCount",
+                "documentBytes",
+                "version",
+                "createdAt",
+                "updatedAt"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "The `cursor` of the next page; `null` on the last one.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "Page_Project": {
+        "description": "A page of a list, from the most recently updated item.",
+        "properties": {
+          "items": {
+            "description": "The items.",
+            "items": {
+              "description": "A project of the account's library.",
+              "properties": {
+                "animationCount": {
+                  "description": "How many animations it holds.",
+                  "format": "int32",
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "createdAt": {
+                  "description": "When it was created.",
+                  "format": "date-time",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "Its id.",
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "name": {
+                  "description": "Its name.",
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "description": "When it or one of its animations last changed.",
+                  "format": "date-time",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "animationCount",
+                "createdAt",
+                "updatedAt"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "nextCursor": {
+            "description": "The `cursor` of the next page; `null` on the last one.",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
       },
       "PasswordChangeRequest": {
         "description": "A change of password.",
@@ -156,6 +455,57 @@
           "status",
           "code",
           "params"
+        ],
+        "type": "object"
+      },
+      "Project": {
+        "description": "A project of the account's library.",
+        "properties": {
+          "animationCount": {
+            "description": "How many animations it holds.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "createdAt": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "description": "Its name.",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "When it or one of its animations last changed.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "animationCount",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ProjectName": {
+        "description": "A project's name: to create, rename or duplicate it.",
+        "properties": {
+          "name": {
+            "description": "The name.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
         ],
         "type": "object"
       },
@@ -284,6 +634,1100 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/account": {
+      "delete": {
+        "operationId": "deleteAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeletionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "The account is deleted: `Set-Cookie` clears the session cookie",
+            "headers": {
+              "Set-Cookie": {
+                "description": "The cleared session cookie",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.current_password`, `auth.account_suspended`, `auth.csrf`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Deletes the signed-in account, its library and its sessions, and clears the session cookie.",
+        "tags": [
+          "account"
+        ]
+      },
+      "get": {
+        "operationId": "getAccount",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            },
+            "description": "The account"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The signed-in account, with its storage usage and quota.",
+        "tags": [
+          "account"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAccount",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Account"
+                }
+              }
+            },
+            "description": "The account, changed"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`account.language` (`available`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Sets the language of the signed-in account's emails and interface.",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/account/export": {
+      "get": {
+        "operationId": "exportAccount",
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountExport"
+                }
+              }
+            },
+            "description": "The zip, as an attachment named `life-pixel-export-<YYYY-MM-DD>.zip`",
+            "headers": {
+              "Content-Disposition": {
+                "description": "The file's name",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The signed-in account's data: a zip laid out like a local library — the desktop app opens it\nonce unzipped —, plus `account.json` with its address, language, plan and sign-up date.",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/api/v1/animations": {
+      "get": {
+        "operationId": "listAnimations",
+        "parameters": [
+          {
+            "description": "Only the animations of this project.",
+            "in": "query",
+            "name": "project",
+            "required": false,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Only the animations whose title holds this text, whatever its case.",
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The `nextCursor` of the previous page; none for the first.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The most items of the page: 1 to 100, 50 by default.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_Animation"
+                }
+              }
+            },
+            "description": "A page of the animations"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A page of the account's animations, from the most recently updated: those of a project,\nthose whose title holds a text, or all.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/animations/{id}": {
+      "delete": {
+        "operationId": "deleteAnimation",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The animation is deleted"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Deletes the animation `id`, whatever the quota.",
+        "tags": [
+          "library"
+        ]
+      },
+      "get": {
+        "operationId": "getAnimation",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animation"
+                }
+              }
+            },
+            "description": "The animation"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The animation `id`, without its document.",
+        "tags": [
+          "library"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAnimation",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "`\"<version>\"`, with a title",
+            "in": "header",
+            "name": "If-Match",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationChange"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animation"
+                }
+              }
+            },
+            "description": "The animation, changed"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`, `library.project_not_found`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works"
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.version_conflict` (`current`): the document changed since"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.name` (`max`)"
+          },
+          "428": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.version_required`: `If-Match` names the version replaced"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Retitles the animation `id` — a save of its document, under `If-Match` —, moves it to\nanother project, or both.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/animations/{id}/document": {
+      "get": {
+        "operationId": "getDocument",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/vnd.life-pixel.animation+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnimationDocument"
+                }
+              }
+            },
+            "description": "The document; `ETag` is its version",
+            "headers": {
+              "ETag": {
+                "description": "`\"<version>\"`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The document of the animation `id`.",
+        "tags": [
+          "library"
+        ]
+      },
+      "put": {
+        "operationId": "saveDocument",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "`\"<version>\"`: the version replaced",
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.life-pixel.animation+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animation"
+                }
+              }
+            },
+            "description": "The animation, saved; `ETag` is its new version",
+            "headers": {
+              "ETag": {
+                "description": "`\"<version>\"`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works"
+          },
+          "412": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.version_conflict` (`current`): the document changed since"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.too_large` (`maxBytes`)"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.unsupported_media_type`: not `application/vnd.life-pixel.animation+json`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A `document.*` code of the model, with its parameters"
+          },
+          "428": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.version_required`: `If-Match` names the version replaced"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Replaces the document of the animation `id`, when `If-Match` names its current version.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/animations/{id}/duplicate": {
+      "post": {
+        "operationId": "duplicateAnimation",
+        "parameters": [
+          {
+            "description": "The animation's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationCopy"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animation"
+                }
+              }
+            },
+            "description": "The copy"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.animation_not_found`, `library.project_not_found`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.name` (`max`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Copies the animation `id` under a new title, into another project or beside the original.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
     "/api/v1/auth/password": {
       "put": {
         "operationId": "changePassword",
@@ -775,6 +2219,720 @@
         "summary": "Sends the signed-in account's verification email again, with a new link; nothing once the\naddress is verified.",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "parameters": [
+          {
+            "description": "The `nextCursor` of the previous page; none for the first.",
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The most items of the page: 1 to 100, 50 by default.",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Page_Project"
+                }
+              }
+            },
+            "description": "A page of the projects"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "A page of the account's projects, from the most recently updated.",
+        "tags": [
+          "library"
+        ]
+      },
+      "post": {
+        "operationId": "createProject",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectName"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            },
+            "description": "The project"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.name` (`max`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Creates an empty project.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "delete": {
+        "operationId": "deleteProject",
+        "parameters": [
+          {
+            "description": "The project's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The project and its animations are deleted"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.project_not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Deletes the project `id` and its animations, whatever the quota.",
+        "tags": [
+          "library"
+        ]
+      },
+      "get": {
+        "operationId": "getProject",
+        "parameters": [
+          {
+            "description": "The project's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            },
+            "description": "The project"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.project_not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The project `id`.",
+        "tags": [
+          "library"
+        ]
+      },
+      "patch": {
+        "operationId": "renameProject",
+        "parameters": [
+          {
+            "description": "The project's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectName"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            },
+            "description": "The project, renamed"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.project_not_found`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.name` (`max`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Renames the project `id`.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/projects/{id}/animations": {
+      "post": {
+        "operationId": "createAnimation",
+        "parameters": [
+          {
+            "description": "The project's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/vnd.life-pixel.animation+json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnimationDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Animation"
+                }
+              }
+            },
+            "description": "The animation; `ETag` is its version",
+            "headers": {
+              "ETag": {
+                "description": "`\"<version>\"`",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.project_not_found`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works"
+          },
+          "413": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.too_large` (`maxBytes`)"
+          },
+          "415": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.unsupported_media_type`: not `application/vnd.life-pixel.animation+json`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "A `document.*` code of the model, with its parameters"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Creates an animation in the project `id` from its document: the app's first save.",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/projects/{id}/duplicate": {
+      "post": {
+        "operationId": "duplicateProject",
+        "parameters": [
+          {
+            "description": "The project's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectName"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            },
+            "description": "The copy"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`library.project_not_found`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`document.name` (`max`)"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Copies the project `id` and its animations into a new project; the whole copy is checked\nagainst the quota first.",
+        "tags": [
+          "library"
         ]
       }
     },

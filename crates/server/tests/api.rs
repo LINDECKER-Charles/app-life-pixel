@@ -63,7 +63,7 @@ async fn an_unknown_api_route_is_a_problem_never_the_app() {
     for path in [
         "/api/v1",
         "/api/v1/",
-        "/api/v1/projects/42",
+        "/api/v1/unknown/42",
         "/api/v2/projects",
     ] {
         server
@@ -71,7 +71,7 @@ async fn an_unknown_api_route_is_a_problem_never_the_app() {
             .await
             .assert_problem(404, "request.not_found");
     }
-    let post = empty(Method::POST, "/api/v1/projects");
+    let post = empty(Method::POST, "/api/v1/unknown");
     server
         .send(post)
         .await

@@ -1,6 +1,7 @@
 //! The accounts use cases, one module per flow, and what several of them share: opening a
 //! session, and issuing an emailed token.
 
+mod deletion;
 mod password_change;
 mod password_reset;
 mod profile;
@@ -9,6 +10,7 @@ mod sign_in;
 mod sign_up;
 mod verification;
 
+pub use deletion::AccountDeletion;
 pub use password_change::PasswordChange;
 pub use password_reset::PasswordReset;
 pub use sign_in::Credentials;

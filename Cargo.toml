@@ -59,6 +59,7 @@ tempfile = "3.27.0"
 thiserror = "2.0.21"
 time = "0.3.55"
 tokio = "1.53.1"
+tokio-util = { version = "0.7.19", default-features = false }
 tower = "0.5.3"
 tower-http = "0.6.11"
 tracing = "0.1.44"

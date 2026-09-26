@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use life_pixel_service::accounts::{Accounts, AccountsPorts};
+use life_pixel_service::library::{Library, LibraryPorts};
 use life_pixel_service::ports::LibraryStore;
 use thiserror::Error;
 
@@ -44,6 +45,8 @@ pub struct AppState {
     pub readiness: Arc<dyn Readiness>,
     /// The hosted library.
     pub library_store: Arc<dyn LibraryStore>,
+    /// The library's use cases, over the hosted library.
+    pub library: Library,
     /// The accounts and sessions.
     pub accounts: Accounts,
     /// The rate limiters.
@@ -64,14 +67,28 @@ impl AppState {
         let catalogues = Catalogues::load(&config.i18n_dir, &config.legal)?;
         let static_app = StaticApp::load(&config.app_dir)?;
         let settings = accounts::settings(&config, catalogues.languages().to_vec());
+        let library = library(&backends, &config);
         Ok(Self {
             config: Arc::new(config),
             readiness: backends.readiness,
             library_store: backends.library_store,
+            library,
             accounts: Accounts::new(backends.accounts, settings),
             rate_limits: Arc::new(RateLimits::new()),
             catalogues: Arc::new(catalogues),
             static_app: Arc::new(static_app),
         })
     }
+}
+
+/// The library's use cases over the hosted store of `backends`, with the accounts' clock, ids and
+/// product events, and the plans of `config`.
+fn library(backends: &Backends, config: &Config) -> Library {
+    let ports = LibraryPorts {
+        store: Arc::clone(&backends.library_store),
+        clock: Arc::clone(&backends.accounts.clock),
+        ids: Arc::clone(&backends.accounts.ids),
+        events: Arc::clone(&backends.accounts.events),
+    };
+    Library::new(ports, config.plans)
 }

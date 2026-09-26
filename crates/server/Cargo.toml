@@ -44,24 +44,35 @@ sha2.workspace = true
 sqlx = { workspace = true, features = ["macros", "migrate", "postgres", "runtime-tokio", "time", "tls-rustls-aws-lc-rs", "uuid"] }
 thiserror.workspace = true
 time = { workspace = true, features = ["formatting", "parsing"] }
-tokio = { workspace = true, features = ["io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tokio = { workspace = true, features = ["fs", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tokio-util = { workspace = true, features = ["io"] }
 tower-http = { workspace = true, features = ["catch-panic"] }
 tracing.workspace = true
 tracing-opentelemetry.workspace = true
 tracing-subscriber = { workspace = true, features = ["env-filter", "fmt", "json", "std"] }
-utoipa.workspace = true
+utoipa = { workspace = true, features = ["uuid"] }
 utoipa-axum.workspace = true
-uuid = { workspace = true, features = ["v7"] }
+uuid = { workspace = true, features = ["serde", "v7"] }
 
 [dev-dependencies]
 # One line per dependency, sorted.
 life-pixel-service = { workspace = true, features = ["testing"] }
 tempfile.workspace = true
 tower = { workspace = true, features = ["util"] }
+zip.workspace = true
 
 # The tests of the local stack (H4), in one target: tests/stack/main.rs.
 [[test]]
 name = "stack"
+required-features = ["stack-tests"]
+
+# The library and account routes over the local stack (H6).
+[[test]]
+name = "library_api"
+required-features = ["stack-tests"]
+
+[[test]]
+name = "account_api"
 required-features = ["stack-tests"]
 
 [lints]
