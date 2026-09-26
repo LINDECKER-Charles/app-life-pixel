@@ -326,6 +326,91 @@ try the app, so that it leaves your library alone. The icons come from the pixel
 `cargo tauri icon icons/source.png` in `tauri/`, then delete what it makes for mobile and the
 Windows Store — `android/`, `ios/`, `Square*Logo.png`, `StoreLogo.png`.
 
+### Desktop end to end
+
+`tauri/tests/e2e/` drives the debug app through `tauri-driver` and WebKitGTK's WebDriver: the app
+starts; a new animation drawn with the keyboard is saved into a new project, then changed and saved
+again; the library lists it; a GIF export appears in `LP_EXPORT_DIR`; and the bundled
+`life-pixel list --library` lists the same animation. Each run starts the app on its own temporary
+library, export folder and settings. It finds elements by role and accessible name, as a person
+does. It runs on Linux, as CI's `desktop` job does, with Tauri's system packages,
+`webkit2gtk-driver` and `xvfb`, the Tauri CLI,
+`cargo install tauri-driver --version 2.0.6 --locked` and `npm ci --prefix frontend`:
+
+```shell
+cd tauri/tests/e2e
+npm ci
+npm run lint              # tsc, ESLint and Prettier
+npm run build             # the sidecar, then the debug app without a bundle
+xvfb-run -a npm test      # the journey; a failure leaves a screenshot in test-results/
+```
+
+`tauri-driver` cannot drive macOS. There, run the suite in a throwaway Debian container. It
+mounts the repository read-only and copies it, as the front-end build cannot write through the
+mount, and keeps `target/` and every `node_modules/` on Docker volumes, so that the Linux build
+never mixes with yours — `docker volume rm` them when you are done. `--init` lets `xvfb-run`
+see its X server start:
+
+```shell
+docker run --rm --init --memory 7g -v "$PWD":/src:ro -w /repo \
+  -v life-pixel-e2e-target:/repo/target \
+  -v life-pixel-e2e-frontend-modules:/repo/frontend/node_modules \
+  -v life-pixel-e2e-modules:/repo/tauri/tests/e2e/node_modules \
+  -v life-pixel-e2e-rustup:/usr/local/rustup \
+  -v life-pixel-e2e-registry:/usr/local/cargo/registry \
+  -v life-pixel-e2e-tools:/opt/cargo-tools \
+  -e CARGO_BUILD_JOBS=4 -e LP_ENGINE_PREBUILT=1 -e CI=true \
+  rust:1.98-bookworm bash -euxo pipefail -c '
+    tar -C /src --exclude=./target --exclude=node_modules --exclude=.angular \
+      --exclude=./frontend/dist --exclude=./tauri/binaries --exclude=./tauri/gen \
+      --exclude=./tauri/tests/e2e/test-results -cf - . | tar -C /repo -xf -
+    apt-get update
+    apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libxdo-dev libssl-dev \
+      librsvg2-dev webkit2gtk-driver xvfb xauth xz-utils
+    arch=$(dpkg --print-architecture); if [ "$arch" = amd64 ]; then arch=x64; fi
+    curl -fsSL "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-$arch.tar.xz" | tar -xJ -C /opt
+    export PATH="/opt/node-v24.21.0-linux-$arch/bin:/opt/cargo-tools/bin:$PATH"
+    cargo install tauri-cli --version ^2 --locked --root /opt/cargo-tools
+    cargo install tauri-driver --version 2.0.6 --locked --root /opt/cargo-tools
+    npm ci --prefix frontend
+    cd tauri/tests/e2e
+    npm ci
+    npm run build
+    xvfb-run -a npm test'
+```
+
+A failure's screenshot stays in the container: add
+`-v /tmp/life-pixel-e2e-results:/repo/tauri/tests/e2e/test-results` to keep it.
+
+`LP_ENGINE_PREBUILT=1` expects the engine that `cargo xtask build-editor` wrote on your machine;
+without it, the container needs `wasm-bindgen-cli` too.
+
+#### The macOS app, by hand
+
+Before a release, and after a change to `tauri/`, check the app on a Mac. Start it from a terminal
+with `LIFE_PIXEL_LIBRARY` on a temporary folder, so that it leaves your library alone:
+
+```shell
+cargo xtask build-desktop
+LIFE_PIXEL_LIBRARY="$(mktemp -d)" \
+  "target/release/bundle/macos/Life Pixel.app/Contents/MacOS/life-pixel-desktop"
+```
+
+1. **Install**: the commands above start a local, unsigned build. For a release, take the DMG of a
+   `release.yml` dry run and drag Life Pixel into Applications — a signed build opens without a
+   Gatekeeper warning —, then start its `Contents/MacOS/life-pixel-desktop` the same way. The
+   window opens on a new animation, in your system's language.
+2. **Draw**: create a 16 × 16 animation; draw with the pointer, then with the keyboard alone —
+   Tab to the canvas, `b`, the arrows and Enter —; add a frame and draw on it.
+3. **Save**: ⌘S saves it into a new project; change it and save again, without a conflict; the
+   library lists the project and the animation; quit, start again, and open it from the library.
+4. **Export**: export a GIF: the system's save dialog opens and the file plays in Quick Look;
+   export the PNG frames: the folder picker opens and receives every frame.
+5. **CLI**: Settings, then Agents, shows the bundled CLI's path; run its
+   `"<cliPath>" list --library "<libraryPath>"`: it lists the animation you saved.
+6. **No updater**: a local build has none: with the network off, the app starts, saves and exports
+   as before, and no update prompt appears, even after the ten seconds a release waits to check.
+
 ### CLI
 
 `crates/cli` is `life-pixel-cli`, the `life-pixel` binary: `mcp`, `list` and `export` on a local

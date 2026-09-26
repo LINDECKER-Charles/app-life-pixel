@@ -1,0 +1,3 @@
+/node_modules/
+# The screenshot and page source a failed run leaves.
+/test-results/
