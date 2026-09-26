@@ -1,0 +1,48 @@
+// The app's page: the local Nunito face, body type, headings, page background and links. The
+// font file is copied from design-system/assets/ into the app's public folder by
+// tools/copy-design-assets.mjs; no request leaves the app's origin. The admin console does not
+// load this file and keeps the system stack.
+
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url('/design-system/fonts/nunito-variable.ttf') format('truetype');
+}
+
+:root {
+  --lp-font-family: var(--lp-font-family-rounded);
+}
+
+body {
+  font-family: var(--lp-font-family);
+  font-size: var(--lp-font-size-body);
+  line-height: var(--lp-font-line-height);
+  color: var(--lp-color-text);
+  background: var(--lp-color-background);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-heading);
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--lp-font-family-mono);
+}
+
+a {
+  color: var(--lp-color-accent-text);
+  text-underline-offset: 0.25em;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+  }
+}

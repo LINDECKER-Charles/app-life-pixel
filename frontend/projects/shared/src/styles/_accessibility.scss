@@ -1,13 +1,13 @@
 // Visible focus, reduced motion and the visually hidden utility (WCAG 2.2 AA).
 
-$focus-outline-width: 2px;
-$focus-outline-offset: 2px;
 // "Nothing", yet long enough for `animationend` and `transitionend` to fire.
 $reduced-duration: 0.01ms;
 
+// 3 px at a 3 px offset (design-system/docs/accessibility.md): leave room for it, since clipping
+// overflow would crop it.
 @mixin focus-outline {
-  outline: $focus-outline-width solid var(--lp-color-focus);
-  outline-offset: $focus-outline-offset;
+  outline: var(--lp-focus-width) solid var(--lp-color-focus);
+  outline-offset: var(--lp-focus-offset);
 }
 
 :focus-visible {
@@ -19,7 +19,12 @@ $reduced-duration: 0.01ms;
   @include focus-outline;
 }
 
+// The motion tokens drop to zero too, for components that time their own transitions with them.
 @mixin reduced-motion {
+  --lp-duration-fast: 0ms;
+  --lp-duration-normal: 0ms;
+  --lp-duration-slow: 0ms;
+
   *,
   *::before,
   *::after {

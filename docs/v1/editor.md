@@ -165,11 +165,16 @@ export interface EditorEngine {
   `PreferencesStore` (`settings/preferences-store.ts`), whose web implementation keeps them for the
   page (D37); H7 saves a signed-in person's language in the account, T2 the desktop's choices in
   its settings file.
-- **Design tokens** (`projects/shared/src/styles/`): CSS custom properties `--lp-color-*`,
-  `--lp-space-*`, `--lp-radius-*`, `--lp-font-*`, mapped onto Ionic's variables, with a dark set
-  under `prefers-color-scheme: dark` and the manual theme; contrast AA in both. `:focus-visible`
-  draws a 2-pixel outline in `--lp-color-focus`. Reduced motion shortens every animation and
-  transition to nothing and turns Ionic's animations off.
+- **Design tokens** (`projects/shared/src/styles/`): the Rose Atelier values of
+  `design-system/tokens/tokens.css` (D38) under the production names — CSS custom properties
+  `--lp-color-*`, `--lp-shadow-*`, `--lp-space-*`, `--lp-radius-*`, `--lp-font-*`, `--lp-z-*`,
+  `--lp-duration-*`, `--lp-control-height*` — mapped onto Ionic's variables, with a dark set under
+  `prefers-color-scheme: dark` and the manual theme, and system colours under forced colours;
+  contrast AA in both. `tools/design-tokens/token-parity.test.mjs` keeps each colour equal to its
+  design-system role. The app uses the bundled Nunito face, copied from `design-system/assets/` by
+  `tools/copy-design-assets.mjs`; the admin console keeps the system stack. `:focus-visible` draws
+  a 3-pixel outline in `--lp-color-focus` at a 3-pixel offset. Reduced motion shortens every
+  animation and transition to nothing, zeroes the duration tokens and turns Ionic's animations off.
 - **Unsaved work**: while `hasUnsavedWork`, a `beforeunload` handler asks before the page is left or
   reloaded; nothing is kept in the browser (D37).
 - **Keys**: `shell.`, `settings.`, `editor.`, `not_found.`.
