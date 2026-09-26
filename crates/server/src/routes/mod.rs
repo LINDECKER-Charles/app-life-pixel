@@ -3,6 +3,7 @@
 
 pub mod account;
 pub mod auth;
+pub mod events;
 pub mod health;
 pub mod library;
 
@@ -21,7 +22,9 @@ pub fn api_rate_limited() -> OpenApiRouter<AppState> {
 /// The routes under `/api/v1` that check a rate-limit policy of their own: one line per route
 /// group.
 pub fn api_own_policies() -> OpenApiRouter<AppState> {
-    OpenApiRouter::new().merge(auth::own_policies())
+    OpenApiRouter::new()
+        .merge(auth::own_policies())
+        .merge(events::own_policies())
 }
 
 /// The routes under `/api/v1` that open a session: they check a rate-limit policy of their own,
