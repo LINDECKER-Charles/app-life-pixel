@@ -16,7 +16,7 @@ pub struct PlatformInfo {
     pub os: &'static str,
     /// The library folder in use.
     pub library_path: String,
-    /// The bundled `life-pixel` CLI; `null` until the app ships it.
+    /// The bundled `life-pixel` CLI; `null` in a build without it.
     pub cli_path: Option<String>,
 }
 
@@ -27,6 +27,6 @@ pub async fn platform_info(state: State<'_, DesktopState>) -> Result<PlatformInf
         version: env!("CARGO_PKG_VERSION"),
         os: std::env::consts::OS,
         library_path: state.library_path().await.display().to_string(),
-        cli_path: None,
+        cli_path: state.cli_path().map(|path| path.display().to_string()),
     })
 }

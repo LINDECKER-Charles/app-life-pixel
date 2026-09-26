@@ -32,6 +32,8 @@ pub struct StateOptions {
     pub library_override: Option<PathBuf>,
     /// `LP_EXPORT_DIR`, debug builds only: where exports are saved without a dialog.
     pub export_dir: Option<PathBuf>,
+    /// The bundled `life-pixel` CLI, when the build ships it.
+    pub cli_path: Option<PathBuf>,
 }
 
 /// The library folder in use and the library over it — or why it could not be opened, which
@@ -135,6 +137,12 @@ impl DesktopState {
     #[must_use]
     pub fn dialogs(&self) -> &dyn Dialogs {
         self.dialogs.as_ref()
+    }
+
+    /// The bundled `life-pixel` CLI, when the build ships it.
+    #[must_use]
+    pub fn cli_path(&self) -> Option<&Path> {
+        self.options.cli_path.as_deref()
     }
 
     /// Where exports go without a dialog: `LP_EXPORT_DIR`, in debug builds only.

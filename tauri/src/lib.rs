@@ -5,6 +5,7 @@ pub mod commands;
 pub mod dialogs;
 pub mod errors;
 pub mod settings;
+pub mod sidecar;
 pub mod state;
 
 use std::path::PathBuf;
@@ -22,6 +23,8 @@ use crate::state::{DesktopState, StateOptions};
 const LIBRARY_VARIABLE: &str = "LIFE_PIXEL_LIBRARY";
 /// Where a debug build saves exports, without a dialog: for the end-to-end tests.
 const EXPORT_DIR_VARIABLE: &str = "LP_EXPORT_DIR";
+/// Set by the AppImage runtime to the image's path: the app runs from a mount point that changes.
+const APPIMAGE_VARIABLE: &str = "APPIMAGE";
 /// What the log keeps when `RUST_LOG` says nothing.
 const DEFAULT_LOG_FILTER: &str = "warn";
 
@@ -70,7 +73,19 @@ fn state_options(app: &App) -> tauri::Result<StateOptions> {
         default_library,
         library_override: variable_path(LIBRARY_VARIABLE),
         export_dir: variable_path(EXPORT_DIR_VARIABLE).filter(|_| cfg!(debug_assertions)),
+        cli_path: cli_path(app),
     })
+}
+
+/// The bundled CLI beside the app's executable, or its copy in the data folder inside an
+/// AppImage.
+fn cli_path(app: &App) -> Option<PathBuf> {
+    let executable = std::env::current_exe().ok()?;
+    let in_appimage = cfg!(target_os = "linux") && variable_path(APPIMAGE_VARIABLE).is_some();
+    let stable_folder = in_appimage
+        .then(|| app.path().app_data_dir().ok())
+        .flatten();
+    sidecar::locate(&executable, stable_folder.as_deref())
 }
 
 /// The system's dialogs, attached to the app.
