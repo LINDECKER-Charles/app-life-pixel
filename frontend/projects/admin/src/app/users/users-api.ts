@@ -42,9 +42,12 @@ export class UsersApi {
     });
   }
 
-  /** The account's data, as the zip its owner's export gives (right of access). */
-  export(id: string): Promise<DownloadedFile> {
-    return this.client.download('/api/admin/v1/users/{id}/export', { id });
+  /** The account's data, as the zip its owner's export gives (right of access), with `reason`. */
+  export(id: string, reason: string): Promise<DownloadedFile> {
+    return this.client.downloadPost('/api/admin/v1/users/{id}/export', {
+      path: { id },
+      body: { reason },
+    });
   }
 
   /** Erases the account, its documents included (right to erasure). */
