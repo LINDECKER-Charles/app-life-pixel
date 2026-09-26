@@ -8,7 +8,7 @@ use serde_json::json;
 use crate::router::auth::Browser;
 use crate::stack::{ApiStack, get};
 use crate::{
-    ADMIN_EMAIL, ADMIN_ID, FAILING_ADMIN, UNKNOWN, acting, admin_get, audit_entries, call, expect,
+    ADMIN_EMAIL, ADMIN_ID, FAILING_ADMIN, UNKNOWN, acting, audit_entries, call, expect,
     fail_the_failing_admins_entries, support_request, user, with_reason,
 };
 
@@ -56,6 +56,7 @@ async fn an_action_on_an_account_needs_a_reason_and_an_account() {
     for (method, action) in [
         (Method::POST, "/suspend"),
         (Method::POST, "/reactivate"),
+        (Method::POST, "/export"),
         (Method::DELETE, ""),
     ] {
         let blank = with_reason(method.clone(), &format!("/users/{ada}{action}"), "  ");
@@ -103,11 +104,16 @@ async fn a_failed_entry_leaves_the_account_active_and_its_sessions_open() {
 }
 
 #[tokio::test]
-async fn the_export_is_the_owners_zip_and_its_read_is_audited() {
+async fn the_export_is_the_owners_zip_and_its_read_is_audited_with_its_reason() {
     let stack = ApiStack::new().await;
     let (_, ada) = user(&stack, "ada@example.org").await;
 
-    let answer = expect(&stack, 200, admin_get(&format!("/users/{ada}/export"))).await;
+    let export = with_reason(
+        Method::POST,
+        &format!("/users/{ada}/export"),
+        " Access request ",
+    );
+    let answer = expect(&stack, 200, export).await;
 
     assert_eq!(answer.header("content-type"), "application/zip");
     assert!(
@@ -120,17 +126,11 @@ async fn the_export_is_the_owners_zip_and_its_read_is_audited() {
     assert_eq!(entries.len(), 1);
     assert_eq!(entries[0].action, "user.export");
     assert_eq!(entries[0].target_id, ada);
+    assert_eq!(entries[0].reason.as_deref(), Some("Access request"));
     assert_eq!(
-        (
-            entries[0].reason.as_ref(),
-            entries[0].before.as_ref(),
-            entries[0].after.as_ref()
-        ),
-        (None, None, None)
+        (entries[0].before.as_ref(), entries[0].after.as_ref()),
+        (None, None)
     );
-    let unknown = call(&stack, admin_get(&format!("/users/{UNKNOWN}/export"))).await;
-    unknown.assert_problem(404, "admin.user_not_found");
-    assert_eq!(audit_entries(&stack).await.len(), 1);
 }
 
 #[tokio::test]

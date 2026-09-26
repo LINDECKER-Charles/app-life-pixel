@@ -3104,7 +3104,7 @@
       }
     },
     "/api/admin/v1/users/{id}/export": {
-      "get": {
+      "post": {
         "operationId": "exportUser",
         "parameters": [
           {
@@ -3118,6 +3118,16 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReasonBody"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -3157,6 +3167,16 @@
             },
             "description": "`admin.unauthenticated`: no live session"
           },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`admin.csrf`: another origin, or no valid `X-CSRF-Token`"
+          },
           "404": {
             "content": {
               "application/problem+json": {
@@ -3166,10 +3186,21 @@
               }
             },
             "description": "`admin.user_not_found`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`admin.reason_length`, with `min` and `max`"
           }
         },
         "security": [
           {
+            "adminCsrf": [],
             "adminSession": []
           }
         ],
