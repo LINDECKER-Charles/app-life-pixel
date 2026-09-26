@@ -1,7 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AvailableLanguages, type MotionPreference, type ThemePreference } from 'shared';
+import { DesktopPreferencesStore } from '../platform/desktop-preferences';
+import { isDesktop, PlatformService, type PlatformInfo } from '../platform/platform';
 import { PreferencesStore } from './preferences-store';
 
 /** A value to choose, and the i18n key of its label. */
@@ -34,4 +36,25 @@ export class SettingsPage {
   protected readonly languages = inject(AvailableLanguages).languages;
   protected readonly themes = THEME_CHOICES;
   protected readonly motions = MOTION_CHOICES;
+  /** Only the desktop gains a library folder to choose (desktop.md, T2). */
+  protected readonly desktop = isDesktop();
+  protected readonly platformInfo = signal<PlatformInfo | null>(null);
+  private readonly platform = inject(PlatformService);
+  private readonly desktopPreferences = inject(DesktopPreferencesStore, { optional: true });
+
+  constructor() {
+    if (this.desktop) void this.loadPlatformInfo();
+  }
+
+  /** Opens the system's folder dialog, then persists the choice unless it is cancelled. */
+  protected async chooseLibraryFolder(): Promise<void> {
+    const folder = await this.platform.pickLibraryFolder();
+    if (folder === null) return;
+    await this.desktopPreferences?.setLibraryFolder(folder);
+    await this.loadPlatformInfo();
+  }
+
+  private async loadPlatformInfo(): Promise<void> {
+    this.platformInfo.set(await this.platform.info());
+  }
 }
