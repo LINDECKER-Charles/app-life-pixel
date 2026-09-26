@@ -1,0 +1,86 @@
+// Status pills and banners (design-system/docs/components.md, "Toasts, banners, badges and empty
+// states"). Every state has an icon or shape and words: colour never carries it alone.
+//
+//   .lp-pill (--success, --warning, --danger, --info, --accent)   a compact static state; not
+//     a button. `<lp-icon>` or `.lp-pill__dot` before its text.
+//   .lp-banner (--success, --warning, --danger, --info)            a message near its content:
+//     `.lp-banner__icon`, `.lp-banner__body` and optional `.lp-banner__actions`. The
+//     `lp-status-banner` component (app/ui/status-banner) sets its role and icon.
+
+$feedback-variants: success, warning, danger, info;
+
+.lp-pill {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  padding: 0.125rem var(--lp-space-2);
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text-muted);
+  white-space: nowrap;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-round);
+}
+
+.lp-pill__dot {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.lp-pill--accent {
+  color: var(--lp-color-accent-text);
+  background: var(--lp-color-accent-soft);
+}
+
+.lp-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--lp-space-3);
+  align-items: start;
+  padding: var(--lp-space-3) var(--lp-space-4);
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-semibold);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface-soft);
+  // The edge stays visible where forced colours remove the background.
+  border: var(--lp-border-width) solid currentColor;
+  border-radius: var(--lp-radius-large);
+}
+
+.lp-banner__icon {
+  display: flex;
+  align-items: center;
+  min-height: 1lh;
+}
+
+.lp-banner__body {
+  display: grid;
+  gap: var(--lp-space-1);
+  min-width: 0;
+
+  > * {
+    margin: 0;
+  }
+}
+
+.lp-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  grid-column: 2;
+  gap: var(--lp-space-2);
+}
+
+// After the base rules, which they override.
+@each $variant in $feedback-variants {
+  .lp-pill--#{$variant},
+  .lp-banner--#{$variant} {
+    color: var(--lp-color-#{$variant});
+    background: var(--lp-color-#{$variant}-bg);
+  }
+}

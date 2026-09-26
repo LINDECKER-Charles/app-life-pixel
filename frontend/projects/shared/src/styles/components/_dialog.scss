@@ -1,0 +1,117 @@
+// Dialog anatomy (design-system/docs/components.md, "Dialogs, sheets and confirmations"): a named
+// title, concise context, content that scrolls inside a bounded height, an inline failure area and
+// the action row, which stays reachable at every zoom. Ionic's modal keeps focus, inertness and
+// Escape; these classes only lay out what it holds.
+//
+//   <ion-modal class="lp-modal" …>                 --wide for the export comparison
+//     <ng-template>
+//       <div class="lp-dialog">
+//         <header class="lp-dialog__header">
+//           <h2 class="lp-dialog__title">…</h2>      optional close `.lp-icon-button` after it
+//         </header>
+//         <p class="lp-dialog__context">…</p>
+//         <div class="lp-dialog__body">…</div>       scrolls
+//         <div class="lp-dialog__failure">…</div>    an `lp-status-banner`; empty collapses
+//         <div class="lp-dialog__actions">…</div>    primary first in reading order
+//       </div>
+//     </ng-template>
+//   </ion-modal>
+
+$dialog-edge: var(--lp-space-5);
+
+// From 48 rem wide, the dialog takes the height of its content up to the viewport's; below, it
+// keeps Ionic's full-screen sheet. Ionic's documented properties, no shadow-DOM styling.
+@media (min-width: 48rem) {
+  ion-modal.lp-modal {
+    --width: min(var(--lp-dialog-width), calc(100% - 2 * var(--lp-space-5)));
+    --height: auto;
+    --max-height: calc(100dvh - 2 * var(--lp-space-5));
+    --border-radius: var(--lp-radius-xlarge);
+    --box-shadow: var(--lp-shadow-large);
+
+    .ion-page {
+      position: relative;
+      max-height: calc(100dvh - 2 * var(--lp-space-5));
+      contain: content;
+    }
+  }
+
+  ion-modal.lp-modal--wide {
+    --width: min(var(--lp-dialog-width-wide), calc(100% - 2 * var(--lp-space-5)));
+  }
+}
+
+.lp-dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: inherit;
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface-raised);
+}
+
+.lp-dialog__header {
+  display: flex;
+  gap: var(--lp-space-3);
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: $dialog-edge $dialog-edge 0;
+}
+
+.lp-dialog__title {
+  flex: 1;
+  margin: 0;
+  font-size: var(--lp-font-size-large);
+  line-height: var(--lp-font-line-height-heading);
+  // The title's height matches the close button's beside it.
+  align-self: center;
+}
+
+.lp-dialog__context {
+  padding: var(--lp-space-2) $dialog-edge 0;
+  margin: 0;
+  color: var(--lp-color-text-muted);
+}
+
+.lp-dialog__body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--lp-space-4);
+  min-height: 0;
+  // Room for the focus outline of the controls at the edge, which clipping would crop.
+  padding: var(--lp-space-4) $dialog-edge;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.lp-dialog__failure {
+  padding: 0 $dialog-edge var(--lp-space-3);
+
+  &:empty {
+    display: none;
+  }
+}
+
+.lp-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  gap: var(--lp-space-2);
+  justify-content: flex-end;
+  padding: var(--lp-space-3) $dialog-edge;
+  background: var(--lp-color-surface-raised);
+  border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+}
+
+// On a narrow screen, the actions share the row and stay above the software keyboard's edge.
+@media (max-width: 29.99rem) {
+  .lp-dialog__actions {
+    padding-block-end: max(var(--lp-space-3), env(safe-area-inset-bottom));
+
+    > .lp-button {
+      flex: 1 1 auto;
+    }
+  }
+}

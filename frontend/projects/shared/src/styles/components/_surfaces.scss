@@ -1,0 +1,54 @@
+// Cards and panels: content groups on a surface. Space separates groups before another enclosing
+// card does (design-system/docs/foundations.md, "Space, geometry and density").
+//
+//   .lp-card            a raised group on the page: surface, decorative edge, 20 px corners
+//   .lp-card__title     its heading (any level)
+//   .lp-panel           a quieter editor or settings region: surface, 14 px corners
+//   .lp-panel--soft     the pale rose surface, for a welcome inset or a quiet section
+//   .lp-stack           vertical rhythm: children 16 px apart (`--lp-stack-gap` to change it)
+//   .lp-cluster         a wrapping row of controls 8 px apart, such as an action row
+
+.lp-card,
+.lp-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+}
+
+.lp-card {
+  padding: var(--lp-space-5);
+  border-radius: var(--lp-radius-xlarge);
+}
+
+.lp-card__title {
+  margin: 0 0 var(--lp-space-3);
+  font-size: var(--lp-font-size-large);
+}
+
+.lp-panel {
+  padding: var(--lp-space-4);
+  border-radius: var(--lp-radius-large);
+}
+
+.lp-panel--soft {
+  background: var(--lp-color-surface-soft);
+}
+
+.lp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-stack-gap, var(--lp-space-4));
+
+  > * {
+    margin-block: 0;
+  }
+}
+
+.lp-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+}

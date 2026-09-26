@@ -1,0 +1,153 @@
+// Fields (design-system/docs/components.md, "Fields and forms"): a persistent label, an optional
+// hint, the control with an optional unit, and the validation message.
+//
+//   <div class="lp-field">
+//     <label class="lp-field__label" for="width">Width</label>
+//     <p class="lp-field__hint" id="width-hint">From 1 to 256.</p>
+//     <div class="lp-field__control">
+//       <input class="lp-input" id="width" aria-describedby="width-hint width-error" />
+//       <span class="lp-field__unit">px</span>
+//     </div>
+//     <p class="lp-field__error" id="width-error"><lp-icon name="error" />…</p>
+//   </div>
+//
+// `.lp-input` styles an `<input>`, `<select>` or `<textarea>`; `aria-invalid="true"` draws the
+// error edge. `.lp-check` is a checkbox or radio with its label; `.lp-fieldset` groups radios
+// under their `<legend>`.
+
+.lp-field {
+  display: grid;
+  gap: var(--lp-space-2);
+  min-width: 0;
+}
+
+.lp-field__label,
+.lp-fieldset > legend {
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text);
+}
+
+.lp-field__hint,
+.lp-field__error {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  line-height: var(--lp-font-line-height-control);
+}
+
+.lp-field__hint {
+  color: var(--lp-color-text-muted);
+}
+
+.lp-field__error {
+  display: flex;
+  gap: var(--lp-space-2);
+  align-items: flex-start;
+  font-weight: var(--lp-font-weight-semibold);
+  color: var(--lp-color-danger);
+}
+
+.lp-field__control {
+  display: flex;
+  gap: var(--lp-space-2);
+  align-items: center;
+  min-width: 0;
+
+  > .lp-input {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.lp-field__unit {
+  flex-shrink: 0;
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.lp-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--lp-control-height);
+  padding: var(--lp-space-2) var(--lp-space-3);
+  margin: 0;
+  font: inherit;
+  // 16 px: smaller text makes mobile browsers zoom into the field.
+  font-size: var(--lp-font-size-body);
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border);
+  border-radius: var(--lp-radius-large);
+  transition: border-color var(--lp-duration-fast) var(--lp-ease-standard);
+
+  &::placeholder {
+    color: var(--lp-color-text-muted);
+    opacity: 1;
+  }
+
+  &:hover:not(:disabled, [readonly]) {
+    border-color: var(--lp-color-text-muted);
+  }
+
+  &[aria-invalid='true'] {
+    border-color: var(--lp-color-danger);
+    box-shadow: inset 0 0 0 1px var(--lp-color-danger);
+  }
+
+  &:disabled {
+    color: var(--lp-color-disabled-text);
+    cursor: not-allowed;
+    background: var(--lp-color-disabled-bg);
+  }
+
+  &[readonly] {
+    background: var(--lp-color-surface-soft);
+  }
+}
+
+textarea.lp-input {
+  min-height: calc(3 * var(--lp-control-height));
+  resize: vertical;
+}
+
+select.lp-input {
+  cursor: pointer;
+}
+
+.lp-input--compact {
+  min-height: var(--lp-control-height-compact);
+  padding-block: var(--lp-space-1);
+}
+
+.lp-check {
+  display: flex;
+  gap: var(--lp-space-3);
+  align-items: center;
+  min-height: var(--lp-control-height);
+  font-size: var(--lp-font-size-small);
+  cursor: pointer;
+
+  > input {
+    flex-shrink: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    accent-color: var(--lp-color-accent);
+  }
+}
+
+.lp-fieldset {
+  display: grid;
+  gap: var(--lp-space-1);
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+
+  > legend {
+    padding: 0;
+    margin-block-end: var(--lp-space-2);
+  }
+}
