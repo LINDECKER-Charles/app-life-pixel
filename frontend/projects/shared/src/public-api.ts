@@ -6,6 +6,7 @@ export * from './lib/api/api-client';
 export * from './lib/api/api-headers';
 export * from './lib/api/api-problem';
 export * from './lib/api/api-types';
+export * from './lib/api/events-api';
 export type * from './lib/api/schema';
 export * from './lib/appearance/appearance';
 export * from './lib/appearance/apply-appearance';

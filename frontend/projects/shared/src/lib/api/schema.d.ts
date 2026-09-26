@@ -163,6 +163,27 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/events': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Records an allowed product event; the subject comes from the session when there is one. Once
+     *     the request parses, this never fails: a full channel only drops the event, counted by
+     *     `events_dropped_total`.
+     */
+    post: operations['createEvent'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/healthz': {
     parameters: {
       query?: never;
@@ -207,6 +228,31 @@ export interface components {
       /** @description Its documents' bytes and its quota. */
       storage: components['schemas']['Storage'];
     };
+    /**
+     * @description The one name the app's allow-list accepts today (`docs/v1/server.md`, H13); any other value
+     *     fails to deserialize, and answers `request.malformed`.
+     * @enum {string}
+     */
+    EventName: 'export_completed';
+    /** @description A product event the app reports, with the browsing context every one of them carries. */
+    EventRequest: {
+      appVersion: string;
+      language: string;
+      name: components['schemas']['EventName'];
+      platform: string;
+      properties: components['schemas']['ExportCompletedProperties'];
+    };
+    /** @description `export_completed`'s properties: the format downloaded and its raw, uncompressed size. */
+    ExportCompletedProperties: {
+      /** Format: int64 */
+      bytes: number;
+      format: components['schemas']['ExportFormat'];
+    };
+    /**
+     * @description The format a completed export used, as `docs/v1/service.md` fixes the list.
+     * @enum {string}
+     */
+    ExportFormat: 'wasm' | 'gif' | 'apng' | 'sprite_sheet' | 'png_frames';
     /** @description The server's health. */
     Health: {
       /** @description Always `ok`: a server that cannot answer sends a problem. */
@@ -719,6 +765,46 @@ export interface operations {
         };
       };
       /** @description `rate_limit.exceeded`: 3 an hour per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createEvent: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['EventRequest'];
+      };
+    };
+    responses: {
+      /** @description Recorded, or silently dropped under load */
+      202: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `request.malformed`: a name, property or value outside the allow-list */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 60 a minute per address */
       429: {
         headers: {
           [name: string]: unknown;
