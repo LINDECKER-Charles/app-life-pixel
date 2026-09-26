@@ -1,5 +1,6 @@
 import { importProvidersFrom } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
@@ -34,6 +35,7 @@ async function render(info: Promise<PlatformInfo>, copy = vi.fn().mockResolvedVa
         }),
       ),
       provideTranslocoMessageformat(),
+      provideRouter([]),
       { provide: PlatformService, useValue: { info: () => info } },
       { provide: Clipboard, useValue: { copy } },
     ],
@@ -93,13 +95,32 @@ describe('the agents page', () => {
     expect(statuses[1]?.textContent).toContain('Could not copy');
   });
 
-  it('says when this build ships no CLI', async () => {
+  it('warns when this build ships no CLI', async () => {
     const { root } = await render(Promise.resolve({ ...INFO, cliPath: null }));
 
     expect(root.querySelector('pre')).toBeNull();
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain(
+    expect(root.querySelector('lp-status-banner.lp-banner--warning')?.textContent).toContain(
       'cargo xtask build-desktop',
     );
+  });
+
+  it('says so, as an error, when the platform cannot be read', async () => {
+    const { root } = await render(Promise.reject(new Error('no platform')));
+
+    await vi.waitFor(() =>
+      expect(root.querySelector('[role="alert"]')?.textContent).toContain(
+        en['mcp.agents.unavailable'],
+      ),
+    );
+    expect(root.querySelector('pre')).toBeNull();
+  });
+
+  it('leads back to the settings', async () => {
+    const { root } = await render(Promise.resolve(INFO));
+
+    expect(root.querySelector('a[href="/settings"]')).not.toBeNull();
+    expect(root.querySelector('main')).toBeNull();
+    expect(root.querySelectorAll('h1')).toHaveLength(1);
   });
 
   it('has no serious accessibility violation', async () => {

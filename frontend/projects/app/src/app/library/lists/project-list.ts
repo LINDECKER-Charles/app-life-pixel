@@ -2,20 +2,23 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { Icon } from '../../ui/icon/icon';
+import { MenuButton } from '../../ui/menu/menu-button';
 import { ProjectActions } from '../actions/project-actions';
 import { LibraryChanges } from '../changes/library-changes';
 import { LIBRARY_STORE } from '../library-store';
 import type { Project } from '../library-types';
+import { ListStatus } from './list-status';
 import { PagedList } from './paged-list';
 
 /**
  * The library's projects with their counts (accounts.md, H8), 50 at a time with "Load more": a
- * form creates one; each can be opened, renamed, duplicated or deleted. The list reads again when
- * the library changes outside the app (desktop.md, T3).
+ * form creates one; each opens, its menu renames or duplicates it, and a separate button deletes
+ * it. The list reads again when the library changes outside the app (desktop.md, T3).
  */
 @Component({
   selector: 'lp-project-list',
-  imports: [RouterLink, TranslocoPipe],
+  imports: [Icon, ListStatus, MenuButton, RouterLink, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './project-list.html',
   styleUrl: './library-list.scss',

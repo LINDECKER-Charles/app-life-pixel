@@ -1,58 +1,74 @@
-// Reading width: long lines of settings are hard to scan.
-$page-max-width: 40rem;
+// The settings' groups are shared cards; what is theirs: the language list's width, the theme
+// cards and the muted notes.
 
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-5);
-  max-width: $page-max-width;
-  padding: var(--lp-space-5) var(--lp-space-4);
-  margin-inline: auto;
-}
-
-h1 {
+p {
   margin: 0;
-  font-size: var(--lp-font-size-title);
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
+.language {
+  max-width: 20rem;
+}
+
+// Theme cards: each radio with its name and hint; the chosen one takes the accent edge.
+.themes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
   gap: var(--lp-space-2);
 }
 
-select {
-  align-self: flex-start;
-  padding: var(--lp-space-2);
-  font: inherit;
-  color: var(--lp-color-text);
-  background: var(--lp-color-background);
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
-}
+.theme {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--lp-space-1) var(--lp-space-2);
+  align-content: start;
+  align-items: center;
+  min-height: var(--lp-control-height);
+  padding: var(--lp-space-3);
+  cursor: pointer;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border);
+  border-radius: var(--lp-radius-large);
 
-.choices {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-2);
-  padding: var(--lp-space-3) var(--lp-space-4);
-  margin: 0;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-medium);
+  &:hover {
+    border-color: var(--lp-color-text-muted);
+  }
 
-  legend {
-    padding-inline: var(--lp-space-1);
-    font-weight: var(--lp-font-weight-bold);
+  &:has(.theme__input:checked) {
+    background: var(--lp-color-accent-soft);
+    border-color: var(--lp-color-accent);
+    box-shadow: inset 0 0 0 1px var(--lp-color-accent);
+  }
+
+  .theme__input {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    accent-color: var(--lp-color-accent);
   }
 }
 
-.choice {
-  display: flex;
-  align-items: center;
-  gap: var(--lp-space-2);
-  min-height: 1.5rem;
+.theme__name {
+  font-weight: var(--lp-font-weight-bold);
 }
 
-input[type='radio'] {
-  accent-color: var(--lp-color-accent);
+.theme__hint {
+  grid-column: 2;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.note {
+  margin-block-start: var(--lp-space-3);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.lp-stack .note {
+  margin-block-start: 0;
+}
+
+.path {
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  overflow-wrap: anywhere;
 }

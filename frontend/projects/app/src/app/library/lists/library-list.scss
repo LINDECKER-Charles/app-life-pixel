@@ -1,4 +1,5 @@
-/* Shared by the library's lists: projects, and animations. */
+/* Shared by the library's lists: projects, and animations. Compact rows: the title link and its
+   facts, then the actions menu and, apart, Delete. */
 
 :host {
   display: flex;
@@ -8,51 +9,80 @@
 
 .create,
 .search {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lp-space-2);
-  align-items: center;
+  max-width: 36rem;
 }
 
 .items {
   display: flex;
   flex-direction: column;
-  gap: var(--lp-space-2);
   padding: 0;
   margin: 0;
   list-style: none;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+
+  &:empty {
+    display: none;
+  }
 }
 
 .item {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lp-space-3);
+  gap: var(--lp-space-2) var(--lp-space-3);
   align-items: center;
-  padding: var(--lp-space-3);
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-medium);
-  background: var(--lp-color-surface);
+  padding: var(--lp-space-2) var(--lp-space-3);
+
+  & + & {
+    border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  }
+}
+
+.text {
+  display: flex;
+  flex: 1 1 14rem;
+  flex-wrap: wrap;
+  gap: var(--lp-space-1) var(--lp-space-3);
+  align-items: baseline;
+  min-width: 0;
 }
 
 .name {
-  flex: 1 1 12rem;
   font-weight: var(--lp-font-weight-bold);
+  overflow-wrap: anywhere;
 }
 
-.meta {
-  color: var(--lp-color-text-muted);
+.meta,
+.empty {
   font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.empty {
+  margin: 0;
 }
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--lp-space-2);
+  gap: var(--lp-space-1);
+  align-items: center;
+  margin-inline-start: auto;
 }
 
-.danger {
-  color: var(--lp-color-on-danger);
-  background: var(--lp-color-danger);
+.delete:hover {
+  color: var(--lp-color-danger);
+}
+
+.no-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+  align-items: center;
+
+  p {
+    margin: 0;
+  }
 }
 
 .more {

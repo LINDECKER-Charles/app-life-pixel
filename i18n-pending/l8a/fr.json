@@ -1,0 +1,21 @@
+{
+  "library.actions": "Actions",
+  "library.animation.actions_label": "Actions pour {name}",
+  "library.animations.clear_search": "Effacer la recherche",
+  "library.animations.empty_text": "Créez une animation, dessinez-la, puis enregistrez-la : elle vous attendra ici.",
+  "library.animations.empty_title": "Aucune animation enregistrée pour l’instant",
+  "library.animations.no_results": "Aucune animation ne correspond à « {query} ».",
+  "library.create_animation": "Créer une animation",
+  "library.lead": "Vos projets et les animations que vous avez enregistrées.",
+  "library.project.actions_label": "Actions pour {name}",
+  "library.project.empty_text": "Enregistrez une animation dans ce projet pour la retrouver ici.",
+  "library.project.empty_title": "Aucune animation dans ce projet pour l’instant",
+  "mcp.agents.back": "Retour aux paramètres",
+  "settings.agents.hint": "Laissez un agent d’IA de cet ordinateur travailler sur votre bibliothèque, sans compte.",
+  "settings.appearance.heading": "Apparence",
+  "settings.lead": "Chaque changement s’applique aussitôt.",
+  "settings.theme.canvas_note": "Votre dessin garde son fond neutre dans tous les thèmes.",
+  "settings.theme.dark_hint": "Surfaces sombres, reposantes le soir.",
+  "settings.theme.light_hint": "Surfaces claires et chaleureuses.",
+  "settings.theme.system_hint": "Suit le réglage de votre appareil."
+}
