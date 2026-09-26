@@ -29,6 +29,11 @@ async function openLegalPage(page: string): Promise<ComponentFixture<LegalPage>>
   const initialization = TestBed.inject(ApplicationInitStatus).donePromise;
   await answerJson('/i18n/languages.json', languages);
   await answerJson('/i18n/en.json', en);
+  const http = TestBed.inject(HttpTestingController);
+  (await vi.waitFor(() => http.expectOne('/api/v1/auth/session'))).flush(
+    { code: 'auth.unauthenticated', params: {} },
+    { status: 401, statusText: 'Unauthorized' },
+  );
   await initialization;
   const fixture = TestBed.createComponent(LegalPage);
   fixture.componentRef.setInput('page', page);

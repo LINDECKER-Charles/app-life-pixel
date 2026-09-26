@@ -1,0 +1,18 @@
+.page {
+  max-width: 40rem;
+  padding: var(--lp-space-6) var(--lp-space-4);
+  margin-inline: auto;
+}
+
+section {
+  margin-block-end: var(--lp-space-6);
+}
+
+.danger {
+  color: var(--ion-color-danger, #c00);
+}
+
+.actions {
+  display: flex;
+  gap: var(--lp-space-3);
+}
