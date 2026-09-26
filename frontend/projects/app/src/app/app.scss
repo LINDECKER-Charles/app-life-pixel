@@ -1,5 +1,24 @@
-// Ionic positions its router outlet over the whole app: here it takes the room the header and
-// the footer leave.
+// The skip link is the first stop of the keyboard: out of sight until it takes the focus, then
+// above the header (design-system/docs/accessibility.md, "Page shell").
+.skip-link {
+  position: absolute;
+  inset-block-start: var(--lp-space-2);
+  inset-inline-start: var(--lp-space-2);
+  z-index: var(--lp-z-popover);
+  padding: var(--lp-space-2) var(--lp-space-4);
+  font-weight: var(--lp-font-weight-bold);
+  color: var(--lp-color-on-accent);
+  background: var(--lp-color-accent);
+  border-radius: var(--lp-radius-large);
+  transform: translateY(calc(-100% - var(--lp-space-4)));
+
+  &:focus {
+    transform: none;
+  }
+}
+
+// Ionic positions its router outlet over the whole app: here it takes the room the header, the
+// engine's messages and the footer leave.
 .outlet {
   position: relative;
   flex: 1;

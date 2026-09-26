@@ -35,13 +35,43 @@ describe('AccountMenu', () => {
 
     expect(fixture.nativeElement.querySelector('.email')?.textContent).toBe(ACCOUNT.email);
 
-    fixture.nativeElement.querySelector('button')?.dispatchEvent(new Event('click'));
+    fixture.nativeElement.querySelector('button[aria-haspopup="menu"]')?.click();
+    await fixture.whenStable();
+    fixture.nativeElement.querySelector('button[role="menuitem"]')?.click();
     await fixture.whenStable();
     TestBed.inject(HttpTestingController)
       .expectOne('/api/v1/auth/sign-out')
       .flush(null, { status: 204, statusText: 'No Content' });
 
     await waitForEffects(() => expect(navigation).toHaveBeenCalledWith('/editor'));
+  });
+
+  it('is a labelled menu the keyboard opens, and Escape closes on its button', async () => {
+    const fixture = await openAccountPage(AccountMenu, ACCOUNT);
+    document.body.append(fixture.nativeElement);
+    const root = fixture.nativeElement as HTMLElement;
+    const trigger = root.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]');
+    const menu = root.querySelector('[role="menu"]');
+    if (!trigger || !menu) throw new Error('no account menu');
+    const press = async (target: Element, key: string) => {
+      target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }));
+      await fixture.whenStable();
+    };
+
+    expect(menu.getAttribute('aria-label')).toBe('Account');
+    await press(trigger, 'ArrowDown');
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    const items = Array.from(menu.querySelectorAll('[role="menuitem"]'), (item) =>
+      item.textContent?.trim(),
+    );
+    expect(items).toEqual(['Account', 'Library', 'Sign out']);
+    expect(document.activeElement?.textContent?.trim()).toBe('Account');
+
+    await press(document.activeElement ?? menu, 'Escape');
+
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(trigger);
+    fixture.nativeElement.remove();
   });
 
   it('opens a blocking reload dialog once a request answers 426', async () => {

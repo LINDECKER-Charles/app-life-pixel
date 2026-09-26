@@ -80,6 +80,28 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('.brand')?.textContent).toBe(en['app.name']);
   });
 
+  it('opens on a skip link that takes the focus to the page, in the main landmark', async () => {
+    const fixture = await startApp();
+    await navigate(fixture, '/settings');
+    const root = fixture.nativeElement as HTMLElement;
+    document.body.append(root);
+    const skipLink = root.querySelector<HTMLAnchorElement>('a[href]');
+    const main = root.querySelector<HTMLElement>('[role="main"]');
+
+    expect(skipLink?.textContent?.trim()).toBe(en['shell.skip_to_content']);
+    skipLink?.focus();
+    expect(document.activeElement).toBe(skipLink);
+
+    skipLink?.click();
+
+    expect(document.activeElement?.localName).toBe('lp-settings-page');
+    expect(main?.contains(document.activeElement)).toBe(true);
+    expect(TestBed.inject(Router).url).toBe('/settings');
+    // A shadow host with a negative tabindex would drop the whole page from the Tab order.
+    expect(main?.hasAttribute('tabindex')).toBe(false);
+    root.remove();
+  });
+
   it('resolves each path to its page', async () => {
     const fixture = await startApp();
 
