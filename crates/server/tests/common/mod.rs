@@ -23,7 +23,7 @@ use life_pixel_server::app;
 use life_pixel_server::config::{Config, ConfigError};
 use life_pixel_server::readiness::Readiness;
 use life_pixel_server::state::{AppState, Backends};
-use life_pixel_service::memory::InMemoryLibraryStore;
+use life_pixel_service::memory::{InMemoryLibraryStore, RecordingEvents};
 use serde_json::Value;
 use tempfile::TempDir;
 use tower::ServiceExt;
@@ -171,6 +171,7 @@ impl TestServer {
             }),
             library_store: Arc::new(InMemoryLibraryStore::new()),
             accounts: accounts.ports(),
+            events: Arc::new(RecordingEvents::new()),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {
