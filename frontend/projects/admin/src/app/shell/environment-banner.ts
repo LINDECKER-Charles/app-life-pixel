@@ -33,24 +33,25 @@ export function bannerTone(environment: string): BannerTone {
       gap: var(--lp-space-2);
       align-items: baseline;
       padding: var(--lp-space-2) var(--lp-space-4);
+      font-weight: var(--lp-font-weight-semibold);
       color: var(--lp-color-text);
       background: var(--lp-color-surface);
-      border-bottom: 1px solid var(--lp-color-border);
+      border-bottom: var(--lp-border-width-strong) solid var(--lp-color-border);
     }
     strong {
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
-    /* Both tones keep their text above 4.5:1 in light and dark mode. */
+    /* The warning/danger token pairs are measured at 6:1+ in both light and dark mode. */
     [data-tone='staging'] {
-      color: #1c1b22;
-      background: #fbbf24;
-      border-color: #92400e;
+      color: var(--lp-color-warning);
+      background: var(--lp-color-warning-bg);
+      border-color: var(--lp-color-warning);
     }
     [data-tone='production'] {
-      color: #ffffff;
-      background: #b3261e;
-      border-color: #7f1d1d;
+      color: var(--lp-color-danger);
+      background: var(--lp-color-danger-bg);
+      border-color: var(--lp-color-danger);
     }
   `,
 })

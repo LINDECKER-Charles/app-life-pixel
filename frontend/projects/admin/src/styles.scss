@@ -75,18 +75,30 @@ pre {
   border-radius: var(--lp-radius-small);
 }
 
+// Restrained by default (little pink, admin-console.md): a neutral surface button. `.primary`
+// marks the one main action of a form; `.danger` confirms a suspension, deletion or revocation.
 button {
   padding: var(--lp-space-2) var(--lp-space-3);
   font: inherit;
-  color: var(--lp-color-on-accent);
+  color: var(--lp-color-text);
   cursor: pointer;
-  background: var(--lp-color-accent);
-  border: 1px solid var(--lp-color-accent);
+  background: var(--lp-color-surface);
+  border: 1px solid var(--lp-color-border);
   border-radius: var(--lp-radius-small);
+
+  &:hover:not(:disabled) {
+    border-color: var(--lp-color-text-muted);
+  }
 
   &:disabled {
     cursor: not-allowed;
     opacity: 0.6;
+  }
+
+  &.primary {
+    color: var(--lp-color-on-accent);
+    background: var(--lp-color-accent);
+    border-color: var(--lp-color-accent);
   }
 
   &.danger {
