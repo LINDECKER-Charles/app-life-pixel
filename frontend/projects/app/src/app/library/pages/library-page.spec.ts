@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import axe from 'axe-core';
 import { LibraryPrompts } from '../actions/library-prompts';
+import { LibraryChanges } from '../changes/library-changes';
 import type { FakeLibraryStore } from '../testing/fake-library-store';
 import { configureLibrary, SERIOUS_IMPACTS } from '../testing/library-test-support';
 import { LibraryPage } from './library-page';
@@ -149,6 +150,25 @@ describe('the library page', () => {
     expect(store.animations.map((animation) => animation.title)).toEqual(['Copy of Stroll']);
   });
 
+  it('reads its lists again when the library changes outside the app', async () => {
+    const { store } = await setUp();
+    const project = store.addProject('Sprites');
+    const root = await render(LibraryPage);
+    await vi.waitFor(() => expect(texts(root, 'lp-project-list .name')).toEqual(['Sprites']));
+
+    store.addProject('Heroes');
+    store.addAnimation(project.id, 'Written by an agent');
+    const change = { projectIds: [project.id], animationIds: [] };
+    TestBed.inject(LibraryChanges).announce(change);
+
+    await vi.waitFor(() =>
+      expect(texts(root, 'lp-project-list .name')).toEqual(['Sprites', 'Heroes']),
+    );
+    await vi.waitFor(() =>
+      expect(texts(root, 'lp-animation-list .name')).toEqual(['Written by an agent']),
+    );
+  });
+
   it('says why an action failed', async () => {
     const { store } = await setUp();
     store.addProject('Sprites');
@@ -203,6 +223,23 @@ describe('the project page', () => {
     await vi.waitFor(() =>
       expect(root.querySelector('[role="alert"]')?.textContent).toContain('does not exist'),
     );
+  });
+
+  it('reads its animations again only for a change to its project', async () => {
+    const { store } = await setUp();
+    const sprites = store.addProject('Sprites');
+    const heroes = store.addProject('Heroes');
+    const root = await render(ProjectPage, { projectId: sprites.id });
+    await vi.waitFor(() => expect(root.querySelector('h1')?.textContent?.trim()).toBe('Sprites'));
+    const listAnimations = vi.spyOn(store, 'listAnimations');
+
+    const changes = TestBed.inject(LibraryChanges);
+    changes.announce({ projectIds: [heroes.id], animationIds: [] });
+    expect(listAnimations).not.toHaveBeenCalled();
+    store.addAnimation(sprites.id, 'Walk');
+    changes.announce({ projectIds: [sprites.id], animationIds: [] });
+
+    await vi.waitFor(() => expect(texts(root, 'lp-animation-list .name')).toEqual(['Walk']));
   });
 
   it('lets a moved animation leave the project', async () => {

@@ -1,0 +1,42 @@
+<ion-content>
+  <main class="page">
+    <h1>{{ 'mcp.agents.title' | transloco }}</h1>
+    <p>{{ 'mcp.agents.intro' | transloco }}</p>
+    @switch (lookup().kind) {
+      @case ('loading') {
+        <p role="status">{{ 'common.loading' | transloco }}</p>
+      }
+      @case ('failed') {
+        <p role="alert">{{ 'mcp.agents.unavailable' | transloco }}</p>
+      }
+      @default {
+        @if (paths(); as agentPaths) {
+          <section aria-labelledby="mcp-claude-heading">
+            <h2 id="mcp-claude-heading">{{ 'mcp.agents.claude.heading' | transloco }}</h2>
+            <p>{{ 'mcp.agents.claude.hint' | transloco }}</p>
+            <lp-copy-block [text]="command()" copyLabel="mcp.agents.claude.copy" />
+          </section>
+          <section aria-labelledby="mcp-json-heading">
+            <h2 id="mcp-json-heading">{{ 'mcp.agents.json.heading' | transloco }}</h2>
+            <p>{{ 'mcp.agents.json.hint' | transloco }}</p>
+            <lp-copy-block [text]="configuration()" copyLabel="mcp.agents.json.copy" />
+          </section>
+          <p class="library">
+            {{ 'mcp.agents.library' | transloco: { path: agentPaths.libraryPath } }}
+          </p>
+        } @else {
+          <p role="alert">{{ 'mcp.agents.no_cli' | transloco }}</p>
+        }
+      }
+    }
+    <section aria-labelledby="mcp-abilities-heading">
+      <h2 id="mcp-abilities-heading">{{ 'mcp.agents.abilities.heading' | transloco }}</h2>
+      <ul>
+        @for (ability of abilities; track ability) {
+          <li>{{ ability | transloco }}</li>
+        }
+      </ul>
+      <p>{{ 'mcp.agents.abilities.live' | transloco }}</p>
+    </section>
+  </main>
+</ion-content>

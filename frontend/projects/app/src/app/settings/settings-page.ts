@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AvailableLanguages, type MotionPreference, type ThemePreference } from 'shared';
@@ -26,7 +27,7 @@ const MOTION_CHOICES: readonly Choice<MotionPreference>[] = [
 /** Language, theme and motion, each applied as soon as it is chosen. */
 @Component({
   selector: 'lp-settings-page',
-  imports: [IonContent, TranslocoPipe],
+  imports: [IonContent, RouterLink, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './settings-page.html',
   styleUrl: './settings-page.scss',

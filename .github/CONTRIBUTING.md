@@ -303,13 +303,20 @@ app from `npm start` on http://localhost:4260. Run with the Node.js version of `
 root of the repository, after `npm ci --prefix frontend`.
 
 ```shell
-cargo test -p life-pixel-desktop            # every command on a temporary library
-cargo xtask build-desktop --debug           # the front-end, then the app: the macOS .app, a Linux .deb
+cargo test -p life-pixel-desktop            # every command on a temporary library, the watcher
+cargo xtask build-sidecar                   # the life-pixel CLI, into tauri/binaries/ for the host
+cargo xtask build-sidecar --target universal-apple-darwin   # both macOS architectures, joined
+cargo xtask build-desktop --debug           # sidecar, front-end, then app: macOS .app, Linux .deb
 cargo xtask build-desktop                   # the same, in release; unsigned, without an updater
 cd tauri && cargo tauri dev                 # the app on the dev server, reloading as you edit
 ```
 
 `build-desktop` never makes a DMG, whose creation drives the Finder; installers are release.yml's.
+It runs `build-sidecar` first and passes `tauri/bundle.conf.json`, which ships the `life-pixel` CLI
+beside the app's executable; `cargo build` and `cargo tauri dev` leave it out, and the app's
+`settings/agents` page then says so. A target other than the host's needs
+`rustup target add <triple>` — both macOS ones for `universal-apple-darwin`. The app watches its
+library folder: what an agent writes through the CLI appears in its lists and open animation.
 `LIFE_PIXEL_LIBRARY` chooses the library folder of a run, whatever the settings say, and a debug
 build saves exports into `LP_EXPORT_DIR` without a dialog: set both to temporary folders when you
 try the app, so that it leaves your library alone. The icons come from the pixel-art

@@ -2,6 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ApplicationInitStatus, DOCUMENT } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Config } from '@ionic/angular';
 import { mockIPC } from '@tauri-apps/api/mocks';
 import axe from 'axe-core';
@@ -130,6 +131,7 @@ async function openDesktopSettings(): Promise<ComponentFixture<SettingsPage>> {
       provideI18n(),
       providePlatform(),
       provideAppearance(),
+      provideRouter([]),
     ],
   });
   const initialization = TestBed.inject(ApplicationInitStatus).donePromise;
@@ -158,6 +160,13 @@ describe('SettingsPage on the desktop', () => {
     await vi.waitFor(() =>
       expect(fixture.nativeElement.textContent).toContain('/home/pixel/New Library'),
     );
+  });
+
+  it('links to the setup of local AI agents (desktop.md, T3)', async () => {
+    const fixture = await openDesktopSettings();
+
+    const link = fixture.nativeElement.querySelector('.library-folder a');
+    expect(link?.getAttribute('href')).toBe('/settings/agents');
   });
 
   it('has no library folder section on the web', async () => {

@@ -4,8 +4,13 @@ use std::process::Command;
 use anyhow::{Context, bail, ensure};
 use cargo_metadata::MetadataCommand;
 
+use super::build_sidecar::BuildSidecar;
+
 /// The Tauri project, relative to the workspace root.
 const TAURI_DIR: &str = "tauri";
+
+/// The overlay that bundles the sidecar, relative to the Tauri project.
+const BUNDLE_CONFIG: &str = "bundle.conf.json";
 
 /// What `npm ci` leaves in the front-end, which `beforeBuildCommand` builds.
 const FRONTEND_MODULES: &str = "frontend/node_modules";
@@ -16,8 +21,9 @@ const BUILT_CATALOGUE: &str = "frontend/dist/app/browser/i18n/en.json";
 /// How to install the Tauri CLI when it is missing.
 const INSTALL_TAURI_CLI: &str = "cargo install tauri-cli --version ^2 --locked";
 
-/// Builds the desktop app with the Tauri CLI: `cargo tauri build`, which builds the front-end
-/// first, then bundles it for the host — the macOS `.app`, a Linux `.deb`, nothing on Windows.
+/// Builds the desktop app with the Tauri CLI: `build-sidecar` for the host first, then
+/// `cargo tauri build --config bundle.conf.json`, which builds the front-end, then bundles it with
+/// the `life-pixel` CLI for the host — the macOS `.app`, a Linux `.deb`, nothing on Windows.
 /// Never a DMG, whose creation drives the Finder, nor an installer that downloads its tools.
 ///
 /// Needs the Tauri CLI and `npm ci --prefix frontend`; no signing key: release builds are
@@ -30,7 +36,8 @@ pub struct BuildDesktop {
 }
 
 impl BuildDesktop {
-    /// Checks the prerequisites, runs `cargo tauri build`, then checks the catalogues were built.
+    /// Checks the prerequisites, builds the sidecar, runs `cargo tauri build`, then checks the
+    /// catalogues were built.
     pub fn run(self) -> anyhow::Result<()> {
         let metadata = MetadataCommand::new()
             .no_deps()
@@ -38,6 +45,7 @@ impl BuildDesktop {
             .context("running cargo metadata")?;
         let root = metadata.workspace_root.as_std_path();
         check_prerequisites(root)?;
+        BuildSidecar::for_host().run()?;
         let arguments = tauri_arguments(self.debug, std::env::consts::OS);
         println!("build-desktop: cargo {}", arguments.join(" "));
         let status = Command::new(env!("CARGO"))
@@ -71,7 +79,7 @@ fn check_prerequisites(root: &Path) -> anyhow::Result<()> {
 
 /// The arguments of `cargo` that build the app on `os`, as `std::env::consts::OS` names it.
 fn tauri_arguments(debug: bool, os: &str) -> Vec<&'static str> {
-    let mut arguments = vec!["tauri", "build", "--ci"];
+    let mut arguments = vec!["tauri", "build", "--ci", "--config", BUNDLE_CONFIG];
     if debug {
         arguments.push("--debug");
     }
@@ -100,19 +108,30 @@ mod tests {
         let arguments = tauri_arguments(true, "macos");
         assert_eq!(
             arguments,
-            ["tauri", "build", "--ci", "--debug", "--bundles", "app"]
+            [
+                "tauri",
+                "build",
+                "--ci",
+                "--config",
+                "bundle.conf.json",
+                "--debug",
+                "--bundles",
+                "app"
+            ]
         );
     }
 
     #[test]
     fn linux_bundles_a_deb_and_windows_nothing() {
-        assert_eq!(
-            tauri_arguments(false, "linux"),
-            ["tauri", "build", "--ci", "--bundles", "deb"]
-        );
-        assert_eq!(
-            tauri_arguments(false, "windows"),
-            ["tauri", "build", "--ci", "--no-bundle"]
-        );
+        assert!(tauri_arguments(false, "linux").ends_with(&["--bundles", "deb"]));
+        assert!(tauri_arguments(false, "windows").ends_with(&["--no-bundle"]));
+    }
+
+    #[test]
+    fn every_build_bundles_the_sidecar() {
+        for os in ["macos", "linux", "windows"] {
+            let arguments = tauri_arguments(false, os);
+            assert!(arguments.windows(2).any(|pair| pair == ["--config", BUNDLE_CONFIG]));
+        }
     }
 }

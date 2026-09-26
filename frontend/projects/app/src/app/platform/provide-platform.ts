@@ -1,4 +1,12 @@
-import { EnvironmentProviders, makeEnvironmentProviders, signal } from '@angular/core';
+import {
+  DestroyRef,
+  EnvironmentProviders,
+  inject,
+  Injector,
+  makeEnvironmentProviders,
+  provideAppInitializer,
+  signal,
+} from '@angular/core';
 import { PREFERRED_LANGUAGE } from 'shared';
 import { HostedExportObserver } from '../events/hosted-export-observer';
 import { EXPORT_OBSERVER } from '../export/export-observer';
@@ -20,7 +28,8 @@ const DESKTOP_LIBRARY_ACCESS: LibraryAccess = { signedIn: signal(true) };
 /**
  * Picks the desktop or the web implementations of the library, the exports and the preferences
  * (desktop.md, T2), and keeps U5's silent `EXPORT_OBSERVER` on the desktop, H13's hosted one on
- * the web. Call once, in `app.config.ts`.
+ * the web. On the desktop, the app also follows the library's changes (T3). Call once, in
+ * `app.config.ts`.
  */
 export function providePlatform(): EnvironmentProviders {
   return isDesktop() ? provideDesktopPlatform() : provideWebPlatform();
@@ -36,7 +45,16 @@ function provideDesktopPlatform(): EnvironmentProviders {
     { provide: PreferencesStore, useExisting: DesktopPreferencesStore },
     { provide: LIBRARY_ACCESS, useValue: DESKTOP_LIBRARY_ACCESS },
     { provide: PREFERRED_LANGUAGE, useValue: desktopPreferredLanguage, multi: true },
+    provideAppInitializer(followLibraryChanges),
   ]);
+}
+
+/** Follows the library's changes (T3), from a chunk only the desktop loads. */
+async function followLibraryChanges(): Promise<void> {
+  const injector = inject(Injector);
+  const destroyRef = inject(DestroyRef);
+  const { DesktopLibraryEvents } = await import('./library-events/desktop-library-events');
+  if (!destroyRef.destroyed) await injector.get(DesktopLibraryEvents).follow();
 }
 
 function provideWebPlatform(): EnvironmentProviders {
