@@ -37,6 +37,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 | [docs/security-model.md](docs/security-model.md) | threat model, supply chain, privacy |
 | [docs/i18n.md](docs/i18n.md) | languages, catalogues, adding a language |
 | [docs/decisions.md](docs/decisions.md) | the decision log: accepted, proposed, open |
+| [design-system/](design-system/README.md) | Rose Atelier, the design system every interface follows: tokens, assets, components, journeys, patterns, content, accessibility |
 
 A **proposed** decision is not settled: do not build on it without the maintainer's go-ahead.
 
@@ -298,6 +299,25 @@ to depart from them.
 - Accessibility targets WCAG 2.2 AA: keyboard-reachable, labelled controls, visible focus,
   sufficient contrast, `prefers-reduced-motion` honoured.
 
+### Interface
+
+- Read `design-system/docs/` before building or changing any interface — the README's reading
+  order first. Rose Atelier is the accepted direction (D38); add no product feature on its behalf.
+- Style with the semantic tokens of `frontend/projects/shared/src/styles/_tokens.scss`: no
+  hard-coded colour in a stylesheet. The only literal colours are the named checkerboard and grid
+  constants of the canvas renderer.
+- Buttons, fields, banners, cards and dialog action bars use the shared classes of
+  `frontend/projects/shared/src/styles/_components.scss`; a component never restyles `button {}`
+  or `input {}` itself. Buttons are native `<button>`s; Ionic keeps `ion-app`, the router outlet,
+  `ion-content`, `ion-modal` and `ion-alert`.
+- Pip, the mascot, appears only in the welcome, empty states and a successful export — never in
+  errors, deletions, quotas, authentication or the admin console. Icons go through `lp-icon`,
+  hidden from assistive technology; never an emoji as an icon.
+- The canvas and its checkerboard stay neutral in both themes: a theme never recolours artwork.
+- Review every interface change on screenshots of the real app: `npm run e2e:visual --prefix
+  frontend` captures each screen at 1440, 1024, 768 and 390 px, light and dark, English and
+  French, in `frontend/e2e/visual/output/`.
+
 ### HTTP API
 
 - JSON over HTTPS under `/api/v1`, described by an OpenAPI document generated from the Rust code.
@@ -339,6 +359,7 @@ cargo xtask build-desktop --debug
 npm ci --prefix tauri/tests/e2e && npm run lint --prefix tauri/tests/e2e  # the suite: on Linux
 npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend && npm run i18n:check --prefix frontend
 npm run test:engine --prefix frontend
+npm run e2e:visual --prefix frontend  # any interface change: review the screenshots it writes
 npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts crates/admin-server/openapi.json frontend/projects/shared/src/lib/admin-api/schema.d.ts
 npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
