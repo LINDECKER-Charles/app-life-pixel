@@ -1,0 +1,56 @@
+<section class="lp-card lp-stack" aria-labelledby="account-delete-heading">
+  <h2 id="account-delete-heading" class="lp-card__title">
+    {{ 'account.delete.heading' | transloco }}
+  </h2>
+  <p>{{ 'account.delete.consequence' | transloco }}</p>
+  @if (!deleting()) {
+    <p>
+      <button #startButton type="button" class="lp-button lp-button--danger" (click)="start()">
+        {{ 'account.delete.action' | transloco }}
+      </button>
+    </p>
+  } @else {
+    <form class="lp-stack" novalidate (submit)="confirm($event)">
+      <lp-error-summary [entries]="errors.entries()" [targets]="targets" />
+      <lp-password-field
+        fieldId="account-delete-password"
+        [label]="'account.delete.password_label' | transloco"
+        autocomplete="current-password"
+        [value]="password()"
+        [error]="errors.of('password')"
+        (valueChange)="onPassword($event)"
+      />
+      <div class="lp-field">
+        <label class="lp-field__label" for="account-delete-confirmation">
+          {{ 'account.delete.confirm_label' | transloco: { email: account().email } }}
+        </label>
+        <p class="lp-field__hint" id="account-delete-confirmation-hint">
+          {{ 'account.delete.confirm_hint' | transloco }}
+        </p>
+        <input
+          #confirmationInput
+          id="account-delete-confirmation"
+          class="lp-input"
+          type="email"
+          autocomplete="off"
+          aria-describedby="account-delete-confirmation-hint"
+          [value]="confirmation()"
+          (input)="confirmation.set(confirmationInput.value)"
+        />
+      </div>
+      <div class="lp-cluster">
+        <button type="button" class="lp-button lp-button--secondary" (click)="cancel()">
+          {{ 'common.cancel' | transloco }}
+        </button>
+        <button
+          type="submit"
+          class="lp-button lp-button--danger"
+          [disabled]="!confirmed()"
+          [attr.aria-busy]="pending() ? 'true' : null"
+        >
+          {{ 'account.delete.confirm_action' | transloco }}
+        </button>
+      </div>
+    </form>
+  }
+</section>

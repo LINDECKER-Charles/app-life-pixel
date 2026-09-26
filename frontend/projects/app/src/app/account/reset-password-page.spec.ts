@@ -1,17 +1,19 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import axe from 'axe-core';
-import { openAccountPage, waitForEffects } from './testing/account-test-support';
+import {
+  openAccountPage,
+  submitForm,
+  typeInto,
+  waitForEffects,
+} from './testing/account-test-support';
 import { ResetPasswordPage } from './reset-password-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 
 async function submit(fixture: ComponentFixture<ResetPasswordPage>, email: string): Promise<void> {
-  fixture.nativeElement
-    .querySelector('ion-input')
-    ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: email } }));
-  fixture.nativeElement.querySelector('form')?.dispatchEvent(new Event('submit'));
-  await fixture.whenStable();
+  typeInto(fixture.nativeElement, '#reset-password-email', email);
+  await submitForm(fixture);
 }
 
 describe('ResetPasswordPage', () => {
@@ -26,11 +28,25 @@ describe('ResetPasswordPage', () => {
       .flush(null, { status: 204, statusText: 'No Content' });
 
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
+        'If an account uses this address',
+      );
     });
+    expect(fixture.nativeElement.querySelector('form')).toBeNull();
   });
 
-  it('shows a rate-limit error as a form banner', async () => {
+  it('asks for the address before sending, and focuses its field', async () => {
+    const fixture = await openAccountPage(ResetPasswordPage);
+
+    await submit(fixture, '   ');
+
+    TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/password-reset');
+    const email = fixture.nativeElement.querySelector('#reset-password-email');
+    await waitForEffects(() => expect(document.activeElement).toBe(email));
+    expect(email.getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('shows a rate-limit error in the summary, keeping the address', async () => {
     const fixture = await openAccountPage(ResetPasswordPage);
 
     await submit(fixture, 'lee@example.com');
@@ -42,8 +58,11 @@ describe('ResetPasswordPage', () => {
       );
 
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector('.banner')?.textContent).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('[role="alert"] li')?.textContent).toBeTruthy();
     });
+    expect(fixture.nativeElement.querySelector('#reset-password-email').value).toBe(
+      'lee@example.com',
+    );
   });
 
   it('has no serious accessibility violation', async () => {

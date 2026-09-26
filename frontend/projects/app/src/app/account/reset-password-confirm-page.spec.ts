@@ -1,37 +1,37 @@
 import { HttpTestingController } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import axe from 'axe-core';
-import { openAccountPage, waitForEffects } from './testing/account-test-support';
+import {
+  ACCOUNT,
+  openAccountPage,
+  submitForm,
+  typeInto,
+  waitForEffects,
+} from './testing/account-test-support';
 import { ResetPasswordConfirmPage } from './reset-password-confirm-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
+const FIELD = '#reset-password-confirm-password';
 
 async function submit(
   fixture: ComponentFixture<ResetPasswordConfirmPage>,
   password: string,
 ): Promise<void> {
-  fixture.nativeElement
-    .querySelector('lp-password-field ion-input')
-    ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: password } }));
-  fixture.nativeElement.querySelector('form')?.dispatchEvent(new Event('submit'));
-  await fixture.whenStable();
+  typeInto(fixture.nativeElement, FIELD, password);
+  await submitForm(fixture);
+}
+
+async function openWithToken(
+  account: typeof ACCOUNT | null = null,
+): Promise<ComponentFixture<ResetPasswordConfirmPage>> {
+  return openAccountPage(ResetPasswordConfirmPage, account, { token: 'a-token' });
 }
 
 describe('ResetPasswordConfirmPage', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
   it('sets the new password and ends every session, this browser included (H7)', async () => {
-    const fixture = await openAccountPage(ResetPasswordConfirmPage, {
-      id: 'a1',
-      email: 'lee@example.com',
-      emailVerified: true,
-      language: 'en',
-      plan: 'free',
-      storage: { usedBytes: 0, limitBytes: 1_000_000 },
-      createdAt: '2024-01-01T00:00:00Z',
-    });
-    fixture.componentRef.setInput('token', 'a-token');
-    await fixture.whenStable();
+    const fixture = await openWithToken({ ...ACCOUNT, emailVerified: true });
 
     await submit(fixture, 'a new long password');
     TestBed.inject(HttpTestingController)
@@ -39,33 +39,27 @@ describe('ResetPasswordConfirmPage', () => {
       .flush(null, { status: 204, statusText: 'No Content' });
 
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toBeTruthy();
+      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
+        'Your password is set.',
+      );
     });
   });
 
-  it('shows a password-length error next to the password field', async () => {
-    const fixture = await openAccountPage(ResetPasswordConfirmPage);
-    fixture.componentRef.setInput('token', 'a-token');
-    await fixture.whenStable();
+  it('refuses a short password before sending, next to the field, and focuses it', async () => {
+    const fixture = await openWithToken();
 
     await submit(fixture, 'short');
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/v1/auth/password-reset/confirm')
-      .flush(
-        { code: 'auth.password_length', params: { min: 12, max: 128 } },
-        { status: 422, statusText: 'Unprocessable Entity' },
-      );
 
-    await waitForEffects(() => {
-      const passwordField = fixture.nativeElement.querySelector('lp-password-field ion-input');
-      expect(passwordField?.errorText).toBeTruthy();
-    });
+    TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/password-reset/confirm');
+    const password = fixture.nativeElement.querySelector(FIELD);
+    await waitForEffects(() => expect(document.activeElement).toBe(password));
+    expect(fixture.nativeElement.querySelector(`${FIELD}-error`)?.textContent).toContain(
+      'A password holds 12 to 128 characters.',
+    );
   });
 
-  it('shows an invalid-token error as a form banner', async () => {
-    const fixture = await openAccountPage(ResetPasswordConfirmPage);
-    fixture.componentRef.setInput('token', 'a-token');
-    await fixture.whenStable();
+  it('shows an invalid-token error in the summary, which takes the focus', async () => {
+    const fixture = await openWithToken();
 
     await submit(fixture, 'a new long password');
     TestBed.inject(HttpTestingController)
@@ -76,12 +70,14 @@ describe('ResetPasswordConfirmPage', () => {
       );
 
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector('.banner')?.textContent).toBeTruthy();
+      const summary = fixture.nativeElement.querySelector('[role="alert"]');
+      expect(summary?.textContent).toContain('This link is invalid, already used or expired.');
+      expect(document.activeElement).toBe(summary);
     });
   });
 
   it('has no serious accessibility violation', async () => {
-    const fixture = await openAccountPage(ResetPasswordConfirmPage);
+    const fixture = await openWithToken();
 
     const { violations } = await axe.run(fixture.nativeElement);
 

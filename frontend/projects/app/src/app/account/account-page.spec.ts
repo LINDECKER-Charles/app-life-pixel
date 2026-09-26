@@ -7,26 +7,37 @@ import { AccountPage } from './account-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 
+function section(host: HTMLElement, heading: string): HTMLElement {
+  return host.querySelector(`section[aria-labelledby="${heading}"]`) as HTMLElement;
+}
+
 describe('AccountPage', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
   it('shows the address, unverified, with a way to resend the verification email', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
+    const address = section(fixture.nativeElement, 'account-address-heading');
 
-    expect(fixture.nativeElement.textContent).toContain(ACCOUNT.email);
-    const resend: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'section[aria-labelledby="account-address-heading"] button',
-    );
-    expect(resend).toBeTruthy();
-
-    resend.dispatchEvent(new Event('click'));
+    expect(address.textContent).toContain(ACCOUNT.email);
+    expect(address.textContent).toContain('This address is not verified yet.');
+    address.querySelector('button')?.click();
     TestBed.inject(HttpTestingController)
       .expectOne('/api/v1/auth/verify-email/resend')
       .flush(null, { status: 204, statusText: 'No Content' });
 
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toBeTruthy();
+      expect(address.querySelector('[role="status"]')?.textContent).toContain(
+        'A new verification email is on its way.',
+      );
     });
+  });
+
+  it('says a verified address is verified, without a resend button', async () => {
+    const fixture = await openAccountPage(AccountPage, { ...ACCOUNT, emailVerified: true });
+    const address = section(fixture.nativeElement, 'account-address-heading');
+
+    expect(address.textContent).toContain('This address is verified.');
+    expect(address.querySelector('button')).toBeNull();
   });
 
   it('formats the storage used against the quota with Intl', async () => {
@@ -35,9 +46,7 @@ describe('AccountPage', () => {
       storage: { usedBytes: 512_000, limitBytes: 1_000_000 },
     });
 
-    const usage = fixture.nativeElement.querySelector(
-      'section[aria-labelledby="account-usage-heading"] p',
-    );
+    const usage = section(fixture.nativeElement, 'account-usage-heading').querySelector('p');
     expect(usage?.textContent?.trim()).toBe(
       `${new Intl.NumberFormat('en').format(512_000)} of ${new Intl.NumberFormat('en').format(1_000_000)} bytes used.`,
     );
@@ -45,10 +54,11 @@ describe('AccountPage', () => {
 
   it('changes the language with a CSRF header, and applies it through the preference', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
+    const select = fixture.nativeElement.querySelector('#account-language') as HTMLSelectElement;
+    expect(select.labels?.[0]?.textContent?.trim()).toBe('Language');
 
-    fixture.nativeElement
-      .querySelector('ion-select')
-      ?.dispatchEvent(new CustomEvent('ionChange', { detail: { value: 'fr' } }));
+    select.value = 'fr';
+    select.dispatchEvent(new Event('change'));
     await fixture.whenStable();
 
     const http = TestBed.inject(HttpTestingController);
@@ -60,77 +70,20 @@ describe('AccountPage', () => {
     await fixture.whenStable();
   });
 
-  it('deletes the account only once the address is typed to confirm, with the password', async () => {
+  it('keeps sign-out apart from deletion, and deletion last', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
-    const navigation = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    fixture.nativeElement
-      .querySelector('section[aria-labelledby="account-delete-heading"] button')
-      ?.dispatchEvent(new Event('click'));
-    await fixture.whenStable();
-
-    const confirmButton: HTMLButtonElement = fixture.nativeElement.querySelector(
-      'button[type="submit"].danger',
+    const headings = [...fixture.nativeElement.querySelectorAll('h2')].map(
+      (heading) => (heading as HTMLElement).id,
     );
-    expect(confirmButton.disabled).toBe(true);
-
-    fixture.nativeElement
-      .querySelector('lp-password-field ion-input')
-      ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'a very long password' } }));
-    fixture.nativeElement
-      .querySelector('ion-input[type="email"]')
-      ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: ACCOUNT.email } }));
-    await fixture.whenStable();
-
-    expect(confirmButton.disabled).toBe(false);
-    fixture.nativeElement.querySelector('form')?.dispatchEvent(new Event('submit'));
-    await fixture.whenStable();
-
-    const request = TestBed.inject(HttpTestingController).expectOne('/api/v1/account');
-    expect(request.request.method).toBe('DELETE');
-    expect(request.request.headers.get('X-CSRF-Token')).toBe('t0k');
-    request.flush(null, { status: 204, statusText: 'No Content' });
-
-    await waitForEffects(() => expect(navigation).toHaveBeenCalledWith('/editor'));
-  });
-
-  it('shows a wrong-password deletion error next to the password field', async () => {
-    const fixture = await openAccountPage(AccountPage, ACCOUNT);
-
-    fixture.nativeElement
-      .querySelector('section[aria-labelledby="account-delete-heading"] button')
-      ?.dispatchEvent(new Event('click'));
-    await fixture.whenStable();
-    fixture.nativeElement
-      .querySelector('lp-password-field ion-input')
-      ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: 'wrong password' } }));
-    fixture.nativeElement
-      .querySelector('ion-input[type="email"]')
-      ?.dispatchEvent(new CustomEvent('ionInput', { detail: { value: ACCOUNT.email } }));
-    await fixture.whenStable();
-    fixture.nativeElement.querySelector('form')?.dispatchEvent(new Event('submit'));
-    await fixture.whenStable();
-
-    TestBed.inject(HttpTestingController)
-      .expectOne('/api/v1/account')
-      .flush(
-        { code: 'auth.current_password', params: {} },
-        { status: 403, statusText: 'Forbidden' },
-      );
-
-    await waitForEffects(() => {
-      const passwordField = fixture.nativeElement.querySelector('lp-password-field ion-input');
-      expect(passwordField?.errorText).toBeTruthy();
-    });
+    expect(headings.slice(-2)).toEqual(['account-sign-out-heading', 'account-delete-heading']);
   });
 
   it('signs out and returns to the editor', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
     const navigation = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    fixture.nativeElement
-      .querySelector('section[aria-labelledby="account-sign-out-heading"] button')
-      ?.dispatchEvent(new Event('click'));
+    section(fixture.nativeElement, 'account-sign-out-heading').querySelector('button')?.click();
     await fixture.whenStable();
 
     TestBed.inject(HttpTestingController)

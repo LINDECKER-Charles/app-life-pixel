@@ -91,3 +91,19 @@ export async function openAccountPage<T>(
   await fixture.whenStable();
   return fixture;
 }
+
+/** Types `value` in the field `selector` finds, as a person would: its `input` event follows. */
+export function typeInto(host: HTMLElement, selector: string, value: string): void {
+  const field = host.querySelector<HTMLInputElement | HTMLTextAreaElement>(selector);
+  if (!field) {
+    throw new Error(`No field matches ${selector}`);
+  }
+  field.value = value;
+  field.dispatchEvent(new Event('input'));
+}
+
+/** Sends the first form of `fixture`, and lets the page react. */
+export async function submitForm<T>(fixture: ComponentFixture<T>): Promise<void> {
+  fixture.nativeElement.querySelector('form')?.dispatchEvent(new Event('submit'));
+  await fixture.whenStable();
+}

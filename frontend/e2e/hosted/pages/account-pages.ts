@@ -63,9 +63,9 @@ export class AccountPages {
     await this.expectPage('Account');
   }
 
-  /** The alert a refused form shows. */
+  /** The message of the error summary a refused form shows, when it lists one error. */
   formAlert(): Locator {
-    return this.page.getByRole('main').getByRole('alert');
+    return this.page.getByRole('main').getByRole('alert').getByRole('listitem');
   }
 
   async openAccount(): Promise<void> {

@@ -48,6 +48,24 @@ describe('SupportRequestPage', () => {
     expect(api.reply).toHaveBeenCalledWith(THREAD.id, 'Still blank');
   });
 
+  it('refuses an empty reply before sending, and focuses its field', async () => {
+    const api = mockSupportApi();
+    api.get.mockResolvedValueOnce(ANSWERED);
+    const fixture = await open();
+    const root: HTMLElement = fixture.nativeElement;
+    await waitForEffects(() => expect(root.querySelector('form')).toBeTruthy());
+
+    root.querySelector('form')?.dispatchEvent(new Event('submit'));
+
+    const field = root.querySelector('#support-reply');
+    await waitForEffects(() => expect(document.activeElement).toBe(field));
+    expect(field?.getAttribute('aria-describedby')).toBe(
+      'support-reply-counter support-reply-error',
+    );
+    expect(root.querySelector('#support-reply-error')?.textContent).toContain('1 to 5,000');
+    expect(api.reply).not.toHaveBeenCalled();
+  });
+
   it('offers no reply on a closed request', async () => {
     mockSupportApi().get.mockResolvedValue({ ...THREAD, status: 'closed' });
     const fixture = await open();

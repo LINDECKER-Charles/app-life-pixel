@@ -25,8 +25,9 @@ export class SupportPages {
   /** Fills "New request" — the category from its select —, attaches the screenshot, and sends. */
   async send(request: NewRequest): Promise<void> {
     const form = this.region('New request');
-    await form.locator('ion-select').click();
-    await this.page.getByRole('radio', { name: request.category, exact: true }).click();
+    await form
+      .getByRole('combobox', { name: 'Category' })
+      .selectOption({ label: request.category });
     await form.getByRole('textbox', { name: 'Message' }).fill(request.message);
     await form.getByLabel('Screenshot').setInputFiles({
       name: 'screenshot.png',
@@ -34,7 +35,7 @@ export class SupportPages {
       buffer: request.screenshot,
     });
     await form.getByRole('button', { name: 'Send the request' }).click();
-    await expect(form.getByRole('status')).toHaveText(
+    await expect(form.getByRole('status')).toContainText(
       'Your request was sent. We will answer here and by email.',
     );
   }

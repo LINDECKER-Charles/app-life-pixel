@@ -1,67 +1,63 @@
-.page {
-  max-width: 40rem;
-  padding: var(--lp-space-6) var(--lp-space-4);
-  margin-inline: auto;
+// The page template, panels, pills, banners and buttons are global (_page.scss, _surfaces.scss,
+// _feedback.scss, _buttons.scss): this lays out the list of tokens.
+
+h2:focus-visible {
+  outline-offset: var(--lp-space-1);
 }
 
-section {
-  margin-block: var(--lp-space-6);
+.state {
+  margin: 0;
+  color: var(--lp-color-text-muted);
 }
 
 .tokens {
-  padding: 0;
-  list-style: none;
-}
-
-.tokens li {
   display: flex;
   flex-direction: column;
-  gap: var(--lp-space-2);
-  align-items: flex-start;
-  padding-block: var(--lp-space-3);
-  border-block-end: 1px solid var(--lp-color-border, currentcolor);
+  gap: var(--lp-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &:empty {
+    display: none;
+  }
 }
 
-.summary {
+.token {
+  display: grid;
+  gap: var(--lp-space-2);
+
+  p {
+    margin: 0;
+  }
+}
+
+.token__header {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--lp-space-3);
+  gap: var(--lp-space-1) var(--lp-space-3);
   align-items: baseline;
 }
 
-.name {
+.token__name {
   margin: 0;
   font-size: var(--lp-font-size-body);
+  overflow-wrap: anywhere;
 }
 
-code {
+.token__prefix {
   font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
 }
 
-.scopes {
+.token__scopes {
   display: flex;
   flex-wrap: wrap;
   gap: var(--lp-space-2);
-  margin: 0;
 }
 
-.scope {
-  padding: 0 var(--lp-space-2);
-  border: 1px solid var(--lp-color-border, currentcolor);
-  border-radius: var(--lp-radius-small, 4px);
-}
-
-.hint {
-  margin: 0;
-  font-size: var(--lp-font-size-small, 0.875rem);
-}
-
-.primary {
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
-}
-
-.danger {
-  color: var(--lp-color-on-danger);
-  background: var(--lp-color-danger);
+.token__meta {
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
 }

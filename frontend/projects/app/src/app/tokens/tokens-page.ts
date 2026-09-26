@@ -1,18 +1,30 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  inject,
+  Injector,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { type AccessTokenSummary, ApiProblem, type CreatedAccessToken, TokensApi } from 'shared';
+import { Icon } from '../ui/icon/icon';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import { TokenCreationDialog } from './token-creation-dialog';
 import { TokenRevocation } from './token-revocation';
 import { formatDate, SCOPE_LABELS } from './token-values';
 
 /**
  * Settings → Access tokens (mcp-cli.md, A3): the account's active tokens for the hosted MCP
- * endpoint, a new one, and their revocation. `hostedOnly` and `requireAccount` keep this page for
- * a signed-in visitor of the hosted app.
+ * endpoint — loading, failed, empty or listed —, a new one, and their revocation. `hostedOnly` and
+ * `requireAccount` keep this page for a signed-in visitor of the hosted app.
  */
 @Component({
   selector: 'lp-tokens-page',
-  imports: [TokenCreationDialog, TranslocoPipe],
+  imports: [Icon, IonContent, StatusBanner, TokenCreationDialog, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tokens-page.html',
   styleUrl: './tokens-page.scss',
@@ -21,6 +33,8 @@ export class TokensPage {
   private readonly api = inject(TokensApi);
   private readonly revocation = inject(TokenRevocation);
   private readonly transloco = inject(TranslocoService);
+  private readonly injector = inject(Injector);
+  private readonly listHeading = viewChild.required<ElementRef<HTMLElement>>('listHeading');
 
   protected readonly scopeLabels = SCOPE_LABELS;
 
@@ -31,6 +45,8 @@ export class TokensPage {
   protected readonly creating = signal(false);
   protected readonly revoking = signal<string | undefined>(undefined);
   protected readonly revokeError = signal<ApiProblem | undefined>(undefined);
+  /** The name of the token revoked last, announced. */
+  protected readonly revoked = signal<string | undefined>(undefined);
 
   constructor() {
     void this.load();
@@ -60,14 +76,20 @@ export class TokensPage {
     }
   }
 
-  /** Revokes `token` once the person confirms it. */
+  /**
+   * Revokes `token` once the person confirms it, then says so and moves the focus to the list's
+   * heading: the button that had it is gone.
+   */
   protected async revoke(token: AccessTokenSummary): Promise<void> {
     if (this.revoking() || !(await this.revocation.confirm(token.name))) return;
     this.revoking.set(token.id);
     this.revokeError.set(undefined);
+    this.revoked.set(undefined);
     try {
       await this.api.revoke(token.id);
       this.tokens.update((tokens) => tokens.filter((candidate) => candidate.id !== token.id));
+      this.revoked.set(token.name);
+      afterNextRender(() => this.listHeading().nativeElement.focus(), { injector: this.injector });
     } catch (error) {
       this.revokeError.set(problem(error));
     } finally {

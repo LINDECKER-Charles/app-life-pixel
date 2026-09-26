@@ -8,10 +8,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { IonSelect, IonSelectOption, type SelectCustomEvent } from '@ionic/angular';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { type SupportCategory, SupportApi, type SupportRequestThread } from 'shared';
-import { type FieldMap, FormErrors } from '../account/form-errors';
+import { ErrorSummary } from '../account/form/error-summary';
+import { fieldError } from '../account/form/field-error';
+import { type FieldCheck, type FieldMap, FormErrors } from '../account/form/form-errors';
+import { Icon } from '../ui/icon/icon';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import {
   CATEGORY_LABELS,
   messageLength,
@@ -34,11 +37,11 @@ const REQUEST_FIELD_BY_CODE: FieldMap<RequestField> = {
 /**
  * "New request" (support-admin.md, H9): a category, a message with its character counter, and an
  * optional screenshot checked for its type and size before any upload. The context is attached
- * without asking, and said so.
+ * without asking, and said so. The category and the message are checked when sent.
  */
 @Component({
   selector: 'lp-new-support-request',
-  imports: [IonSelect, IonSelectOption, TranslocoPipe],
+  imports: [ErrorSummary, Icon, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './new-support-request.html',
   styleUrl: './support.scss',
@@ -46,8 +49,8 @@ const REQUEST_FIELD_BY_CODE: FieldMap<RequestField> = {
 export class NewSupportRequest {
   private readonly api = inject(SupportApi);
   private readonly screen = inject(SupportScreen);
-  private readonly transloco = inject(TranslocoService);
   private readonly fileInput = viewChild<ElementRef<HTMLInputElement>>('fileInput');
+  private readonly summary = viewChild.required(ErrorSummary);
 
   /** A request the server took. */
   readonly sent = output<SupportRequestThread>();
@@ -56,6 +59,11 @@ export class NewSupportRequest {
   protected readonly maxChars = SUPPORT_LIMITS.messageMaxChars;
   protected readonly maxMegabytes = SCREENSHOT_MAX_MEGABYTES;
   protected readonly accept = SCREENSHOT_TYPES.join(',');
+  protected readonly targets = {
+    category: 'support-category',
+    message: 'support-message',
+    screenshot: 'support-screenshot',
+  };
 
   protected readonly category = signal<SupportCategory | undefined>(undefined);
   protected readonly message = signal('');
@@ -66,25 +74,18 @@ export class NewSupportRequest {
   protected readonly errors = new FormErrors<RequestField>(REQUEST_FIELD_BY_CODE, 'form');
 
   protected readonly length = computed(() => messageLength(this.message()));
-  protected readonly ready = computed(
-    () =>
-      this.category() !== undefined &&
-      this.length() > 0 &&
-      this.length() <= this.maxChars &&
-      !this.pending(),
+  protected readonly screenshotError = computed(
+    () => this.screenshotRefusal() !== undefined || this.errors.of('screenshot') !== undefined,
   );
 
-  protected errorText(field: RequestField): string | undefined {
-    const error = this.errors.of(field);
-    return error ? this.transloco.translate(`errors.${error.code}`, error.params) : undefined;
-  }
-
-  protected onCategory(event: SelectCustomEvent<SupportCategory>): void {
-    this.category.set(event.detail.value);
+  protected onCategory(value: string): void {
+    this.category.set(value === '' ? undefined : (value as SupportCategory));
+    this.errors.recheck('category', this.checks()[0][1]);
   }
 
   protected onMessage(event: Event): void {
     this.message.set((event.target as HTMLTextAreaElement).value);
+    this.errors.recheck('message', this.checks()[1][1]);
   }
 
   /** Keeps a PNG or JPEG within the limit; anything else is refused here, never uploaded. */
@@ -97,16 +98,20 @@ export class NewSupportRequest {
     }
     this.screenshot.set(refusal ? undefined : file);
     this.screenshotRefusal.set(refusal);
+    this.errors.recheck('screenshot', undefined);
   }
 
   protected async submit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
     const category = this.category();
-    if (!this.ready() || category === undefined) {
+    if (this.pending()) {
       return;
     }
-    this.errors.clear();
     this.confirmed.set(false);
+    if (!this.errors.check(this.checks()) || category === undefined) {
+      this.summary().focusFirstError();
+      return;
+    }
     this.pending.set(true);
     try {
       const request = { category, message: this.message(), context: this.screen.context() };
@@ -114,9 +119,22 @@ export class NewSupportRequest {
       this.reset();
     } catch (error) {
       this.errors.set(error);
+      this.summary().focusFirstError();
     } finally {
       this.pending.set(false);
     }
+  }
+
+  private checks(): FieldCheck<RequestField>[] {
+    const length = this.length();
+    const max = this.maxChars;
+    return [
+      ['category', fieldError(this.category() !== undefined, 'errors.support.category')],
+      [
+        'message',
+        fieldError(length > 0 && length <= max, 'errors.support.message_length', { min: 1, max }),
+      ],
+    ];
   }
 
   private reset(): void {

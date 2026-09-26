@@ -1,29 +1,56 @@
 <ion-content>
-  <main class="page">
-    <h1>{{ 'account.title' | transloco }}</h1>
+  <div class="lp-page lp-page--reading">
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'account.title' | transloco }}</h1>
+      </div>
+    </header>
     @if (account(); as account) {
-      <section aria-labelledby="account-address-heading">
-        <h2 id="account-address-heading">{{ 'account.address.heading' | transloco }}</h2>
-        <p>{{ account.email }}</p>
+      <section class="lp-card lp-stack" aria-labelledby="account-address-heading">
+        <h2 id="account-address-heading" class="lp-card__title">
+          {{ 'account.address.heading' | transloco }}
+        </h2>
+        <p class="address">{{ account.email }}</p>
         @if (account.emailVerified) {
-          <p>{{ 'account.address.verified' | transloco }}</p>
+          <p>
+            <span class="lp-pill lp-pill--success">
+              <lp-icon name="success" size="small" />{{ 'account.address.verified' | transloco }}
+            </span>
+          </p>
         } @else {
-          <p>{{ 'account.address.unverified' | transloco }}</p>
+          <p>
+            <span class="lp-pill lp-pill--warning">
+              <lp-icon name="warning" size="small" />{{ 'account.address.unverified' | transloco }}
+            </span>
+          </p>
           @if (resendSent()) {
-            <p role="status">{{ 'account.address.resend_sent' | transloco }}</p>
+            <lp-status-banner variant="success">
+              <p>{{ 'account.address.resend_sent' | transloco }}</p>
+            </lp-status-banner>
           } @else {
-            <button type="button" [disabled]="resendPending()" (click)="resendVerification()">
-              {{ 'account.address.resend' | transloco }}
-            </button>
+            <p>
+              <button
+                type="button"
+                class="lp-button lp-button--secondary"
+                [attr.aria-busy]="resendPending() ? 'true' : null"
+                (click)="resendVerification()"
+              >
+                {{ 'account.address.resend' | transloco }}
+              </button>
+            </p>
             @if (resendError(); as error) {
-              <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+              <lp-status-banner variant="danger">
+                <p>{{ 'errors.' + error.code | transloco: error.params }}</p>
+              </lp-status-banner>
             }
           }
         }
       </section>
 
-      <section aria-labelledby="account-usage-heading">
-        <h2 id="account-usage-heading">{{ 'account.usage.heading' | transloco }}</h2>
+      <section class="lp-card lp-stack" aria-labelledby="account-usage-heading">
+        <h2 id="account-usage-heading" class="lp-card__title">
+          {{ 'account.usage.heading' | transloco }}
+        </h2>
         @if (account.storage.limitBytes === null) {
           <p>
             {{ 'account.usage.summary_unlimited' | transloco: { used: account.storage.usedBytes } }}
@@ -38,84 +65,62 @@
         }
       </section>
 
-      <section aria-labelledby="account-language-heading">
-        <h2 id="account-language-heading">{{ 'account.language.heading' | transloco }}</h2>
-        <ion-select
-          [label]="'account.language.label' | transloco"
-          labelPlacement="stacked"
-          interface="popover"
-          [value]="account.language"
-          [disabled]="languagePending()"
-          (ionChange)="changeLanguage($event)"
-        >
-          @for (item of languages(); track item.code) {
-            <ion-select-option [value]="item.code">{{ item.name }}</ion-select-option>
-          }
-        </ion-select>
-        @if (languageError(); as error) {
-          <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
-        }
-      </section>
-
-      <section aria-labelledby="account-export-heading">
-        <h2 id="account-export-heading">{{ 'account.export.heading' | transloco }}</h2>
-        <a class="button" [href]="accountApi.exportUrl" download>
-          {{ 'account.export.action' | transloco }}
-        </a>
-      </section>
-
-      <section aria-labelledby="account-delete-heading">
-        <h2 id="account-delete-heading">{{ 'account.delete.heading' | transloco }}</h2>
-        @if (!deleting()) {
-          <button type="button" class="danger" (click)="startDeletion()">
-            {{ 'account.delete.action' | transloco }}
-          </button>
-        } @else {
-          <form novalidate (submit)="confirmDeletion($event, account)">
-            @if (deletion.of('form'); as error) {
-              <p #deletionBanner class="banner" role="alert" tabindex="-1">
-                {{ 'errors.' + error.code | transloco: error.params }}
-              </p>
+      <section class="lp-card lp-stack" aria-labelledby="account-language-heading">
+        <h2 id="account-language-heading" class="lp-card__title">
+          {{ 'account.language.heading' | transloco }}
+        </h2>
+        <div class="lp-field">
+          <label class="lp-field__label" for="account-language">
+            {{ 'account.language.label' | transloco }}
+          </label>
+          <select
+            #languageSelect
+            id="account-language"
+            class="lp-input"
+            [disabled]="languagePending()"
+            [attr.aria-invalid]="languageError() ? 'true' : null"
+            [attr.aria-describedby]="languageError() ? 'account-language-error' : null"
+            (change)="changeLanguage(languageSelect.value)"
+          >
+            @for (item of languages(); track item.code) {
+              <option [value]="item.code" [selected]="item.code === account.language">
+                {{ item.name }}
+              </option>
             }
-            <lp-password-field
-              #deletionPasswordField
-              [label]="'account.delete.password_label' | transloco"
-              autocomplete="current-password"
-              [value]="deletionPassword()"
-              [errorText]="deletionErrorText('password')"
-              (valueChange)="deletionPassword.set($event)"
-            />
-            <ion-input
-              [label]="'account.delete.confirm_label' | transloco: { email: account.email }"
-              labelPlacement="stacked"
-              type="email"
-              autocomplete="off"
-              [value]="deletionConfirmation()"
-              [helperText]="'account.delete.confirm_hint' | transloco"
-              (ionInput)="onDeletionConfirmationInput($event)"
-            />
-            <div class="actions">
-              <button type="button" (click)="cancelDeletion()">
-                {{ 'common.cancel' | transloco }}
-              </button>
-              <button
-                type="submit"
-                class="danger"
-                [disabled]="deletionPending() || !deletionConfirmed(account)"
-              >
-                {{ 'account.delete.confirm_action' | transloco }}
-              </button>
-            </div>
-          </form>
-        }
+          </select>
+          @if (languageError(); as error) {
+            <p class="lp-field__error" id="account-language-error" role="alert">
+              <lp-icon name="error" size="small" />{{
+                'errors.' + error.code | transloco: error.params
+              }}
+            </p>
+          }
+        </div>
       </section>
 
-      <section aria-labelledby="account-sign-out-heading">
-        <h2 id="account-sign-out-heading">{{ 'account.sign_out.heading' | transloco }}</h2>
-        <button type="button" (click)="signOut()">
-          {{ 'account.sign_out.action' | transloco }}
-        </button>
+      <section class="lp-card lp-stack" aria-labelledby="account-export-heading">
+        <h2 id="account-export-heading" class="lp-card__title">
+          {{ 'account.export.heading' | transloco }}
+        </h2>
+        <p>
+          <a class="lp-button lp-button--secondary" [href]="accountApi.exportUrl" download>
+            <lp-icon name="download" />{{ 'account.export.action' | transloco }}
+          </a>
+        </p>
       </section>
+
+      <section class="lp-card lp-stack" aria-labelledby="account-sign-out-heading">
+        <h2 id="account-sign-out-heading" class="lp-card__title">
+          {{ 'account.sign_out.heading' | transloco }}
+        </h2>
+        <p>
+          <button type="button" class="lp-button lp-button--secondary" (click)="signOut()">
+            <lp-icon name="sign-out" />{{ 'account.sign_out.action' | transloco }}
+          </button>
+        </p>
+      </section>
+
+      <lp-account-deletion [account]="account" />
     }
-  </main>
+  </div>
 </ion-content>

@@ -16,6 +16,7 @@ import {
   type SupportRequestThread,
 } from 'shared';
 import { SessionStore } from '../account/session-store';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import { NewSupportRequest } from './new-support-request';
 import { CATEGORY_LABELS, formatDate, STATUS_LABELS } from './support-limits';
 import { SupportSignedOut } from './support-signed-out';
@@ -26,7 +27,14 @@ import { SupportSignedOut } from './support-signed-out';
  */
 @Component({
   selector: 'lp-support-page',
-  imports: [IonContent, NewSupportRequest, RouterLink, SupportSignedOut, TranslocoPipe],
+  imports: [
+    IonContent,
+    NewSupportRequest,
+    RouterLink,
+    StatusBanner,
+    SupportSignedOut,
+    TranslocoPipe,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './support-page.html',
   styleUrl: './support.scss',

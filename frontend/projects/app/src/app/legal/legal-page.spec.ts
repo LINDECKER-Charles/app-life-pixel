@@ -43,7 +43,7 @@ async function openLegalPage(page: string): Promise<ComponentFixture<LegalPage>>
 
 function heading(fixture: ComponentFixture<LegalPage>): string | null | undefined {
   fixture.detectChanges();
-  const page: HTMLElement | null = fixture.nativeElement.querySelector('.page');
+  const page: HTMLElement | null = fixture.nativeElement.querySelector('.lp-legal');
   return page?.querySelector('h1')?.textContent;
 }
 
@@ -58,7 +58,7 @@ describe('LegalPage', () => {
     );
     await vi.waitFor(() => expect(heading(fixture)).toBe('Terms'));
 
-    const page: HTMLElement = fixture.nativeElement.querySelector('.page');
+    const page: HTMLElement = fixture.nativeElement.querySelector('.lp-legal');
     expect(page.querySelector('a')?.getAttribute('href')).toBe('/legal/privacy');
   });
 
