@@ -89,6 +89,13 @@ The deploy job, per environment:
 6. checks `https://<domain>/healthz` over TLS, as a warning only: a certificate that is still
    being issued is diagnosed, not fixed by restarting the edge.
 
+`scripts/deploy/deploy.sh` does these six steps on the host. `_deploy.yml`, in the GitHub
+environment of its target (`staging` or `production`), sends it over SSH with the `.env` and the
+job's registry token in files of mode 600, never on a command line; the host's key is read with
+`ssh-keyscan` on each run. `DEPLOY_DRY_RUN=1` prints the commands instead, and CI's `docker`
+job runs it so. The environment files are documented by `.env.staging.example` and
+`.env.prod.example`, which never set the images' listeners nor folders.
+
 What `compose.deploy.yaml` must declare:
 
 - the public services (`server`, `admin`) join the external `edge` network with the
@@ -130,6 +137,7 @@ GitHub secrets, following the shared deployment kit:
 | `STAGING_SSH_USER`, `PROD_SSH_USER` | optional, `root` by default |
 | `ENV_STAGING`, `ENV_PROD` | the full `.env` of the environment, as one multi-line secret |
 | `ENV_TEST` | optional, for CI |
+| `PROMOTION_DEPLOY_KEY` | private half of a deploy key with write access, which the `test` ruleset lets push: `promote-test` fast-forwards `test` with it |
 
 The `.env` of an environment carries the database URL, the object storage endpoint, bucket and
 keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`),

@@ -340,6 +340,12 @@ npm run test:engine --prefix frontend
 npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts crates/admin-server/openapi.json frontend/projects/shared/src/lib/admin-api/schema.d.ts
 npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
+docker run --rm -v "$PWD":/repo -w /repo hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d hadolint docker/app.Dockerfile docker/admin.Dockerfile
+docker compose --env-file .env.example --profile app config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.staging.example config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.example config --quiet && docker compose -f docker/selfhost/compose.yaml --env-file docker/selfhost/.env.example config --quiet
+docker build -f docker/app.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/app:local . && docker build -f docker/admin.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/admin:local .
+docker compose --profile app up -d --wait --no-build && curl -f http://127.0.0.1:8460/healthz  # the images above, on the local stack
+docker run --rm -v "$PWD":/repo -w /repo koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d scripts/deploy/deploy.sh
+DEPLOY_DRY_RUN=1 DEPLOY_SHA=HEAD DEPLOY_PATH=/opt/life-pixel-staging DEPLOY_ENV_FILE=.env.staging.example DEPLOY_REGISTRY_USER=ci DEPLOY_REGISTRY_TOKEN_FILE=/dev/null scripts/deploy/deploy.sh
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 

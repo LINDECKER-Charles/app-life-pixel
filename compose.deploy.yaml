@@ -1,0 +1,38 @@
+# H14 — staging and production on the shared VPS, over compose.yaml:
+#   COMPOSE_FILE=compose.yaml:compose.deploy.yaml, with the environment's .env.
+# The rules of AGENTS.md, "The shared VPS": no `ports:` — the public services join the external
+# `edge` network and declare their domains with `caddy` labels —, never a `log` directive nor a
+# `caddy.import` label, a memory limit and a healthcheck for every service, metrics scraped over
+# the external `observability` network, traces to its OTLP collector. The internal admin API,
+# port 9091, is reached over the project's `default` network only and never routed by the edge;
+# it answers only to LP_ADMIN_API_SECRET.
+services:
+  server:
+    networks: [default, edge, observability]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    labels:
+      caddy: ${CADDY_DOMAINS:?}
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+      prometheus.scrape: "true"
+      prometheus.port: "9090"
+      prometheus.path: /metrics
+
+  admin:
+    networks: [default, edge, observability]
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4318
+    labels:
+      caddy: ${ADMIN_DOMAINS:?}
+      caddy.reverse_proxy: "{{upstreams 8080}}"
+      prometheus.scrape: "true"
+      prometheus.port: "9090"
+      prometheus.path: /metrics
+
+  # shared_buffers follows the 512 MiB limit of compose.yaml: a quarter of it.
+  postgres:
+    command: ["postgres", "-c", "shared_buffers=128MB"]
+
+networks:
+  edge: { external: true }
+  observability: { external: true }
