@@ -247,6 +247,12 @@ mod tests {
             json!([{ "adminSession": [], "adminCsrf": [] }])
         );
         assert!(suspend["responses"]["403"].is_object());
+        let export = &description["paths"]["/api/admin/v1/users/{id}/export"]["post"];
+        assert_eq!(
+            export["security"],
+            json!([{ "adminSession": [], "adminCsrf": [] }])
+        );
+        assert!(export["requestBody"].is_object());
         let users = &description["paths"]["/api/admin/v1/users"]["get"];
         assert_eq!(users["security"], json!([{ "adminSession": [] }]));
         assert!(description.get("security").is_none());
