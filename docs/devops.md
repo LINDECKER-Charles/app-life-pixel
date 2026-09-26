@@ -123,7 +123,48 @@ Scaleway Object Storage in Paris (D35).
 - versioning of the production bucket, whose replaced or deleted objects expire after 30 days;
 - a restore rehearsed before launch, then periodically.
 
-Staging data is disposable and not backed up.
+Staging data is disposable and not backed up: `COMPOSE_PROFILES=backup` and H15's variables are
+never set in `.env.staging.example`, so `backup-dump` and `backup-upload` never run there.
+
+The chain runs in two services of `compose.deploy.yaml`, profile `backup`, production only, with
+`scripts/backup/` mounted read-only:
+
+- **Schedule** — `backup-dump` (`postgres:18-alpine`, the same image and version as `postgres`, so
+  `pg_dump` always matches the server) wakes once a day at `BACKUP_TIME` (UTC, `03:15` by default)
+  and dumps every database of `BACKUP_DATABASES` with `pg_dump --format=custom`, first as
+  `<database>-<UTC timestamp>.dump.partial`, renamed `.dump` only once the dump has completed, into
+  the `backups` volume. `backup-upload` (`rclone/rclone`) wakes every 10 minutes and moves every
+  finished `.dump` it finds there to the crypt remote, one `rclone move` per file, logging one JSON
+  line per attempt (`backup_uploaded` or `backup_failed`, with the file and its size) to its
+  stdout.
+- **Location** — encrypted on the host, before it ever leaves, by the `crypt` remote
+  (`RCLONE_CONFIG_BACKUPCRYPT_*`, obscured passwords, a maintainer's offline copy is the only other
+  one); stored under the `s3` remote (`RCLONE_CONFIG_BACKUPS3_*`) in the `nl-ams` bucket, away from
+  the live data's `fr-par` bucket. File names stay readable
+  (`RCLONE_CONFIG_BACKUPCRYPT_FILENAME_ENCRYPTION=off`), so a backup is found by its
+  `<database>-<UTC timestamp>.dump` name alone, without decrypting anything first. The upload
+  credentials write only — `--no-check-dest`, `--s3-no-check-bucket` and `--s3-no-head` never ask
+  them to read or overwrite —, so a compromised host can still never erase a backup already sent.
+  Retention: the bucket's lifecycle rule deletes backups after 180 days; versioning keeps replaced
+  or deleted objects 30 days (D35) — both set by the maintainer, outside this repository.
+- **Restore** — `scripts/backup/restore.sh <file> <database-url>`, run by the maintainer, needs the
+  read-only rclone credentials and the crypt passwords (never the write-only upload ones, which
+  cannot read) configured as the `backupcrypt` remote, and libpq's client tools on `PATH`: it
+  fetches and decrypts `<file>` through the crypt remote with `rclone copy`, then replays it into
+  `<database-url>` with `pg_restore --clean --if-exists --no-owner`, dropping what that database
+  already holds first.
+- **Rehearsal** — `scripts/backup/rehearse-local.sh` rehearses the whole chain against the local
+  stack, with throwaway crypt passwords: `dump-loop.sh` dumps one database, `upload-loop.sh` moves
+  it, encrypted, to a throwaway bucket on the local S3Mock — the same `rclone` image as production
+  —, the same image then fetches and decrypts it, and `pg_restore` replays it into a new database,
+  whose every table's row count is compared with the source. It creates only that database and
+  that bucket, both named at random, and removes them itself, even on failure: nothing of a run
+  outlives it. Required before the first production deploy, then rehearsed again after any change
+  to `scripts/backup/`, to the pinned images, or to the crypt or bucket configuration, and
+  periodically otherwise (every quarter is a reasonable default).
+- **Alert** — `infra-vps` pages when no `backup_uploaded` line appears in `backup-upload`'s logs
+  for 26 hours: long enough to absorb one missed 10-minute cycle or a short host hiccup without
+  paging on the first delay, short enough that a broken pipeline is caught within a day.
 
 ## Secrets
 

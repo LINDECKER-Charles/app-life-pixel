@@ -363,6 +363,23 @@ DEPLOY_DRY_RUN=1 DEPLOY_SHA=HEAD DEPLOY_PATH=/opt/life-pixel-staging \
 `scripts/deploy/deploy.sh` runs only on the VPS, from `_deploy.yml`; its dry run prints the
 commands of the six steps. `docker/selfhost/` is the self-hosting example, with its own README.
 
+### Backups
+
+`compose.deploy.yaml`'s `backup` profile — production only, docs/devops.md's backup section is
+the runbook — runs `backup-dump` and `backup-upload` on `scripts/backup/`'s two loop scripts,
+`dump-loop.sh` and `upload-loop.sh`, mounted read-only.
+
+```shell
+docker run --rm -v "$PWD":/repo -w /repo koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d scripts/backup/dump-loop.sh scripts/backup/upload-loop.sh scripts/backup/restore.sh scripts/backup/rehearse-local.sh
+docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.example --profile backup config --quiet
+scripts/backup/rehearse-local.sh   # with the local stack up: rehearses dump, upload, restore
+```
+
+`scripts/backup/restore.sh <file> <database-url>` runs only on the VPS, by the maintainer, with
+the read-only rclone credentials and the crypt passwords configured as the `backupcrypt` remote.
+`rehearse-local.sh` needs `PGPASSWORD` (or `.env`'s `LP_POSTGRES_PASSWORD`) and creates only a
+database and an S3Mock bucket, both named at random, which it removes itself, even on failure.
+
 ### Desktop
 
 `tauri/` is `life-pixel-desktop`: the app in a Tauri 2 window, with `service` in-process on a
