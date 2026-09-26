@@ -33,6 +33,73 @@ services:
   postgres:
     command: ["postgres", "-c", "shared_buffers=128MB"]
 
+  # H15 — nightly encrypted backups, production only (`COMPOSE_PROFILES=backup`); staging data is
+  # disposable and not backed up (devops.md). Scripts mounted read-only from the repository; each
+  # service's own loop script, still running, is its healthcheck.
+  backup-dump:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    profiles: [backup]
+    networks: [default]
+    entrypoint: ["bash", "/scripts/dump-loop.sh"]
+    environment:
+      # Not required here: staging's compose file is checked too, and never sets these (its
+      # .env.staging.example carries no backup variables, since staging data is disposable). The
+      # scripts themselves require them, and refuse to run without them.
+      BACKUP_TIME: ${BACKUP_TIME:-03:15}
+      BACKUP_DATABASES: ${BACKUP_DATABASES:-}
+      PGHOST: ${PGHOST:-}
+      PGUSER: ${PGUSER:-}
+      PGPASSWORD: ${PGPASSWORD:-}
+    volumes:
+      - ./scripts/backup:/scripts:ro
+      - backups:/backups
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "dump-loop.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits: { memory: 256M }
+    restart: unless-stopped
+
+  backup-upload:
+    image: rclone/rclone@sha256:45401ad7410db1d67ffdb58e19059ad20b0d8e0285a60e38bbec55cc1019c7a5
+    profiles: [backup]
+    networks: [default]
+    entrypoint: ["sh", "/scripts/upload-loop.sh"]
+    environment:
+      # Not required here either, for the same reason as backup-dump's: rclone itself refuses to
+      # run without them.
+      RCLONE_CONFIG_BACKUPS3_TYPE: ${RCLONE_CONFIG_BACKUPS3_TYPE:-}
+      RCLONE_CONFIG_BACKUPS3_PROVIDER: ${RCLONE_CONFIG_BACKUPS3_PROVIDER:-}
+      RCLONE_CONFIG_BACKUPS3_ENDPOINT: ${RCLONE_CONFIG_BACKUPS3_ENDPOINT:-}
+      RCLONE_CONFIG_BACKUPS3_REGION: ${RCLONE_CONFIG_BACKUPS3_REGION:-}
+      RCLONE_CONFIG_BACKUPS3_ACCESS_KEY_ID: ${RCLONE_CONFIG_BACKUPS3_ACCESS_KEY_ID:-}
+      RCLONE_CONFIG_BACKUPS3_SECRET_ACCESS_KEY: ${RCLONE_CONFIG_BACKUPS3_SECRET_ACCESS_KEY:-}
+      RCLONE_CONFIG_BACKUPCRYPT_TYPE: ${RCLONE_CONFIG_BACKUPCRYPT_TYPE:-}
+      RCLONE_CONFIG_BACKUPCRYPT_REMOTE: ${RCLONE_CONFIG_BACKUPCRYPT_REMOTE:-}
+      RCLONE_CONFIG_BACKUPCRYPT_FILENAME_ENCRYPTION: ${RCLONE_CONFIG_BACKUPCRYPT_FILENAME_ENCRYPTION:-off}
+      RCLONE_CONFIG_BACKUPCRYPT_PASSWORD: ${RCLONE_CONFIG_BACKUPCRYPT_PASSWORD:-}
+      RCLONE_CONFIG_BACKUPCRYPT_PASSWORD2: ${RCLONE_CONFIG_BACKUPCRYPT_PASSWORD2:-}
+    volumes:
+      - ./scripts/backup:/scripts:ro
+      - backups:/backups
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "upload-loop.sh"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits: { memory: 256M }
+    restart: unless-stopped
+
 networks:
   edge: { external: true }
   observability: { external: true }
+
+volumes:
+  backups:
