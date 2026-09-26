@@ -27,7 +27,10 @@ export class HostedEditor extends EditorPage {
     return this.page.getByRole('dialog', { name: title, exact: true });
   }
 
-  /** Opens `/editor` and creates an animation titled `title` in the new-animation dialog. */
+  /**
+   * Opens `/editor`, goes from its welcome to the new-animation dialog, and creates an animation
+   * titled `title` there.
+   */
   async createAnimation(title: string): Promise<void> {
     await this.open();
     await this.fillNewAnimation(title);

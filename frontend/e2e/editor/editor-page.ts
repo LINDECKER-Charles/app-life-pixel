@@ -28,6 +28,7 @@ export interface WasmExport {
  */
 export class EditorPage {
   readonly canvas: Locator;
+  readonly welcome: Locator;
   readonly newDialog: Locator;
   readonly exportDialog: Locator;
   readonly shortcutsDialog: Locator;
@@ -35,16 +36,30 @@ export class EditorPage {
 
   constructor(readonly page: Page) {
     this.canvas = page.getByRole('application', { name: 'Drawing canvas' });
+    this.welcome = page.getByRole('heading', { name: 'A little world, one pixel at a time.' });
     this.newDialog = page.getByRole('dialog', { name: 'New animation' });
     this.exportDialog = page.getByRole('dialog', { name: 'Export the animation' });
     this.shortcutsDialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
     this.tagDialog = page.getByRole('dialog', { name: 'Add tag' });
   }
 
-  /** Opens `/editor`, whose first visit asks for a new animation. */
-  async open(): Promise<void> {
+  /** Opens `/editor`, whose first visit shows the welcome in the empty stage. */
+  async goto(): Promise<void> {
     await this.page.goto('/editor');
+    await expect(this.welcome).toBeVisible();
+  }
+
+  /** Opens `/editor`, then the welcome's "Create animation", which opens the new-animation dialog. */
+  async open(): Promise<void> {
+    await this.goto();
+    await this.button('Create animation').click();
+    await this.expectNewDialog();
+  }
+
+  /** The new-animation dialog is open, with the focus on its title (journeys.md §1). */
+  async expectNewDialog(): Promise<void> {
     await expect(this.newDialog).toBeVisible();
+    await expect(this.textbox('Title')).toBeFocused();
   }
 
   /** Creates the journeys' animation through the new-animation dialog, with the pointer. */
@@ -56,9 +71,10 @@ export class EditorPage {
     await this.expectReady();
   }
 
-  /** The animation is open: the dialog closed, and its first frame listed in the timeline. */
+  /** The animation is open: the dialog and the welcome gone, its first frame in the timeline. */
   async expectReady(): Promise<void> {
     await expect(this.newDialog).toBeHidden();
+    await expect(this.welcome).toBeHidden();
     await expect(this.frameButton(1)).toBeVisible();
   }
 
@@ -115,7 +131,10 @@ export class EditorPage {
 
   // --- The canvas, with the pointer. ---
 
-  /** The centre of an animation pixel, in the page's coordinates, at the default zoom. */
+  /**
+   * The centre of an animation pixel, in the page's coordinates, at the default zoom: the canvas
+   * fills the stage and centres the artwork in it, whatever the stage's place in the layout.
+   */
   async pointAt(pixel: Pixel): Promise<{ x: number; y: number }> {
     const box = await this.canvas.boundingBox();
     if (!box) throw new Error('The drawing canvas is not laid out.');

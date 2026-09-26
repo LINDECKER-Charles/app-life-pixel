@@ -77,9 +77,12 @@ async function addTag(editor: EditorPage, frame: number, name: string): Promise<
 test('draws the same animation with the keyboard alone', async ({ page, browser }) => {
   const editor = new EditorPage(page);
   const cursor = new KeyboardCursor(page);
-  await editor.open();
+  await editor.goto();
 
   await test.step('creates the animation', async () => {
+    await tabTo(page, editor.button('Create animation'));
+    await page.keyboard.press('Enter');
+    await editor.expectNewDialog();
     await typeInto(page, editor.textbox('Title'), TITLE);
     await typeInto(page, editor.spinbutton('Width'), String(SIZE));
     await typeInto(page, editor.spinbutton('Height'), String(SIZE));
