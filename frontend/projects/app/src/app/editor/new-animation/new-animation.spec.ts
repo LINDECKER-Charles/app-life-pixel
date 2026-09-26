@@ -1,10 +1,12 @@
 import { importProvidersFrom } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter, Router } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
 import en from '../../../../../../../i18n/en.json';
 import { EngineStore } from '../../engine/engine-store';
+import { CurrentAnimation } from '../../library/current-animation';
 import { DiscardConfirmation } from './discard-confirmation';
 import { NewAnimationDialog } from './new-animation-dialog';
 import { NewAnimationFlow } from './new-animation-flow';
@@ -20,6 +22,7 @@ describe('the new-animation dialog', () => {
         provideIonicAngular({ animated: false }),
         importProvidersFrom(TranslocoTestingModule.forRoot(I18N_TESTING)),
         { provide: DiscardConfirmation, useValue: { confirm } },
+        provideRouter([{ path: '**', children: [] }]),
       ],
     });
     // Angular 22 no longer runs the testing module's initializer: the catalogue loads here.
@@ -106,5 +109,29 @@ describe('the new-animation dialog', () => {
 
     expect(flow.isOpen()).toBe(true);
     expect(confirm).not.toHaveBeenCalled();
+  });
+
+  it('makes the new animation unsaved work, leaving a saved animation’s route', async () => {
+    await configure();
+    const router = TestBed.inject(Router);
+    await router.navigateByUrl('/editor/a1');
+    const current = TestBed.inject(CurrentAnimation);
+    current.setSaved({
+      id: 'a1',
+      projectId: 'p1',
+      title: 'Saved',
+      width: 8,
+      height: 8,
+      frameCount: 1,
+      documentBytes: 1,
+      version: 1,
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: '2024-01-01T00:00:00Z',
+    });
+
+    await TestBed.inject(NewAnimationFlow).create({ title: 'Fresh', width: 8, height: 8 });
+
+    expect(current.state()).toEqual({ kind: 'unsaved' });
+    expect(router.url).toBe('/editor');
   });
 });

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { requireAccount } from './account/require-account';
+import { requireLibraryAccess } from './library/require-library-access';
 
 // One lazy route per feature; a route's title is an i18n key. The not-found route stays last.
 export const routes: Routes = [
@@ -55,6 +56,18 @@ export const routes: Routes = [
     title: 'account.title',
     canActivate: [requireAccount],
     loadComponent: () => import('./account/account-page').then((m) => m.AccountPage),
+  },
+  {
+    path: 'library',
+    title: 'library.title',
+    canActivate: [requireLibraryAccess],
+    loadComponent: () => import('./library/pages/library-page').then((m) => m.LibraryPage),
+  },
+  {
+    path: 'library/projects/:projectId',
+    title: 'library.title',
+    canActivate: [requireLibraryAccess],
+    loadComponent: () => import('./library/pages/project-page').then((m) => m.ProjectPage),
   },
   {
     path: '**',
