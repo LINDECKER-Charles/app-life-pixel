@@ -75,9 +75,27 @@ describe('AdminClient', () => {
   });
 
   it('downloads a file under the name the server gives it', async () => {
-    const answer = client.download('/api/admin/v1/users/{id}/export', { id: 'u1' });
-    const request = http.expectOne('/api/admin/v1/users/u1/export');
+    const answer = client.download('/api/admin/v1/support-requests/{id}/screenshot', { id: 'r1' });
+    const request = http.expectOne('/api/admin/v1/support-requests/r1/screenshot');
     expect(request.request.responseType).toBe('blob');
+    request.flush(new Blob(['png']), {
+      headers: { 'Content-Disposition': 'attachment; filename="screenshot.png"' },
+    });
+    const file = await answer;
+    expect(file.fileName).toBe('screenshot.png');
+    expect(await file.blob.text()).toBe('png');
+  });
+
+  it('downloads a POST file, sending its reason with the CSRF token', async () => {
+    const answer = client.downloadPost('/api/admin/v1/users/{id}/export', {
+      path: { id: 'u1' },
+      body: { reason: 'Right-of-access request' },
+    });
+    const request = http.expectOne('/api/admin/v1/users/u1/export');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.responseType).toBe('blob');
+    expect(request.request.headers.get(CSRF_HEADER)).toBe('csrf-1');
+    expect(request.request.body).toEqual({ reason: 'Right-of-access request' });
     request.flush(new Blob(['zip']), {
       headers: { 'Content-Disposition': 'attachment; filename="life-pixel-u1.zip"' },
     });
