@@ -246,6 +246,55 @@ git diff --exit-code -- crates/server/openapi.json crates/server/admin-openapi.j
   frontend/projects/shared/src/lib/api/schema.d.ts
 ```
 
+### Admin server
+
+`crates/admin-server` is `life-pixel-admin-server`: the admin console's API, which signs admins in
+with a password and a TOTP code, relays the server's internal admin API, and reads the
+monitoring sources. Run from the root of the repository, with the local stack started: it reads
+the `LPA_` block of `.env`, runs the migrations of `crates/admin-server/migrations/` on its own
+database, `life_pixel_admin`, then serves on http://localhost:8463, its metrics on :8464. It
+relays to the server on http://localhost:8462; the monitoring sources stay empty locally, and
+the console says so.
+
+```shell
+cargo run -p life-pixel-admin-server                  # serve
+cargo run -p life-pixel-admin-server -- migrate       # the migrations, then exit
+cargo run -p life-pixel-admin-server -- healthcheck   # exit 0 when /healthz answers 200
+cargo run -p life-pixel-admin-server -- openapi       # the console API's description, on stdout
+```
+
+Admins exist only through the command line of the admin server's host. `create-admin` asks for
+the password twice without echo — or reads one line of standard input with `--password-stdin` —
+and prints the `otpauth://` URI to scan with an authenticator app; nothing shows the secret
+again. `disable-admin` ends the admin's sessions and refuses its sign-ins.
+
+```shell
+cargo run -p life-pixel-admin-server -- create-admin ops@example.org
+printf '%s\n' "$PASSWORD" | cargo run -p life-pixel-admin-server -- create-admin ops@example.org --password-stdin
+cargo run -p life-pixel-admin-server -- disable-admin ops@example.org
+```
+
+The stack tests run on databases of their own, `lpa_test_…`, owned by `life_pixel_admin` and
+created through `LP_TEST_DATABASE_URL`, never on `life_pixel_admin` itself. To try the admin
+server by hand, give it a throwaway database as `LPA_DATABASE_URL`, as for the server:
+
+```shell
+cargo test -p life-pixel-admin-server --features stack-tests
+cargo clippy -p life-pixel-admin-server --all-targets --features stack-tests -- -D warnings
+cargo run -p life-pixel-admin-server --features stack-tests -- test-database create
+cargo run -p life-pixel-admin-server --features stack-tests -- test-database drop <url>
+```
+
+Its description holds its own routes and the relayed ones of `crates/server/admin-openapi.json`,
+moved under `/api/admin/v1`; `npm run api:generate --prefix frontend` regenerates it after the
+server's, with the console's types, and CI's `api` job fails when they differ.
+
+```shell
+npm run api:generate --prefix frontend
+git diff --exit-code -- crates/admin-server/openapi.json \
+  frontend/projects/shared/src/lib/admin-api/schema.d.ts
+```
+
 ### Desktop
 
 `tauri/` is `life-pixel-desktop`: the app in a Tauri 2 window, with `service` in-process on a
