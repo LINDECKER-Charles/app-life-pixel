@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import {
+  IonContent,
   IonInput,
   IonSelect,
   IonSelectOption,
@@ -34,7 +35,7 @@ const DELETION_FIELD_BY_CODE: FieldMap<DeletionField> = {
  */
 @Component({
   selector: 'lp-account-page',
-  imports: [IonInput, IonSelect, IonSelectOption, PasswordField, TranslocoPipe],
+  imports: [IonContent, IonInput, IonSelect, IonSelectOption, PasswordField, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './account-page.html',
   styleUrl: './account-page.scss',

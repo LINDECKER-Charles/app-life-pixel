@@ -9,6 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { ApiProblem, SupportApi, type SupportRequestThread } from 'shared';
 import { FormErrors } from '../account/form-errors';
@@ -30,7 +31,7 @@ type ReplyField = 'body' | 'form';
  */
 @Component({
   selector: 'lp-support-request-page',
-  imports: [RouterLink, SupportSignedOut, TranslocoPipe],
+  imports: [IonContent, RouterLink, SupportSignedOut, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './support-request-page.html',
   styleUrl: './support.scss',
