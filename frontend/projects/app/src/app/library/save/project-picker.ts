@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { StatusBanner } from '../../ui/status-banner/status-banner';
 import { LIBRARY_STORE } from '../library-store';
 import type { Project } from '../library-types';
 import { PagedList } from '../lists/paged-list';
@@ -21,61 +22,78 @@ const NEW_PROJECT = '';
  */
 @Component({
   selector: 'lp-project-picker',
-  imports: [TranslocoPipe],
+  imports: [StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form class="picker" novalidate (submit)="submit($event)">
-      <fieldset>
-        <legend>{{ 'library.save.project.legend' | transloco }}</legend>
-        @for (project of projects.items(); track project.id) {
-          <label class="option">
+      <div class="lp-dialog__body">
+        <fieldset class="lp-fieldset">
+          <legend>{{ 'library.save.project.legend' | transloco }}</legend>
+          @for (project of projects.items(); track project.id) {
+            <label class="lp-check">
+              <input
+                type="radio"
+                name="project"
+                [value]="project.id"
+                [checked]="selected() === project.id"
+                (change)="selected.set(project.id)"
+              />
+              {{ project.name }}
+            </label>
+          }
+          @if (projects.hasMore()) {
+            <button
+              type="button"
+              class="lp-button lp-button--quiet lp-button--compact more"
+              [disabled]="projects.loading()"
+              [attr.aria-busy]="projects.loading() || null"
+              (click)="projects.loadMore()"
+            >
+              {{ 'library.load_more' | transloco }}
+            </button>
+          }
+          <label class="lp-check">
             <input
               type="radio"
               name="project"
-              [value]="project.id"
-              [checked]="selected() === project.id"
-              (change)="selected.set(project.id)"
+              [value]="newProject"
+              [checked]="selected() === newProject"
+              (change)="selected.set(newProject)"
             />
-            {{ project.name }}
+            {{ 'library.save.project.new' | transloco }}
           </label>
-        }
-        @if (projects.hasMore()) {
-          <button type="button" [disabled]="projects.loading()" (click)="projects.loadMore()">
-            {{ 'library.load_more' | transloco }}
-          </button>
-        }
-        <label class="option">
-          <input
-            type="radio"
-            name="project"
-            [value]="newProject"
-            [checked]="selected() === newProject"
-            (change)="selected.set(newProject)"
-          />
-          {{ 'library.save.project.new' | transloco }}
-        </label>
+        </fieldset>
         @if (selected() === newProject) {
-          <label class="field">
-            {{ 'library.project.name_label' | transloco }}
+          <div class="lp-field">
+            <label class="lp-field__label" for="save-project-name">
+              {{ 'library.project.name_label' | transloco }}
+            </label>
             <input
+              id="save-project-name"
+              class="lp-input"
               type="text"
               name="name"
               required
+              autocomplete="off"
               [value]="name()"
               (input)="onNameInput($event)"
             />
-          </label>
+          </div>
         }
-      </fieldset>
-      @if (projects.failure(); as failure) {
-        <p role="alert">{{ 'errors.' + failure.code | transloco: failure.params }}</p>
-      }
-      <div class="actions">
-        <button type="button" (click)="cancelled.emit()">
-          {{ 'common.cancel' | transloco }}
-        </button>
-        <button type="submit" class="primary" [disabled]="!canSubmit()">
+      </div>
+      <div class="lp-dialog__failure">
+        @if (projects.failure(); as failure) {
+          <lp-status-banner variant="danger">
+            <p>{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+          </lp-status-banner>
+        }
+      </div>
+      <div class="lp-dialog__actions">
+        <button type="submit" class="lp-button lp-button--primary" [disabled]="!canSubmit()">
           {{ 'library.save.project.submit' | transloco }}
+        </button>
+        <button type="button" class="lp-button lp-button--secondary" (click)="cancelled.emit()">
+          {{ 'common.cancel' | transloco }}
         </button>
       </div>
     </form>

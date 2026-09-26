@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { StatusBanner } from '../../ui/status-banner/status-banner';
 import { ModalLabel } from './modal-label';
 import { ProjectPicker } from './project-picker';
 import { SavePrompts } from './save-prompts';
@@ -21,11 +22,13 @@ const BACKDROP_ROLE = 'backdrop';
 /**
  * The questions saving asks (accounts.md, H8), one at a time as `SavePrompts` holds them: sign in
  * or up, the project of a first save, the way out of a conflict, the quota reached, a failure.
- * Closing it any way dismisses the question.
+ * Closing it any way dismisses the question, and keeps the work open. Each follows the dialog
+ * anatomy of `_dialog.scss`; a conflict recommends the copy first and writes what reloading and
+ * overwriting replace; the quota shows the real usage, or says it is unavailable — never zero.
  */
 @Component({
   selector: 'lp-save-dialog',
-  imports: [IonModal, ModalLabel, ProjectPicker, RouterLink, TranslocoPipe],
+  imports: [IonModal, ModalLabel, ProjectPicker, RouterLink, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './save-dialog.html',
   styleUrl: '../library-dialog.scss',

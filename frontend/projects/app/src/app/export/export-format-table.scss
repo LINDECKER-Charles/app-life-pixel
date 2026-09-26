@@ -1,39 +1,90 @@
+// A native table (design-system/docs/patterns.md, "Search, collections and tables"): it scrolls
+// sideways inside its own box on a narrow screen, its buttons staying reachable by keyboard.
+.scroller {
+  overflow-x: auto;
+}
+
 .table {
   width: 100%;
+  font-size: var(--lp-font-size-small);
   border-collapse: collapse;
 }
 
 th,
 td {
   padding: var(--lp-space-2) var(--lp-space-3);
-  text-align: left;
-  border-bottom: 1px solid var(--lp-color-border);
+  text-align: start;
+  vertical-align: middle;
+  border-bottom: var(--lp-border-width) solid var(--lp-color-border-subtle);
 }
 
-tr.lightest {
-  background: color-mix(in srgb, var(--lp-color-accent) 12%, transparent);
+thead th {
+  color: var(--lp-color-text-muted);
+  border-bottom-color: var(--lp-color-border);
 }
 
-.badge {
-  padding: 0 var(--lp-space-2);
-  margin-inline-start: var(--lp-space-2);
-  font-size: var(--lp-font-size-small);
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
-  border-radius: var(--lp-radius-round);
+tbody th {
+  font-weight: var(--lp-font-weight-regular);
 }
 
-button {
-  padding: var(--lp-space-1) var(--lp-space-3);
-  font: inherit;
-  color: var(--lp-color-text);
-  background: transparent;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-medium);
-  cursor: pointer;
+.name {
+  margin-inline-end: var(--lp-space-2);
+  font-weight: var(--lp-font-weight-bold);
+}
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+.use {
+  display: block;
+  margin-block-start: var(--lp-space-1);
+  color: var(--lp-color-text-muted);
+}
+
+.size {
+  font-variant-numeric: tabular-nums;
+}
+
+td.size {
+  white-space: nowrap;
+}
+
+.state {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  color: var(--lp-color-text-muted);
+}
+
+.failed {
+  font-weight: var(--lp-font-weight-semibold);
+  color: var(--lp-color-danger);
+}
+
+.action {
+  text-align: end;
+}
+
+// A narrow screen keeps every column closer, and each button to its icon: its label stays its
+// accessible name and its tooltip. What still overflows scrolls inside the region.
+@media (max-width: 29.99rem) {
+  th,
+  td {
+    padding-inline: var(--lp-space-2);
+  }
+
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+  }
+}
+
+// The smallest row: a pale surface and an edge, beside its pill in words.
+tr.smallest {
+  background: var(--lp-color-success-bg);
+
+  > th {
+    box-shadow: inset var(--lp-border-width-strong) 0 0 var(--lp-color-success);
   }
 }

@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import axe from 'axe-core';
+import en from '../../../../../../../i18n/en.json';
 import { Shortcuts } from '../../editor/shortcuts';
 import type { FakeLibraryStore } from '../testing/fake-library-store';
 import {
@@ -10,14 +11,21 @@ import {
 import { SaveButton } from './save-button';
 import { SavePrompts } from './save-prompts';
 
+/** The catalogue by any key, those of i18n-pending/ included once merged. */
+const TEXTS: Readonly<Record<string, string>> = en;
+
 /** Renders the Save button, whose template holds the save dialog. */
-async function renderButton(): Promise<{ store: FakeLibraryStore; root: HTMLElement }> {
+async function renderButton(): Promise<{
+  store: FakeLibraryStore;
+  root: HTMLElement;
+  host: HTMLElement;
+}> {
   const { store } = await configureLibrary();
   await startUnsavedWork();
   const fixture = TestBed.createComponent(SaveButton);
   await fixture.whenStable();
   // ion-modal moves its presented content to document.body for stacking, once open.
-  return { store, root: document.body };
+  return { store, root: document.body, host: fixture.nativeElement as HTMLElement };
 }
 
 /** Waits for the open dialog to show `selector`, and returns it. */
@@ -27,6 +35,13 @@ async function shown<T extends Element>(root: HTMLElement, selector: string): Pr
     if (!element) throw new Error(`${selector} not shown yet`);
     return element;
   });
+}
+
+/** The Save button itself, whichever element draws it. */
+function saveButton(host: HTMLElement): HTMLElement {
+  const button = host.querySelector<HTMLElement>(':scope > ion-button, :scope > button');
+  if (!button) throw new Error('no Save button');
+  return button;
 }
 
 function buttonNamed(root: HTMLElement, text: string): HTMLButtonElement {
@@ -58,9 +73,9 @@ describe('the save button and its dialog', () => {
   });
 
   it('saves into the project picked', async () => {
-    const { store, root } = await renderButton();
+    const { store, root, host } = await renderButton();
     store.addProject('Sprites');
-    root.querySelector<HTMLElement>('ion-button')?.click();
+    saveButton(host).click();
     await shown(root, 'lp-project-picker input[type="radio"]:checked');
 
     (await shown<HTMLFormElement>(root, 'lp-project-picker form')).requestSubmit();
@@ -70,8 +85,8 @@ describe('the save button and its dialog', () => {
   });
 
   it('saves into a new project named in the picker', async () => {
-    const { store, root } = await renderButton();
-    root.querySelector<HTMLElement>('ion-button')?.click();
+    const { store, root, host } = await renderButton();
+    saveButton(host).click();
     const name = await shown<HTMLInputElement>(root, 'lp-project-picker input[name="name"]');
 
     name.value = 'Heroes';
@@ -95,22 +110,65 @@ describe('the save button and its dialog', () => {
     expect(root.querySelector('ion-modal')?.textContent).toContain('990 of 1,000 bytes');
   });
 
+  it('says the usage is unavailable rather than inventing zero', async () => {
+    const { root } = await renderButton();
+
+    void TestBed.inject(SavePrompts).showQuota({ usedBytes: 0, limitBytes: null });
+
+    const usage = await shown<HTMLElement>(root, '.usage');
+    expect(usage.textContent?.trim()).toBe(TEXTS['library.save.quota.usage_unavailable']);
+    expect(usage.textContent).not.toMatch(/\d/);
+  });
+
   it('offers the three ways out of a conflict', async () => {
     const { root } = await renderButton();
     const prompts = TestBed.inject(SavePrompts);
 
     const answer = prompts.askAboutConflict();
-    await shown(root, 'button.danger');
+    await shown(root, 'button.lp-button--danger');
     buttonNamed(root, 'Save a copy').click();
 
     await expect(answer).resolves.toBe('copy');
+  });
+
+  it('recommends the copy first, and focuses nothing destructive, on a conflict', async () => {
+    const { root } = await renderButton();
+
+    void TestBed.inject(SavePrompts).askAboutConflict();
+    await shown(root, 'button.lp-button--danger');
+
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('ion-modal button'));
+    expect(buttons[0]?.textContent?.trim()).toBe('Save a copy');
+    expect(buttons[0]?.classList).toContain('lp-button--primary');
+    await vi.waitFor(() => expect(document.activeElement).not.toBeNull());
+    const focused = document.activeElement;
+    expect(focused?.classList.contains('lp-button--danger')).toBe(false);
+    expect(root.querySelector('ion-modal button:focus.lp-button--danger')).toBeNull();
+  });
+
+  it('writes what reloading and overwriting replace, on their buttons', async () => {
+    const { root } = await renderButton();
+    void TestBed.inject(SavePrompts).askAboutConflict();
+    await shown(root, 'button.lp-button--danger');
+
+    const described = (name: string): string => {
+      const id = buttonNamed(root, name).getAttribute('aria-describedby') ?? '';
+      return root.querySelector(`[id="${id}"]`)?.textContent?.trim() ?? '';
+    };
+
+    expect(described(TEXTS['library.save.conflict.reload'])).toBe(
+      TEXTS['library.save.conflict.reload_consequence'],
+    );
+    expect(described(TEXTS['library.save.conflict.overwrite'])).toBe(
+      TEXTS['library.save.conflict.overwrite_consequence'],
+    );
   });
 
   it('answers a visitor who chose to sign in', async () => {
     const { root } = await renderButton();
 
     const answer = TestBed.inject(SavePrompts).askToSignIn();
-    await shown(root, 'button.primary');
+    await shown(root, 'button.lp-button--primary');
     buttonNamed(root, 'Sign in').click();
 
     await expect(answer).resolves.toBe('sign-in');
@@ -120,7 +178,7 @@ describe('the save button and its dialog', () => {
     it('asking to sign in', async () => {
       const { root } = await renderButton();
       void TestBed.inject(SavePrompts).askToSignIn();
-      await shown(root, 'button.primary');
+      await shown(root, 'button.lp-button--primary');
 
       expect(await seriousViolations(root)).toEqual([]);
     });
@@ -137,7 +195,7 @@ describe('the save button and its dialog', () => {
     it('on a conflict', async () => {
       const { root } = await renderButton();
       void TestBed.inject(SavePrompts).askAboutConflict();
-      await shown(root, 'button.danger');
+      await shown(root, 'button.lp-button--danger');
 
       expect(await seriousViolations(root)).toEqual([]);
     });

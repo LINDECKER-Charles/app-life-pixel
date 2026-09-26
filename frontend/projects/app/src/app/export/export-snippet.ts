@@ -12,11 +12,16 @@ import {
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EDITOR_ENGINE } from '../engine/editor-engine';
 import { isEngineError, type Framework, type SnippetRequest } from '../engine/engine-types';
+import { Icon } from '../ui/icon/icon';
+import { StatusBanner } from '../ui/status-banner/status-banner';
 import { ExportFlow } from './export-flow';
 import { defaultLoader, defaultSrc } from './export-snippet-values';
 
 const FRAMEWORKS: readonly Framework[] = ['html', 'angular', 'react', 'vue'];
 const COPIED_DURATION_MS = 2000;
+
+/** Where the last copy stands: none yet, done — for a moment —, or refused by the browser. */
+type CopyState = 'idle' | 'copied' | 'failed';
 
 function isFramework(value: string): value is Framework {
   return (FRAMEWORKS as readonly string[]).includes(value);
@@ -24,11 +29,12 @@ function isFramework(value: string): value is Framework {
 
 /**
  * The integration snippet: a framework picker, the URLs, the tag and the alternative text, the
- * code from `engine.snippet`, and a copy button (editor.md, U5).
+ * code from `engine.snippet`, and a copy button (editor.md, U5). The button says when the code is
+ * copied; a browser that refuses leaves an error that stays, and the code to select by hand.
  */
 @Component({
   selector: 'lp-export-snippet',
-  imports: [TranslocoPipe],
+  imports: [Icon, StatusBanner, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './export-snippet.html',
   styleUrl: './export-snippet.scss',
@@ -53,7 +59,7 @@ export class ExportSnippet {
   protected readonly tags = computed(() => this.flow.document()?.tags ?? []);
 
   protected readonly code = signal('');
-  protected readonly copied = signal(false);
+  protected readonly copyState = signal<CopyState>('idle');
 
   constructor() {
     effect(() => {
@@ -74,10 +80,16 @@ export class ExportSnippet {
   }
 
   protected async copy(): Promise<void> {
-    await navigator.clipboard.writeText(this.code());
-    this.copied.set(true);
     clearTimeout(this.copiedTimeout());
-    this.copiedTimeout.set(setTimeout(() => this.copied.set(false), COPIED_DURATION_MS));
+    try {
+      // Absent outside a secure context: the same failure as a refusal.
+      await navigator.clipboard.writeText(this.code());
+    } catch {
+      this.copyState.set('failed');
+      return;
+    }
+    this.copyState.set('copied');
+    this.copiedTimeout.set(setTimeout(() => this.copyState.set('idle'), COPIED_DURATION_MS));
   }
 
   private async refresh(request: SnippetRequest): Promise<void> {

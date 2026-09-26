@@ -1,24 +1,35 @@
 <ion-modal
+  class="lp-modal"
   [isOpen]="kind() !== null"
   [attr.aria-label]="titleKey() | transloco"
   [lpModalLabel]="titleKey() | transloco"
   (didDismiss)="onDismissed($event)"
 >
   <ng-template>
-    <div class="dialog">
-      <h2 class="heading">{{ titleKey() | transloco }}</h2>
+    <div class="lp-dialog">
+      <div class="lp-dialog__header">
+        <h2 class="lp-dialog__title">{{ titleKey() | transloco }}</h2>
+      </div>
       @switch (kind()) {
         @case ('sign-in') {
-          <p>{{ 'library.save.sign_in.message' | transloco }}</p>
-          <div class="actions">
-            <button type="button" (click)="prompts.dismiss()">
-              {{ 'common.cancel' | transloco }}
+          <p class="lp-dialog__context">{{ 'library.save.sign_in.message' | transloco }}</p>
+          <div class="lp-dialog__actions">
+            <button
+              type="button"
+              class="lp-button lp-button--primary"
+              (click)="prompts.answerSignIn('sign-in')"
+            >
+              {{ 'library.save.sign_in.sign_in' | transloco }}
             </button>
-            <button type="button" (click)="prompts.answerSignIn('sign-up')">
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.answerSignIn('sign-up')"
+            >
               {{ 'library.save.sign_in.sign_up' | transloco }}
             </button>
-            <button type="button" class="primary" (click)="prompts.answerSignIn('sign-in')">
-              {{ 'library.save.sign_in.sign_in' | transloco }}
+            <button type="button" class="lp-button lp-button--quiet" (click)="prompts.dismiss()">
+              {{ 'library.save.dialog.keep_editing' | transloco }}
             </button>
           </div>
         }
@@ -29,47 +40,115 @@
           />
         }
         @case ('conflict') {
-          <p>{{ 'library.save.conflict.message' | transloco }}</p>
-          <div class="actions">
-            <button type="button" (click)="prompts.dismiss()">
-              {{ 'common.cancel' | transloco }}
-            </button>
-            <button type="button" (click)="prompts.answerConflict('reload')">
-              {{ 'library.save.conflict.reload' | transloco }}
-            </button>
-            <button type="button" (click)="prompts.answerConflict('copy')">
+          <p class="lp-dialog__context">{{ 'library.save.conflict.message' | transloco }}</p>
+          <div class="lp-dialog__body">
+            <ul class="choices">
+              <li class="choice">
+                <span class="choice__name">
+                  {{ 'library.save.conflict.copy' | transloco }}
+                  <span class="lp-pill lp-pill--success">
+                    {{ 'library.save.conflict.recommended' | transloco }}
+                  </span>
+                </span>
+                <span id="save-conflict-copy">
+                  {{ 'library.save.conflict.copy_consequence' | transloco }}
+                </span>
+              </li>
+              <li class="choice">
+                <span class="choice__name">{{ 'library.save.conflict.reload' | transloco }}</span>
+                <span id="save-conflict-reload">
+                  {{ 'library.save.conflict.reload_consequence' | transloco }}
+                </span>
+              </li>
+              <li class="choice">
+                <span class="choice__name">{{
+                  'library.save.conflict.overwrite' | transloco
+                }}</span>
+                <span id="save-conflict-overwrite">
+                  {{ 'library.save.conflict.overwrite_consequence' | transloco }}
+                </span>
+              </li>
+            </ul>
+          </div>
+          <!-- The safe way out comes first; the two that replace work only after it. -->
+          <div class="lp-dialog__actions">
+            <button
+              type="button"
+              class="lp-button lp-button--primary"
+              aria-describedby="save-conflict-copy"
+              (click)="prompts.answerConflict('copy')"
+            >
               {{ 'library.save.conflict.copy' | transloco }}
             </button>
-            <button type="button" class="danger" (click)="prompts.answerConflict('overwrite')">
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.dismiss()"
+            >
+              {{ 'library.save.dialog.keep_editing' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--danger"
+              aria-describedby="save-conflict-reload"
+              (click)="prompts.answerConflict('reload')"
+            >
+              {{ 'library.save.conflict.reload' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--danger"
+              aria-describedby="save-conflict-overwrite"
+              (click)="prompts.answerConflict('overwrite')"
+            >
               {{ 'library.save.conflict.overwrite' | transloco }}
             </button>
           </div>
         }
         @case ('quota') {
-          @if (quota(); as usage) {
-            <p>
-              {{
-                'library.save.quota.message'
-                  | transloco: { used: usage.usedBytes, limit: usage.limitBytes ?? usage.usedBytes }
-              }}
-            </p>
-          }
-          <div class="actions">
-            <a routerLink="/library" (click)="prompts.dismiss()">
+          <p class="lp-dialog__context">{{ 'library.save.quota.explanation' | transloco }}</p>
+          <div class="lp-dialog__body">
+            @if (quota(); as usage) {
+              <p class="usage">
+                @if (usage.limitBytes !== null) {
+                  {{
+                    'library.save.quota.usage'
+                      | transloco: { used: usage.usedBytes, limit: usage.limitBytes }
+                  }}
+                } @else {
+                  {{ 'library.save.quota.usage_unavailable' | transloco }}
+                }
+              </p>
+            }
+          </div>
+          <div class="lp-dialog__actions">
+            <a
+              class="lp-button lp-button--primary"
+              routerLink="/library"
+              (click)="prompts.dismiss()"
+            >
               {{ 'library.save.quota.library_link' | transloco }}
             </a>
-            <button type="button" class="primary" (click)="prompts.dismiss()">
-              {{ 'common.close' | transloco }}
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.dismiss()"
+            >
+              {{ 'library.save.dialog.keep_editing' | transloco }}
             </button>
           </div>
         }
         @case ('failure') {
-          @if (failure(); as failure) {
-            <p role="alert">{{ 'errors.' + failure.code | transloco: failure.params }}</p>
-          }
-          <p>{{ 'library.save.failure.kept' | transloco }}</p>
-          <div class="actions">
-            <button type="button" class="primary" (click)="prompts.dismiss()">
+          <p class="lp-dialog__context">{{ 'library.save.failure.kept' | transloco }}</p>
+          <div class="lp-dialog__failure">
+            @if (failure(); as failure) {
+              <lp-status-banner variant="danger">
+                <p>{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+              </lp-status-banner>
+            }
+          </div>
+          <div class="lp-dialog__actions">
+            <button type="button" class="lp-button lp-button--primary" (click)="prompts.dismiss()">
               {{ 'common.close' | transloco }}
             </button>
           </div>
