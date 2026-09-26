@@ -292,7 +292,7 @@ export interface paths {
     };
     /**
      * The user `id`: as listed, plus the language, the counts of the library, the product events
-     *     of the last 30 days by name, the sessions and the support requests.
+     *     of the last 30 days by name, the sessions, the support requests and the access tokens.
      */
     get: operations['getUser'];
     put?: never;
@@ -380,10 +380,49 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     /**
+     * @description What a token grants.
+     * @enum {string}
+     */
+    AccessTokenScope: 'read' | 'write' | 'export';
+    /**
      * Format: binary
      * @description A data export: a zip laid out like a local library, plus `account.json`.
      */
     AccountExport: string;
+    /** @description A personal access token of the user, revoked or expired ones included; never its hash. */
+    AdminAccessToken: {
+      /**
+       * Format: date-time
+       * @description When it was created.
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description When it stops, or stopped, working.
+       */
+      expiresAt: string;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /**
+       * Format: date-time
+       * @description When it was last used, to the minute; `null` when never.
+       */
+      lastUsedAt?: string | null;
+      /** @description The name the user gave it. */
+      name: string;
+      /** @description The start of its secret, `lp_pat_` and 4 characters. */
+      prefix: string;
+      /**
+       * Format: date-time
+       * @description When the user revoked it; `null` when they did not.
+       */
+      revokedAt?: string | null;
+      /** @description What it grants. */
+      scopes: components['schemas']['AccessTokenScope'][];
+    };
     /** @description The server's environment and version. */
     AdminEnvironment: {
       /** @description `local`, `staging` or `production`. */
@@ -533,7 +572,8 @@ export interface components {
     };
     /**
      * @description A user in detail: as listed, plus the language, the counts of the library, the product
-     *     events of the last 30 days by name, the sessions and the support requests.
+     *     events of the last 30 days by name, the sessions, the support requests and the access
+     *     tokens.
      */
     AdminUserDetail: {
       /**
@@ -582,6 +622,8 @@ export interface components {
       storageUsedBytes: number;
       /** @description Its support requests, the most recently updated first. */
       supportRequests: components['schemas']['SupportRequestSummary'][];
+      /** @description Its personal access tokens, the most recently created first. */
+      tokens: components['schemas']['AdminAccessToken'][];
     };
     /**
      * @description Whether an account may sign in.
