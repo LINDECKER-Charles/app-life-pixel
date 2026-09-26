@@ -2,10 +2,14 @@ import type { Point, RenderedFrame } from '../../engine/engine-types';
 import type { Size } from '../geometry/canvas-geometry';
 import { onionSkinAlpha } from '../geometry/canvas-geometry';
 
+// The only literal colours of the app: the design system's neutral checkerboard and pixel grid
+// (--lp-checker-light, --lp-checker-dark and --lp-canvas-grid of design-system/tokens/tokens.css,
+// checked by tools/design-tokens/token-parity.test.mjs). They ignore the theme on purpose: a theme
+// never recolours the artwork or the transparency behind it.
 const CHECKER_CELL = 8;
 const CHECKER_LIGHT = '#ffffff';
-const CHECKER_DARK = '#cccccc';
-const GRID_COLOR = 'rgba(0, 0, 0, 0.25)';
+const CHECKER_DARK = '#ececee';
+const GRID_COLOR = '#68686f';
 
 export interface OnionSkinFrame {
   readonly image: RenderedFrame;

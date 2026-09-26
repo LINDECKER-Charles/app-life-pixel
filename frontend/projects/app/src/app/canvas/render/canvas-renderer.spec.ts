@@ -4,6 +4,8 @@ import { drawScene, type Scene } from './canvas-renderer';
 /** jsdom has no real 2D context: this records the calls `drawScene` makes instead of making them. */
 class FakeContext2D {
   readonly calls: string[] = [];
+  readonly fills = new Set<string>();
+  readonly strokes = new Set<string>();
   fillStyle = '';
   strokeStyle = '';
   lineWidth = 1;
@@ -24,6 +26,7 @@ class FakeContext2D {
 
   fillRect(): void {
     this.calls.push('fillRect');
+    this.fills.add(this.fillStyle);
   }
 
   clearRect(): void {
@@ -52,6 +55,7 @@ class FakeContext2D {
 
   stroke(): void {
     this.calls.push('stroke');
+    this.strokes.add(this.strokeStyle);
   }
 }
 
@@ -107,6 +111,22 @@ describe('drawScene', () => {
     expect(ctx.calls).toContain('stroke');
     vi.restoreAllMocks();
   });
+
+  it.each(['light', 'dark'])(
+    'keeps the neutral checkerboard and grid of the design system in the %s theme',
+    (theme) => {
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+      document.documentElement.dataset['theme'] = theme;
+      const ctx = new FakeContext2D();
+
+      drawScene(ctx as unknown as CanvasRenderingContext2D, { ...BASE_SCENE, showGrid: true });
+
+      expect([...ctx.fills]).toEqual(['#ffffff', '#ececee']);
+      expect([...ctx.strokes]).toEqual(['#68686f']);
+      delete document.documentElement.dataset['theme'];
+      vi.restoreAllMocks();
+    },
+  );
 
   it('draws one onion-skin frame per neighbour, before and after', () => {
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(

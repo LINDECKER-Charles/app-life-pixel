@@ -6,12 +6,14 @@
   min-height: 0;
 }
 
+// The neutral surround of the artwork: UI, never part of an exported image.
 .workspace {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
   touch-action: none;
+  background: var(--lp-color-canvas-bg);
   border-radius: inherit;
 }
 
