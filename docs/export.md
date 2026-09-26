@@ -2,9 +2,9 @@
 
 An export has to be three things at once: light, dependency-free, and safe to run inside
 someone else's app. This document describes how the design gets there. The compilation
-mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets are drafts, settled by
-the M1 prototype. The payload and the player ABI are specified byte by byte in
-[crates/format/README.md](../crates/format/README.md), their reference.
+mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets were confirmed by the M1
+prototype's size checkpoint (S1) — see [Budgets](#budgets). The payload and the player ABI are
+specified byte by byte in [crates/format/README.md](../crates/format/README.md), their reference.
 
 Everything an export puts into an app — the player, the loader, the integration snippets — is
 MIT-licensed (D15): the snippets are templates kept with the loader in `player-js`.

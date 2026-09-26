@@ -2,9 +2,12 @@
 
 Pixel-art animations that ship as a few kilobytes of dependency-free WebAssembly.
 
-> **Status: design phase.** There is nothing to install yet. The specification lives in
-> [`docs/`](docs/), the roadmap in [docs/product.md](docs/product.md). Feedback on the design is
-> welcome in the issues.
+> **Status: V1 built.** M1 to M5 of [docs/product.md](docs/product.md) are merged and verified —
+> the editor, the hosted accounts and library, the admin console, the MCP server and the desktop
+> app all run from this repository today. What is not yet true: the maintainer has not deployed
+> the hosted service, signed the desktop installers or published `@life-pixel/player` — see
+> [docs/v1/README.md](docs/v1/README.md#release) for the remaining release steps. Until then, run
+> V1 yourself with the instructions below.
 
 ## What it is
 
@@ -27,14 +30,39 @@ Pixel-art animations that ship as a few kilobytes of dependency-free WebAssembly
 document.querySelector('life-pixel').tag = 'jump';
 ```
 
-## Ways to use it (planned)
+## Ways to use it
 
 | | Runs | Your data | MCP | Price |
 |---|---|---|---|---|
-| Web app | hosted by us | on our servers | over HTTP | free; paid plans add hosted embeds, sync and teams |
-| Android app | on your phone | on our servers | — | your web account |
+| Web app | hosted (not deployed yet, see below) or self-built | on the server you run | over HTTP | free; paid plans (embeds, sync, teams) are M7, not in V1 |
+| Android app | on your phone | on our servers | — | M6, not in V1 |
 | Desktop app | on your computer, offline | on your disk | local (stdio) | free |
 | Self-hosted server | on your server | on your servers | over HTTP | free |
+
+## Install and run V1
+
+The maintainer has not deployed a public instance yet (see
+[what only the maintainer provides](docs/v1/README.md#what-only-the-maintainer-provides)), so
+every path below is self-built, from a checkout of this repository, following
+[.github/CONTRIBUTING.md](.github/CONTRIBUTING.md) for the tools and versions.
+
+- **Web (local or self-hosted)**: `cp .env.example .env && docker compose --profile app up -d --wait`
+  builds and serves the app on `http://localhost:8460` and the admin console on `:8463`, backed by
+  the local stack (Postgres, S3Mock, Mailpit). To run it on your own server and domain, follow
+  [`docker/selfhost/README.md`](docker/selfhost/README.md), which uses your own Postgres, SMTP and
+  reverse proxy instead of the local stack's stand-ins.
+- **Desktop**: `cargo xtask build-desktop --debug` (or `cargo tauri dev` from `tauri/` while
+  developing) bundles Windows, macOS or Linux locally; today's build is unsigned and has no
+  updater, since the signing keys are the maintainer's to provide — see
+  [docs/v1/desktop.md](docs/v1/desktop.md#t4--updater-and-release). Signed installers and the
+  auto-updater will ship from a tagged GitHub Release once the maintainer completes it.
+- **CLI**: `cargo build -p life-pixel-cli --release` produces the `life-pixel` binary (`mcp`,
+  `list`, `export` on a local library); it also ships as a sidecar inside the desktop bundle.
+- **MCP**: for an agent working locally, `claude mcp add life-pixel -- "<path to life-pixel>" mcp
+  --library "<library path>"` (the desktop app's Settings → Agents page prints this command with
+  the right paths); for the hosted server, once deployed, a personal access token from
+  `settings/tokens` gives the equivalent `claude mcp add --transport http` command — see
+  [docs/mcp.md](docs/mcp.md).
 
 ## Documentation
 
