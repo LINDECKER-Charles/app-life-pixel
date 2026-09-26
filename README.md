@@ -69,6 +69,7 @@ every path below is self-built, from a checkout of this repository, following
 | Document | Content |
 |---|---|
 | [Product](docs/product.md) | vision, principles, scope, milestones |
+| [Design system](design-system/README.md) | Rose Atelier: visual language, UX journeys and preview |
 | [Implementation plan](docs/implementation-plan.md) | the tasks of the next milestones, and their order |
 | [V1 technical design](docs/v1/README.md) | the first release: what each task builds and how it is tested, the method, the release |
 | [Architecture](docs/architecture.md) | components, crates, distributions |

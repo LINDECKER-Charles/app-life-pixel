@@ -164,6 +164,7 @@ Commit convention (maintained by /commit, initialised by /b-hive-init).
   - `scripts/**` → `scripts`
   - `xtask/**` → `xtask`
   - `samples/**` → `samples`
+  - `design-system/**` → `design-system`
   - cross-cutting files at the root (`Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`,
     `rustfmt.toml`, `clippy.toml`, `deny.toml`, `.nvmrc`, `.editorconfig`, `.gitignore`,
     `.gitattributes`, `LICENSE`, `LICENSE-MIT`) → no scope: `build` for dependencies and
