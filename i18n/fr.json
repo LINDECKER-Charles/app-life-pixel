@@ -755,5 +755,9 @@
   "tools.tool.pencil": "Crayon",
   "tools.tool.rectangle": "Rectangle",
   "tools.tool.select": "Sélectionner et déplacer",
-  "tools.undo": "Annuler"
+  "tools.undo": "Annuler",
+  "updater.install_and_restart": "Installer et redémarrer",
+  "updater.later": "Plus tard",
+  "updater.message": "Life Pixel {version} est prête. L’installer et redémarrer l’application ?",
+  "updater.title": "Mise à jour disponible"
 }
