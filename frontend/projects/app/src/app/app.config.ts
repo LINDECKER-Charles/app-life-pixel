@@ -16,6 +16,8 @@ import { API_HEADERS, SESSION_EVENTS, provideI18n, sessionInterceptor } from 'sh
 import { AccountMenu } from './account/account-menu';
 import { SessionStore } from './account/session-store';
 import { routes } from './app.routes';
+import { HostedExportObserver } from './events/hosted-export-observer';
+import { EXPORT_OBSERVER } from './export/export-observer';
 import { LegalLinks } from './legal/legal-links';
 import { PreferencesStore } from './settings/preferences-store';
 import { provideAppearance } from './settings/provide-appearance';
@@ -54,5 +56,6 @@ export const appConfig: ApplicationConfig = {
     },
     // The hosted app's start-up load; T2 will guard this one call for the desktop, which never runs it.
     provideAppInitializer(() => inject(SessionStore).load()),
+    { provide: EXPORT_OBSERVER, useClass: HostedExportObserver },
   ],
 };

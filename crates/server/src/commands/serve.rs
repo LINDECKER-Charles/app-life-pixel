@@ -19,6 +19,7 @@ use crate::accounts;
 use crate::app;
 use crate::config::Config;
 use crate::database::{self, DatabaseError, DatabaseReadiness};
+use crate::events::{self, PostgresEventSink};
 use crate::http::rate_limit::RATE_LIMIT_UPKEEP_PERIOD;
 use crate::mail::{EmailTemplates, MailSetupError, SmtpMailer, TemplateError};
 use crate::routes;
@@ -78,11 +79,19 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     storage::metrics::describe();
     accounts::metrics::describe();
     routes::library::metrics::describe();
-    let backends = backends(&pool, Arc::clone(&objects), mailer(&config)?);
+    events::metrics::describe();
+    let events_sink = PostgresEventSink::spawn(pool.clone(), config.secrets.events.clone());
+    let backends = Backends {
+        readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
+        library_store: Arc::new(HostedLibraryStore::new(pool.clone(), Arc::clone(&objects))),
+        accounts: accounts::hosted_ports(&pool, mailer(&config)?, Arc::clone(&events_sink)),
+        events: events_sink,
+    };
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;
     spawn_upkeep(&state, metrics.clone());
     accounts::spawn_purge(state.accounts.clone());
+    events::spawn_purge(pool.clone());
     storage::spawn_upkeep(pool.clone(), Sweeper::new(pool, objects));
     let stop = stop_signal();
     let [public, private, admin] = addresses;
@@ -107,16 +116,6 @@ async fn open_storage(config: &Config) -> Result<(PgPool, Arc<dyn ObjectStore>),
 fn mailer(config: &Config) -> Result<Arc<dyn Mailer>, ServeError> {
     let templates = EmailTemplates::load(&config.i18n_dir)?;
     Ok(Arc::new(SmtpMailer::new(&config.mail, templates)?))
-}
-
-/// The backends of the database of `pool`, the documents of `objects` and the emails of
-/// `mailer`.
-fn backends(pool: &PgPool, objects: Arc<dyn ObjectStore>, mailer: Arc<dyn Mailer>) -> Backends {
-    Backends {
-        readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
-        library_store: Arc::new(HostedLibraryStore::new(pool.clone(), objects)),
-        accounts: accounts::hosted_ports(pool, mailer),
-    }
 }
 
 async fn listen(

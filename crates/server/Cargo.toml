@@ -75,5 +75,10 @@ required-features = ["stack-tests"]
 name = "account_api"
 required-features = ["stack-tests"]
 
+# The product events' tests (H13), against a test database of the local stack.
+[[test]]
+name = "product_events"
+required-features = ["stack-tests"]
+
 [lints]
 workspace = true

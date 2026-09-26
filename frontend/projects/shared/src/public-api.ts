@@ -8,6 +8,7 @@ export * from './lib/api/api-headers';
 export * from './lib/api/api-problem';
 export * from './lib/api/api-types';
 export * from './lib/api/auth-api';
+export * from './lib/api/events-api';
 export type * from './lib/api/schema';
 export * from './lib/api/session-events';
 export * from './lib/api/session-interceptor';

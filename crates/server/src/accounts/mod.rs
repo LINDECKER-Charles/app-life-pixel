@@ -16,7 +16,6 @@
 
 pub mod cookie;
 pub mod csrf;
-mod events;
 pub mod metrics;
 mod session;
 mod upkeep;
@@ -25,10 +24,9 @@ use std::sync::Arc;
 
 use life_pixel_service::accounts::ports::Mailer;
 use life_pixel_service::accounts::{AccountsPorts, AccountsSettings, PasswordHashing};
-use life_pixel_service::ports::{SystemClock, UuidV7Ids};
+use life_pixel_service::ports::{EventSink, SystemClock, UuidV7Ids};
 use sqlx::PgPool;
 
-pub use events::UnrecordedEvents;
 pub use session::{CurrentSession, SessionState, resolve};
 pub use upkeep::{PURGE_PERIOD, spawn_purge};
 
@@ -36,9 +34,13 @@ use crate::config::Config;
 use crate::storage::{PostgresAccountStore, PostgresEmailTokenStore, PostgresSessionStore};
 
 /// The accounts' ports of the hosted service: the stores of the database of `pool`, `mailer`,
-/// the system's clock and UUIDv7s.
+/// the system's clock, UUIDv7s and `events` (H13).
 #[must_use]
-pub fn hosted_ports(pool: &PgPool, mailer: Arc<dyn Mailer>) -> AccountsPorts {
+pub fn hosted_ports(
+    pool: &PgPool,
+    mailer: Arc<dyn Mailer>,
+    events: Arc<dyn EventSink>,
+) -> AccountsPorts {
     AccountsPorts {
         accounts: Arc::new(PostgresAccountStore::new(pool.clone())),
         sessions: Arc::new(PostgresSessionStore::new(pool.clone())),
@@ -46,7 +48,7 @@ pub fn hosted_ports(pool: &PgPool, mailer: Arc<dyn Mailer>) -> AccountsPorts {
         mailer,
         clock: Arc::new(SystemClock),
         ids: Arc::new(UuidV7Ids),
-        events: Arc::new(UnrecordedEvents),
+        events,
     }
 }
 
