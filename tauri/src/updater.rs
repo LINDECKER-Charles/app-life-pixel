@@ -65,7 +65,16 @@ async fn check_once<R: Runtime>(app: &AppHandle<R>) {
     let Some(updater) = build_updater(app) else {
         return;
     };
-    match updater.check().await {
+    handle_check_result(app, updater.check().await).await;
+}
+
+/// Acts on a single [`check_once`] call's result: an offer only when an update is found, silence
+/// otherwise, including on failure.
+async fn handle_check_result<R: Runtime>(
+    app: &AppHandle<R>,
+    result: tauri_plugin_updater::Result<Option<Update>>,
+) {
+    match result {
         Ok(Some(update)) => offer_install(app, update).await,
         Ok(None) => {}
         Err(error) => tracing::debug!(%error, "update check failed, staying silent"),
@@ -76,52 +85,71 @@ async fn check_once<R: Runtime>(app: &AppHandle<R>) {
 /// missing or malformed, which never happens in a build `is_enabled` allowed to start checking.
 fn build_updater<R: Runtime>(app: &AppHandle<R>) -> Option<Updater> {
     let (pubkey, endpoint) = (PUBKEY?, ENDPOINT?);
-    let endpoint: Url = match endpoint.parse() {
-        Ok(endpoint) => endpoint,
-        Err(error) => {
-            tracing::warn!(%error, "LP_UPDATER_ENDPOINT is not a URL");
-            return None;
-        }
-    };
-    let builder = match app
-        .updater_builder()
+    let endpoint = parse_endpoint(endpoint)?;
+    let builder = updater_builder(app, pubkey, endpoint)?;
+    build_from(builder)
+}
+
+/// [`ENDPOINT`] parsed as a URL, logged and dropped when malformed.
+fn parse_endpoint(endpoint: &str) -> Option<Url> {
+    endpoint
+        .parse()
+        .inspect_err(|error| tracing::warn!(%error, "LP_UPDATER_ENDPOINT is not a URL"))
+        .ok()
+}
+
+/// The plugin's builder configured with `pubkey` and `endpoint`, logged and dropped when either
+/// is rejected.
+fn updater_builder<R: Runtime>(
+    app: &AppHandle<R>,
+    pubkey: &str,
+    endpoint: Url,
+) -> Option<tauri_plugin_updater::UpdaterBuilder> {
+    app.updater_builder()
         .pubkey(pubkey)
         .endpoints(vec![endpoint])
-    {
-        Ok(builder) => builder,
-        Err(error) => {
-            tracing::warn!(%error, "updater endpoint rejected");
-            return None;
-        }
-    };
-    match builder.build() {
-        Ok(updater) => Some(updater),
-        Err(error) => {
-            tracing::warn!(%error, "updater not built");
-            None
-        }
-    }
+        .inspect_err(|error| tracing::warn!(%error, "updater endpoint rejected"))
+        .ok()
+}
+
+/// The finished [`Updater`], logged and dropped on failure.
+fn build_from(builder: tauri_plugin_updater::UpdaterBuilder) -> Option<Updater> {
+    builder
+        .build()
+        .inspect_err(|error| tracing::warn!(%error, "updater not built"))
+        .ok()
 }
 
 /// Shows the native "Install and restart" offer; installs and restarts only once it is accepted,
 /// and never on its own otherwise.
 async fn offer_install<R: Runtime>(app: &AppHandle<R>, update: Update) {
     let strings = Strings::for_language(language(app).await);
+    if !ask_to_install(app, &strings, &update.version).await {
+        return;
+    }
+    install_and_restart(app, update).await;
+}
+
+/// Shows the native dialog and waits for the person's answer: `true` for "Install and restart",
+/// `false` for "Later" or a dismissed dialog.
+async fn ask_to_install<R: Runtime>(app: &AppHandle<R>, strings: &Strings, version: &str) -> bool {
     let (sender, receiver) = oneshot::channel();
     app.dialog()
-        .message(strings.message(&update.version))
-        .title(strings.title)
+        .message(strings.message(version))
+        .title(strings.title.clone())
         .kind(MessageDialogKind::Info)
         .buttons(MessageDialogButtons::OkCancelCustom(
-            strings.install_and_restart,
-            strings.later,
+            strings.install_and_restart.clone(),
+            strings.later.clone(),
         ))
         .show(move |accepted| {
             let _ = sender.send(accepted);
         });
-    if receiver.await != Ok(true) {
-        return;
-    }
+    receiver.await == Ok(true)
+}
+
+/// Downloads and installs the accepted update, restarting the app only on success.
+async fn install_and_restart<R: Runtime>(app: &AppHandle<R>, update: Update) {
     match update
         .download_and_install(|_chunk, _total| {}, || {})
         .await
