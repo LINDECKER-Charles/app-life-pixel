@@ -4,6 +4,7 @@
 use std::collections::BTreeSet;
 
 use life_pixel_service::accounts::AccountsError;
+use life_pixel_service::admin::AdminError;
 use life_pixel_service::animation::EditingError;
 use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
@@ -45,7 +46,17 @@ fn every_error() -> Vec<CodedError> {
     let others = [CodedError::of(&MalformedCursor)];
     let known = library.chain(local).chain(editing).chain(others);
     let hosted = account_errors().into_iter().chain(support_errors());
-    known.chain(hosted).collect()
+    known.chain(hosted).chain(admin_errors()).collect()
+}
+
+/// One error of each of the internal admin API's codes.
+fn admin_errors() -> Vec<CodedError> {
+    let errors = [
+        AdminError::UserNotFound,
+        AdminError::ReasonLength,
+        AdminError::ScreenshotNotFound,
+    ];
+    errors.iter().map(CodedError::of).collect()
 }
 
 /// One error of each of the support codes.

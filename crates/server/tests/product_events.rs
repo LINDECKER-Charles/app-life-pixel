@@ -20,6 +20,7 @@ use life_pixel_server::testing::TestDatabase;
 use life_pixel_server::{accounts, app, telemetry};
 use life_pixel_service::AccountId;
 use life_pixel_service::accounts::memory::RecordingMailer;
+use life_pixel_service::admin::memory::unavailable_stores;
 use life_pixel_service::events::subject;
 use life_pixel_service::memory::InMemoryLibraryStore;
 use life_pixel_service::ports::ProductEvent;
@@ -66,6 +67,7 @@ impl EventsStack {
             ),
             events,
             support: in_memory_stores(),
+            admin: unavailable_stores(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {

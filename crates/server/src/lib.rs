@@ -4,6 +4,7 @@
 //! `testing` module of the tests that need the local stack.
 
 pub mod accounts;
+pub mod admin;
 pub mod app;
 pub mod commands;
 pub mod config;

@@ -3,6 +3,7 @@
 use std::sync::Arc;
 
 use life_pixel_service::accounts::{Accounts, AccountsPorts};
+use life_pixel_service::admin::{Admin, AdminPorts, AdminSettings, AdminStores};
 use life_pixel_service::library::{Library, LibraryPorts};
 use life_pixel_service::ports::{EventSink, LibraryStore};
 use life_pixel_service::support::{Support, SupportPorts, SupportStores};
@@ -39,6 +40,8 @@ pub struct Backends {
     pub events: Arc<dyn EventSink>,
     /// Where support requests and their screenshots are kept (H9).
     pub support: SupportStores,
+    /// The admin stores: accounts, support queue, audit log and metrics (H10).
+    pub admin: AdminStores,
 }
 
 /// The shared state: cheap to clone, one field per line.
@@ -64,6 +67,8 @@ pub struct AppState {
     pub events: Arc<dyn EventSink>,
     /// The support requests (H9).
     pub support: Support,
+    /// The internal admin API's use cases (H10).
+    pub admin: Admin,
 }
 
 impl AppState {
@@ -78,17 +83,20 @@ impl AppState {
         let settings = accounts::settings(&config, catalogues.languages().to_vec());
         let library = library(&backends, &config);
         let support = support(&backends);
+        let accounts = Accounts::new(backends.accounts.clone(), settings);
+        let admin = admin(&backends, (&accounts, &library), &config);
         Ok(Self {
             config: Arc::new(config),
             readiness: backends.readiness,
             library_store: backends.library_store,
             library,
-            accounts: Accounts::new(backends.accounts, settings),
+            accounts,
             rate_limits: Arc::new(RateLimits::new()),
             catalogues: Arc::new(catalogues),
             static_app: Arc::new(static_app),
             events: backends.events,
             support,
+            admin,
         })
     }
 }
@@ -114,4 +122,27 @@ fn support(backends: &Backends) -> Support {
         ids: Arc::clone(&backends.accounts.ids),
         events: Arc::clone(&backends.accounts.events),
     })
+}
+
+/// The admin use cases over the admin stores of `backends`, with the accounts' and the library's
+/// use cases, the support screenshots, the accounts' mailer, clock and ids, and the public URL
+/// of `config` for the links of the emails.
+fn admin(
+    backends: &Backends,
+    (accounts, library): (&Accounts, &Library),
+    config: &Config,
+) -> Admin {
+    let ports = AdminPorts {
+        stores: backends.admin.clone(),
+        accounts: accounts.clone(),
+        library: library.clone(),
+        screenshots: Arc::clone(&backends.support.screenshots),
+        mailer: Arc::clone(&backends.accounts.mailer),
+        clock: Arc::clone(&backends.accounts.clock),
+        ids: Arc::clone(&backends.accounts.ids),
+    };
+    let settings = AdminSettings {
+        public_url: config.public_url.as_str().trim_end_matches('/').to_owned(),
+    };
+    Admin::new(ports, settings)
 }

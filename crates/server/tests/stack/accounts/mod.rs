@@ -18,6 +18,7 @@ use life_pixel_server::app;
 use life_pixel_server::mail::{EmailTemplates, SmtpMailer};
 use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::testing::{MailMessage, TestDatabase, TestMailbox, load_test_env};
+use life_pixel_service::admin::memory::unavailable_stores;
 use life_pixel_service::memory::{InMemoryLibraryStore, RecordingEvents};
 use life_pixel_service::support::memory::in_memory_stores;
 use serde_json::{Value, json};
@@ -50,6 +51,7 @@ fn backends(database: &TestDatabase, mailer: SmtpMailer) -> Backends {
         accounts: accounts::hosted_ports(database.pool(), Arc::new(mailer), Arc::clone(&events)),
         events,
         support: in_memory_stores(),
+        admin: unavailable_stores(),
     }
 }
 

@@ -1,5 +1,6 @@
-//! What the library and account API tests share (H6): the server over a test database, a test
-//! bucket prefix, recorded emails and product events, and the requests of a signed-in browser.
+//! What the library, account, support and admin API tests share (H6): the server over a test
+//! database, a test bucket prefix, recorded emails — or Mailpit's — and product events, and the
+//! requests of a signed-in browser.
 
 #![allow(dead_code)] // Each test file uses its own share of the helpers.
 
@@ -11,14 +12,17 @@ use axum::extract::connect_info::MockConnectInfo;
 use axum::http::header::{CONTENT_TYPE, IF_MATCH};
 use axum::http::request::Builder;
 use axum::http::{Method, Request};
-use life_pixel_server::accounts;
 use life_pixel_server::app;
+use life_pixel_server::mail::{EmailTemplates, SmtpMailer};
 use life_pixel_server::routes::library::DOCUMENT_MEDIA_TYPE;
 use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::storage::HostedLibraryStore;
 use life_pixel_server::support;
 use life_pixel_server::testing::{TestDatabase, TestStorage, load_test_env};
+use life_pixel_server::{accounts, admin};
 use life_pixel_service::accounts::memory::RecordingMailer;
+use life_pixel_service::accounts::ports::Mailer;
+use life_pixel_service::admin::AdminStores;
 use life_pixel_service::memory::RecordingEvents;
 use life_pixel_service::testing::sample_document;
 use serde_json::{Value, json};
@@ -29,6 +33,8 @@ use crate::router::{Answer, Database, built_app, client_peer, local_env, read_co
 
 /// The prefix of the API's paths.
 pub const API: &str = "/api/v1";
+/// The variable naming the local stack's SMTP server.
+const SMTP_URL: &str = "LP_SMTP_URL";
 
 /// The server's state over a test database and bucket prefix.
 pub struct ApiStack {
@@ -47,6 +53,23 @@ impl ApiStack {
 
     /// The local configuration that `change` adjusts, over a new database and bucket prefix.
     pub async fn with(change: impl FnOnce(&mut HashMap<String, String>)) -> Self {
+        Self::build(change, false).await
+    }
+
+    /// The local configuration with the stack's SMTP server, where the emails go, over a new
+    /// database and bucket prefix.
+    pub async fn with_mailpit() -> Self {
+        let smtp = |env: &mut HashMap<String, String>| {
+            if let Ok(url) = std::env::var(SMTP_URL) {
+                env.insert(SMTP_URL.to_owned(), url);
+            }
+        };
+        Self::build(smtp, true).await
+    }
+
+    /// The configuration that `change` adjusts, with its SMTP mailer when `sends_emails`, over a
+    /// new database and bucket prefix.
+    async fn build(change: impl FnOnce(&mut HashMap<String, String>), sends_emails: bool) -> Self {
         load_test_env();
         let database = TestDatabase::create().await.unwrap();
         let storage = TestStorage::create().unwrap();
@@ -55,7 +78,14 @@ impl ApiStack {
         change(&mut env);
         let config = read_config(&env).unwrap();
         let events = Arc::new(RecordingEvents::new());
-        let backends = hosted_backends(&database, &storage, events.clone());
+        let mailer: Arc<dyn Mailer> = if sends_emails {
+            let templates = EmailTemplates::load(&config.i18n_dir).unwrap();
+            Arc::new(SmtpMailer::new(&config.mail, templates).unwrap())
+        } else {
+            Arc::new(RecordingMailer::new())
+        };
+        let admin = admin::hosted_stores(database.pool(), config.secrets.events.clone());
+        let backends = hosted_backends((&database, &storage), (events.clone(), mailer), admin);
         let state = AppState::new(config, backends).unwrap();
         Self {
             database,
@@ -113,17 +143,14 @@ impl ApiStack {
     }
 }
 
-/// The hosted backends over `database` and `storage`, recording emails and `events`.
+/// The hosted backends over `database` and `storage`, sending with `mailer`, recording `events`,
+/// with the `admin` stores.
 fn hosted_backends(
-    database: &TestDatabase,
-    storage: &TestStorage,
-    events: Arc<RecordingEvents>,
+    (database, storage): (&TestDatabase, &TestStorage),
+    (events, mailer): (Arc<RecordingEvents>, Arc<dyn Mailer>),
+    admin: AdminStores,
 ) -> Backends {
-    let ports = accounts::hosted_ports(
-        database.pool(),
-        Arc::new(RecordingMailer::new()),
-        events.clone(),
-    );
+    let ports = accounts::hosted_ports(database.pool(), mailer, events.clone());
     let store = HostedLibraryStore::new(database.pool().clone(), storage.objects());
     Backends {
         readiness: Arc::new(Database { answers: true }),
@@ -131,6 +158,7 @@ fn hosted_backends(
         accounts: ports,
         events,
         support: support::hosted_stores(database.pool(), storage.objects()),
+        admin,
     }
 }
 
