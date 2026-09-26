@@ -23,9 +23,9 @@ function element<T extends Element>(root: HTMLElement, selector: string): T {
 
 /** Picks `category` and types `message` in the new request's form. */
 async function fill(root: HTMLElement, category: string, message: string): Promise<void> {
-  element(root, 'ion-select').dispatchEvent(
-    new CustomEvent('ionChange', { detail: { value: category } }),
-  );
+  const select = element<HTMLSelectElement>(root, '#support-category');
+  select.value = category;
+  select.dispatchEvent(new Event('change'));
   const field = element<HTMLTextAreaElement>(root, 'textarea');
   field.value = message;
   field.dispatchEvent(new Event('input'));
@@ -73,18 +73,18 @@ describe('SupportPage', () => {
     const api = mockSupportApi();
     const fixture = await openAccountPage(SupportPage, ACCOUNT);
     const root: HTMLElement = fixture.nativeElement;
-    const submit = element<HTMLButtonElement>(root, 'button[type="submit"]');
-    expect(submit.disabled).toBe(true);
-
     await fill(root, 'bug', 'The canvas stays blank.');
     await fixture.whenStable();
     expect(element(root, '#support-message-counter').textContent?.trim()).toBe(
       `23 of ${new Intl.NumberFormat('en').format(SUPPORT_LIMITS.messageMaxChars)} characters`,
     );
-    expect(submit.disabled).toBe(false);
     element(root, 'form').dispatchEvent(new Event('submit'));
 
-    await waitForEffects(() => expect(root.querySelector('[role="status"]')).toBeTruthy());
+    await waitForEffects(() =>
+      expect(root.querySelector('[role="status"]')?.textContent).toContain(
+        'Your request was sent.',
+      ),
+    );
     expect(api.create).toHaveBeenCalledWith({
       category: 'bug',
       message: 'The canvas stays blank.',
@@ -99,6 +99,58 @@ describe('SupportPage', () => {
     expect(element(root, '.requests a').getAttribute('href')).toBe(`/support/${THREAD.id}`);
   });
 
+  it('says the list is loading, then that it is empty: distinct states', async () => {
+    const api = mockSupportApi();
+    let answer: (page: unknown) => void = () => undefined;
+    api.list.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+    const fixture = await openAccountPage(SupportPage, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+
+    await waitForEffects(() => expect(root.textContent).toContain('Loading…'));
+    expect(root.textContent).not.toContain('You have not sent any request yet.');
+    answer({ items: [], nextCursor: null });
+
+    await waitForEffects(() =>
+      expect(root.textContent).toContain('You have not sent any request yet.'),
+    );
+    expect(root.textContent).not.toContain('Loading…');
+  });
+
+  it('shows a failed list with a retry', async () => {
+    const api = mockSupportApi();
+    api.list.mockRejectedValueOnce(new ApiProblem(503, 'service.unavailable'));
+    const fixture = await openAccountPage(SupportPage, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+
+    await waitForEffects(() => expect(root.querySelector('[role="alert"]')).toBeTruthy());
+    expect(root.textContent).not.toContain('You have not sent any request yet.');
+    [...root.querySelectorAll('button')].find((b) => b.textContent?.includes('Retry'))?.click();
+
+    await waitForEffects(() =>
+      expect(root.textContent).toContain('You have not sent any request yet.'),
+    );
+  });
+
+  it('lists what is missing when sent empty, and focuses the category', async () => {
+    const api = mockSupportApi();
+    const fixture = await openAccountPage(SupportPage, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+
+    element(root, 'form').dispatchEvent(new Event('submit'));
+
+    await waitForEffects(() =>
+      expect(document.activeElement).toBe(root.querySelector('#support-category')),
+    );
+    const items = [...root.querySelectorAll('form [role="alert"] li')].map((item) =>
+      item.textContent?.trim(),
+    );
+    expect(items).toEqual([
+      'Choose one of the categories.',
+      `A message holds 1 to ${new Intl.NumberFormat('en').format(SUPPORT_LIMITS.messageMaxChars)} characters.`,
+    ]);
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
   it('refuses a screenshot of the wrong type or size before any upload', async () => {
     const api = mockSupportApi();
     const fixture = await openAccountPage(SupportPage, ACCOUNT);
@@ -106,15 +158,13 @@ describe('SupportPage', () => {
 
     pick(root, new File(['GIF89a'], 'capture.gif', { type: 'image/gif' }));
     await waitForEffects(() =>
-      expect(root.querySelector('.screenshot [role="alert"]')?.textContent).toContain(
-        'PNG or JPEG',
-      ),
+      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('PNG or JPEG'),
     );
     const heavy = new File(['x'], 'capture.png', { type: 'image/png' });
     Object.defineProperty(heavy, 'size', { value: SUPPORT_LIMITS.screenshotMaxBytes + 1 });
     pick(root, heavy);
     await waitForEffects(() =>
-      expect(root.querySelector('.screenshot [role="alert"]')?.textContent).toContain('too large'),
+      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('too large'),
     );
     const fine = new File(['png'], 'capture.png', { type: 'image/png' });
     pick(root, fine);
@@ -139,7 +189,7 @@ describe('SupportPage', () => {
     element(root, 'form').dispatchEvent(new Event('submit'));
 
     await waitForEffects(() =>
-      expect(root.querySelector('.screenshot [role="alert"]')?.textContent).toContain('4,096'),
+      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('4,096'),
     );
   });
 

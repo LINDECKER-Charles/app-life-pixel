@@ -8,19 +8,25 @@ import { TranslocoPipe } from '@jsverse/transloco';
   imports: [RouterLink, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <p>{{ 'support.signed_out.message' | transloco }}</p>
-    <p class="links">
-      <a class="button" routerLink="/sign-in" [queryParams]="{ returnUrl: returnUrl() }">
-        {{ 'support.signed_out.sign_in' | transloco }}
-      </a>
-      <a class="button" routerLink="/sign-up">{{ 'support.signed_out.sign_up' | transloco }}</a>
-    </p>
-  `,
-  styles: `
-    .links {
-      display: flex;
-      gap: var(--lp-space-3);
-    }
+    <div class="lp-panel lp-panel--soft lp-stack">
+      <p>{{ 'support.signed_out.message' | transloco }}</p>
+      <p class="lp-cluster">
+        <a
+          class="lp-button lp-button--primary"
+          routerLink="/sign-in"
+          [queryParams]="{ returnUrl: returnUrl() }"
+        >
+          {{ 'support.signed_out.sign_in' | transloco }}
+        </a>
+        <a
+          class="lp-button lp-button--secondary"
+          routerLink="/sign-up"
+          [queryParams]="{ returnUrl: returnUrl() }"
+        >
+          {{ 'support.signed_out.sign_up' | transloco }}
+        </a>
+      </p>
+    </div>
   `,
 })
 export class SupportSignedOut {
