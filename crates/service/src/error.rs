@@ -9,6 +9,9 @@ use thiserror::Error;
 /// `core` travel through the service unchanged and stay in `life_pixel_core::error::CODES`.
 pub const CODES: &[&str] = &[
     "account.language",
+    "admin.reason_length",
+    "admin.screenshot_not_found",
+    "admin.user_not_found",
     "auth.account_suspended",
     "auth.current_password",
     "auth.email_invalid",

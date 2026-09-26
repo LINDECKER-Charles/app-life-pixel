@@ -7,6 +7,7 @@ use metrics_exporter_prometheus::PrometheusHandle;
 use tower_http::catch_panic::CatchPanicLayer;
 
 use crate::accounts::{self, csrf};
+use crate::admin::{self, ADMIN_API_PREFIX};
 use crate::http::client_version::require_supported;
 use crate::http::problem::{
     API_BODY_LIMIT_BYTES, BodyLimit, ensure_problem, not_found, panic_problem,
@@ -43,12 +44,13 @@ pub fn metrics_router(handle: PrometheusHandle) -> Router {
         .with_state(handle)
 }
 
-/// The internal admin API's router: `/internal/admin/v1`, which H10 adds. One line per route
-/// group.
+/// The internal admin API's router: `/internal/admin/v1` (H10). One line per route group.
 pub fn admin_router(state: AppState) -> Router {
     let proxies = state.config.trusted_proxies.clone();
     Router::new()
+        .nest(ADMIN_API_PREFIX, admin::api_router(&state))
         .fallback(not_found)
+        .layer(CatchPanicLayer::custom(panic_problem))
         .layer(from_fn(observe))
         .layer(from_fn_with_state(proxies, request_id::assign))
         .with_state(state)

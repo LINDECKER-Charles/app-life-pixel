@@ -85,5 +85,10 @@ required-features = ["stack-tests"]
 name = "support_api"
 required-features = ["stack-tests"]
 
+# The internal admin API over the local stack (H10).
+[[test]]
+name = "admin_api"
+required-features = ["stack-tests"]
+
 [lints]
 workspace = true

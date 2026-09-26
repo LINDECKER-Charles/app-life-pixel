@@ -23,6 +23,7 @@ use life_pixel_server::app;
 use life_pixel_server::config::{Config, ConfigError};
 use life_pixel_server::readiness::Readiness;
 use life_pixel_server::state::{AppState, Backends};
+use life_pixel_service::admin::memory::unavailable_stores;
 use life_pixel_service::memory::{InMemoryLibraryStore, RecordingEvents};
 use life_pixel_service::support::memory::in_memory_stores;
 use serde_json::Value;
@@ -174,6 +175,7 @@ impl TestServer {
             accounts: accounts.ports(),
             events: Arc::new(RecordingEvents::new()),
             support: in_memory_stores(),
+            admin: unavailable_stores(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {
