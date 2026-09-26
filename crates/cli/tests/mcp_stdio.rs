@@ -4,6 +4,8 @@
 #![allow(clippy::unwrap_used, reason = "a panic is a failed test")]
 
 mod common;
+#[path = "session.rs"]
+mod session;
 
 use common::TestLibrary;
 use rmcp::model::CallToolRequestParams;
@@ -77,5 +79,38 @@ async fn a_round_trip_lists_then_exports_the_seeded_animation() {
     assert_eq!(exported.is_error, Some(false), "{exported:?}");
     let entries: Vec<_> = std::fs::read_dir(allow_dir.path()).unwrap().collect();
     assert_eq!(entries.len(), 1);
+    client.cancel().await.unwrap();
+}
+
+/// `docs/v1/mcp-cli.md`'s "A5 — MCP end to end", over stdio: the scripted session, `export` as
+/// `wasm` into `--allow-dir`, and the exported file run in `wasmi`.
+#[tokio::test]
+async fn the_scripted_session_plays_over_stdio_and_its_wasm_export_runs_in_wasmi() {
+    let library = TestLibrary::empty();
+    let allow_dir = common::scratch_dir();
+    let client = connect(&library, allow_dir.path()).await;
+
+    let played = session::play(&client).await;
+
+    let export_arguments = json!({
+        "id": played.animation_id,
+        "format": "wasm",
+        "directory": allow_dir.path().to_str().unwrap(),
+    });
+    let exported = session::call(&client, "export", export_arguments).await;
+    let files: Vec<String> = exported["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|file| file.as_str().unwrap().to_owned())
+        .collect();
+    let wasm_path = files
+        .iter()
+        .find(|path| path.ends_with(".wasm"))
+        .unwrap_or_else(|| panic!("a .wasm file among {files:?}"));
+    let bytes = std::fs::read(wasm_path).unwrap();
+    session::check_wasm(&bytes, &played.frame0_rows);
+
+    session::check_embed_snippet(&client, &played.animation_id).await;
     client.cancel().await.unwrap();
 }
