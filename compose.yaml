@@ -21,5 +21,96 @@ services:
         limits: { memory: 512M }
     restart: unless-stopped
 
+  # H14 — the server and the app, image `app`. Each service lists only its own variables,
+  # interpolated from the project's .env, and none uses env_file. The listeners and folders are
+  # the image's.
+  server:
+    image: ghcr.io/lindecker-charles/life-pixel/app:${IMAGE_TAG:-local}
+    environment:
+      LP_ENVIRONMENT: ${LP_ENVIRONMENT}
+      LP_PUBLIC_URL: ${LP_PUBLIC_URL}
+      LP_ALLOWED_ORIGINS: ${LP_ALLOWED_ORIGINS:-}
+      LP_DATABASE_URL: ${LP_DATABASE_URL}
+      LP_DATABASE_MAX_CONNECTIONS: ${LP_DATABASE_MAX_CONNECTIONS}
+      LP_STORAGE_URL: ${LP_STORAGE_URL}
+      LP_S3_ENDPOINT: ${LP_S3_ENDPOINT:-}
+      LP_S3_REGION: ${LP_S3_REGION:-}
+      LP_S3_ACCESS_KEY_ID: ${LP_S3_ACCESS_KEY_ID:-}
+      LP_S3_SECRET_ACCESS_KEY: ${LP_S3_SECRET_ACCESS_KEY:-}
+      LP_S3_PATH_STYLE: ${LP_S3_PATH_STYLE:-}
+      LP_SMTP_URL: ${LP_SMTP_URL}
+      LP_MAIL_FROM: ${LP_MAIL_FROM}
+      LP_SESSION_SECRET: ${LP_SESSION_SECRET}
+      LP_EVENTS_SECRET: ${LP_EVENTS_SECRET}
+      LP_EXPORT_LINK_SECRET: ${LP_EXPORT_LINK_SECRET}
+      LP_ADMIN_API_SECRET: ${LP_ADMIN_API_SECRET}
+      LP_PLAN_FREE_STORAGE_BYTES: ${LP_PLAN_FREE_STORAGE_BYTES}
+      LP_PLAN_FREE_MCP_CALLS_PER_DAY: ${LP_PLAN_FREE_MCP_CALLS_PER_DAY}
+      LP_MIN_CLIENT_VERSIONS: ${LP_MIN_CLIENT_VERSIONS}
+      LP_TRUSTED_PROXIES: ${LP_TRUSTED_PROXIES:-}
+      LP_MCP_SERVER_NAME: ${LP_MCP_SERVER_NAME}
+      LP_LEGAL_PUBLISHER: ${LP_LEGAL_PUBLISHER}
+      LP_LEGAL_ADDRESS: ${LP_LEGAL_ADDRESS}
+      LP_LEGAL_CONTACT: ${LP_LEGAL_CONTACT}
+      LP_LEGAL_DIRECTOR: ${LP_LEGAL_DIRECTOR}
+      LP_LEGAL_HOST: ${LP_LEGAL_HOST}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/life-pixel-server", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { memory: 512M }
+    restart: unless-stopped
+
+  # H14 — the admin server and the console, image `admin`. It never sees LP_DATABASE_URL: it
+  # reaches the server only through the internal admin API.
+  admin:
+    image: ghcr.io/lindecker-charles/life-pixel/admin:${IMAGE_TAG:-local}
+    environment:
+      LPA_ENVIRONMENT: ${LPA_ENVIRONMENT}
+      LPA_PUBLIC_URL: ${LPA_PUBLIC_URL}
+      LPA_ALLOWED_ORIGINS: ${LPA_ALLOWED_ORIGINS:-}
+      LPA_DATABASE_URL: ${LPA_DATABASE_URL}
+      LPA_SESSION_SECRET: ${LPA_SESSION_SECRET}
+      LPA_TOTP_KEY: ${LPA_TOTP_KEY}
+      LPA_SERVER_ADMIN_API_URL: ${LPA_SERVER_ADMIN_API_URL}
+      LPA_SERVER_ADMIN_API_SECRET: ${LPA_SERVER_ADMIN_API_SECRET}
+      LPA_TRUSTED_PROXIES: ${LPA_TRUSTED_PROXIES:-}
+      LPA_ENVIRONMENTS: ${LPA_ENVIRONMENTS:-}
+      LPA_VICTORIAMETRICS_URL: ${LPA_VICTORIAMETRICS_URL:-}
+      LPA_VICTORIALOGS_URL: ${LPA_VICTORIALOGS_URL:-}
+      LPA_ALERTMANAGER_URL: ${LPA_ALERTMANAGER_URL:-}
+      LPA_GRAFANA_URL: ${LPA_GRAFANA_URL:-}
+      LPA_GRAFANA_LOGS_DATASOURCE: ${LPA_GRAFANA_LOGS_DATASOURCE:-}
+      LPA_GRAFANA_TRACES_DATASOURCE: ${LPA_GRAFANA_TRACES_DATASOURCE:-}
+      LPA_METRICS_SELECTOR_STAGING: ${LPA_METRICS_SELECTOR_STAGING:-}
+      LPA_CONTAINERS_SELECTOR_STAGING: ${LPA_CONTAINERS_SELECTOR_STAGING:-}
+      LPA_LOGS_SELECTOR_STAGING: ${LPA_LOGS_SELECTOR_STAGING:-}
+      LPA_METRICS_SELECTOR_PRODUCTION: ${LPA_METRICS_SELECTOR_PRODUCTION:-}
+      LPA_CONTAINERS_SELECTOR_PRODUCTION: ${LPA_CONTAINERS_SELECTOR_PRODUCTION:-}
+      LPA_LOGS_SELECTOR_PRODUCTION: ${LPA_LOGS_SELECTOR_PRODUCTION:-}
+      LPA_ALERTS_FILTER: ${LPA_ALERTS_FILTER:-}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      RUST_LOG: ${RUST_LOG:-info}
+    depends_on:
+      server: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/life-pixel-admin-server", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { memory: 256M }
+    restart: unless-stopped
+
 volumes:
   pgdata:
