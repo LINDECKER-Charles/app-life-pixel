@@ -1,8 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  computed,
-  ElementRef,
   inject,
   output,
   signal,
@@ -10,7 +8,10 @@ import {
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { type AccessTokenScope, type CreatedAccessToken, TokensApi } from 'shared';
-import { type FieldMap, FormErrors } from '../account/form-errors';
+import { ErrorSummary } from '../account/form/error-summary';
+import { fieldError } from '../account/form/field-error';
+import { type FieldCheck, type FieldMap, FormErrors } from '../account/form/form-errors';
+import { Icon } from '../ui/icon/icon';
 import {
   DEFAULT_SCOPES,
   isValidName,
@@ -20,7 +21,7 @@ import {
   TOKEN_LIMITS,
 } from './token-values';
 
-type CreationField = 'name' | 'expiry' | 'form';
+type CreationField = 'name' | 'scopes' | 'expiry' | 'form';
 
 const FIELD_BY_CODE: FieldMap<CreationField> = {
   'token.name': 'name',
@@ -29,19 +30,19 @@ const FIELD_BY_CODE: FieldMap<CreationField> = {
 
 /**
  * A new token's name, scopes — read and write unless changed — and lifetime, 90 days unless
- * changed (mcp-cli.md, A3). Emits the token the server created, its secret in it.
+ * changed (mcp-cli.md, A3), checked when sent. Emits the token the server created, its secret in
+ * it. Lays out the dialog's body and action row (`.lp-dialog`).
  */
 @Component({
   selector: 'lp-token-creation-form',
-  imports: [TranslocoPipe],
+  imports: [ErrorSummary, Icon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './token-creation-form.html',
   styleUrl: './token-dialog.scss',
 })
 export class TokenCreationForm {
   private readonly api = inject(TokensApi);
-  private readonly banner = viewChild<ElementRef<HTMLElement>>('banner');
-  private readonly nameField = viewChild<ElementRef<HTMLInputElement>>('nameField');
+  private readonly summary = viewChild.required(ErrorSummary);
 
   /** The token just created. */
   readonly created = output<CreatedAccessToken>();
@@ -52,6 +53,11 @@ export class TokenCreationForm {
   protected readonly scopeOptions = SCOPES;
   protected readonly scopeLabels = SCOPE_LABELS;
   protected readonly scopeHints = SCOPE_HINTS;
+  protected readonly targets = {
+    name: 'token-name',
+    scopes: `token-scope-${SCOPES[0]}`,
+    expiry: 'token-expiry',
+  };
 
   protected readonly name = signal('');
   protected readonly scopes = signal<ReadonlySet<AccessTokenScope>>(new Set(DEFAULT_SCOPES));
@@ -59,8 +65,10 @@ export class TokenCreationForm {
   protected readonly pending = signal(false);
   protected readonly errors = new FormErrors<CreationField>(FIELD_BY_CODE, 'form');
 
-  protected readonly isNameValid = computed(() => isValidName(this.name()));
-  protected readonly isValid = computed(() => this.isNameValid() && this.scopes().size > 0);
+  protected onName(name: string): void {
+    this.name.set(name);
+    this.errors.recheck('name', this.checks()[0][1]);
+  }
 
   protected toggleScope(scope: AccessTokenScope, checked: boolean): void {
     this.scopes.update((scopes) => {
@@ -69,22 +77,33 @@ export class TokenCreationForm {
       else next.delete(scope);
       return next;
     });
+    this.errors.recheck('scopes', this.checks()[1][1]);
   }
 
   protected async submit(event: SubmitEvent): Promise<void> {
     event.preventDefault();
-    if (this.pending() || !this.isValid()) return;
-    this.errors.clear();
+    if (this.pending()) return;
+    if (!this.errors.check(this.checks())) {
+      this.summary().focusFirstError();
+      return;
+    }
     this.pending.set(true);
     try {
       this.created.emit(await this.api.create(this.request()));
     } catch (error) {
-      const field = this.errors.set(error);
-      const target = field === 'name' ? this.nameField() : this.banner();
-      target?.nativeElement.focus();
+      this.errors.set(error);
+      this.summary().focusFirstError();
     } finally {
       this.pending.set(false);
     }
+  }
+
+  private checks(): FieldCheck<CreationField>[] {
+    const max = TOKEN_LIMITS.nameMaxChars;
+    return [
+      ['name', fieldError(isValidName(this.name()), 'errors.token.name', { max })],
+      ['scopes', fieldError(this.scopes().size > 0, 'tokens.create.scopes_required')],
+    ];
   }
 
   private request(): { name: string; scopes: AccessTokenScope[]; expiresInDays: number } {

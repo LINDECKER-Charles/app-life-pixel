@@ -1,133 +1,54 @@
-/* Shared by the token dialog's steps: the creation form and the secret shown once. */
+// Shared by the token dialog's steps, the creation form and the secret shown once. The dialog's
+// anatomy, the fields, banners and buttons are global (_dialog.scss, _fields.scss, _buttons.scss):
+// each step fills the dialog below its title, its body scrolling above its action row.
 
-:host {
+:host,
+.step {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: var(--lp-space-4);
+  min-height: 0;
 }
 
-.dialog {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-4);
-  padding: var(--lp-space-5);
-  overflow-y: auto;
-  color: var(--lp-color-text);
-  background: var(--lp-color-background);
-}
-
-.heading {
-  margin: 0;
-  font-size: var(--lp-font-size-large);
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-4);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-1);
-  padding: 0;
-  margin: 0;
-  border: 0;
-
-  legend {
-    padding: 0;
-    margin-block-end: var(--lp-space-1);
-  }
-}
-
-.option {
-  display: flex;
-  gap: var(--lp-space-2);
-  align-items: baseline;
-
-  .hint {
-    display: block;
-  }
-}
-
-input[type='text'],
-select {
-  padding: var(--lp-space-2);
-  font: inherit;
-  color: var(--lp-color-text);
-  background: var(--lp-color-background);
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
-
-  &[aria-invalid='true'] {
-    border-color: var(--lp-color-danger);
-  }
-}
-
-.hint {
-  margin: 0;
-  font-size: var(--lp-font-size-small);
+.scope-hint {
+  display: block;
+  font-weight: var(--lp-font-weight-regular);
   color: var(--lp-color-text-muted);
 }
 
-.error {
-  margin: 0;
-  color: var(--lp-color-danger);
-}
-
-.banner,
-.warning {
+.secret {
   padding: var(--lp-space-3);
   margin: 0;
-  border: 1px solid var(--lp-color-danger);
-  border-radius: var(--lp-radius-small);
-}
-
-.code {
-  padding: var(--lp-space-3);
-  margin: 0;
-  overflow-x: auto;
   font-family: var(--lp-font-family-mono);
   font-size: var(--lp-font-size-small);
   color: var(--lp-color-text);
-  background: var(--lp-color-surface);
-  border-radius: var(--lp-radius-small);
-  white-space: pre-wrap;
   word-break: break-all;
-}
-
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--lp-space-2);
-}
-
-button {
-  padding: var(--lp-space-2) var(--lp-space-4);
-  font: inherit;
+  white-space: pre-wrap;
+  background: var(--lp-color-surface-soft);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
   border-radius: var(--lp-radius-medium);
-  cursor: pointer;
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
 }
 
-.field button {
-  align-self: flex-start;
+.lp-cluster {
+  margin: 0;
 }
 
-.primary {
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
-  border: 1px solid var(--lp-color-accent);
+.copy-state {
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-semibold);
 }
 
-.secondary {
-  color: var(--lp-color-text);
-  background: transparent;
-  border: 1px solid var(--lp-color-border);
+.copy-done,
+.copy-failed {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+}
+
+.copy-done {
+  color: var(--lp-color-success);
+}
+
+.copy-failed {
+  color: var(--lp-color-danger);
 }

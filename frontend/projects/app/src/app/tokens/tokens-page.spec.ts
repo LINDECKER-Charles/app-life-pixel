@@ -24,12 +24,19 @@ async function shown<T extends Element>(selector: string): Promise<T> {
   });
 }
 
-/** Opens the page with its list shown, and the creation dialog's form. */
+/**
+ * Opens the page with its list shown, and the creation dialog's form — once presented, since
+ * presenting moves the focus into the dialog.
+ */
 async function openCreationForm(): Promise<HTMLFormElement> {
   const fixture = await openAccountPage(TokensPage, ACCOUNT);
   const root: HTMLElement = fixture.nativeElement;
   await waitForEffects(() => expect(root.querySelectorAll('.tokens li')).toHaveLength(1));
+  const presented = new Promise((resolve) =>
+    document.addEventListener('ionModalDidPresent', resolve, { once: true }),
+  );
   buttonNamed(root, 'Create a token').click();
+  await presented;
   return shown<HTMLFormElement>('form');
 }
 
@@ -94,7 +101,6 @@ describe('TokensPage', () => {
     expect(form.querySelector<HTMLSelectElement>('#token-expiry')?.value).toBe('90');
 
     typeName(form, '  Claude Code  ');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
@@ -117,7 +123,6 @@ describe('TokensPage', () => {
     expiry.value = '365';
     expiry.dispatchEvent(new Event('change'));
     typeName(form, 'CI');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() =>
@@ -129,7 +134,28 @@ describe('TokensPage', () => {
     );
   });
 
-  it('refuses a token without a scope before sending it', async () => {
+  it('refuses a token without a name or a scope when sent, and focuses the name', async () => {
+    const { api } = mockTokens();
+    const form = await openCreationForm();
+    for (const value of ['read', 'write']) {
+      form.querySelector<HTMLInputElement>(`input[type="checkbox"][value="${value}"]`)?.click();
+    }
+    expect(form.textContent).not.toContain('Choose at least one permission.');
+
+    buttonNamed(form, 'Create').click();
+
+    const summary = await shown<HTMLElement>('[role="alert"]');
+    await vi.waitFor(() =>
+      expect([...summary.querySelectorAll('li')].map((item) => item.textContent?.trim())).toEqual([
+        'A token name holds 1 to 60 characters.',
+        'Choose at least one permission.',
+      ]),
+    );
+    await vi.waitFor(() => expect(document.activeElement).toBe(form.querySelector('#token-name')));
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
+  it('focuses the first permission when only the permissions are missing', async () => {
     const { api } = mockTokens();
     const form = await openCreationForm();
     typeName(form, 'CI');
@@ -137,8 +163,13 @@ describe('TokensPage', () => {
       form.querySelector<HTMLInputElement>(`input[type="checkbox"][value="${value}"]`)?.click();
     }
 
-    await vi.waitFor(() => expect(form.textContent).toContain('Choose at least one permission.'));
-    expect(buttonNamed(form, 'Create').disabled).toBe(true);
+    buttonNamed(form, 'Create').click();
+
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(form.querySelector('#token-scope-read')),
+    );
+    form.querySelector<HTMLInputElement>('#token-scope-export')?.click();
+    await vi.waitFor(() => expect(form.querySelector('[role="alert"]')).toBeNull());
     expect(api.create).not.toHaveBeenCalled();
   });
 
@@ -148,7 +179,6 @@ describe('TokensPage', () => {
     mockTokens();
     const form = await openCreationForm();
     typeName(form, 'Claude Code');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
 
     const code = await shown<HTMLElement>('lp-created-token');
@@ -173,24 +203,22 @@ describe('TokensPage', () => {
     api.create.mockRejectedValueOnce(new ApiProblem(422, 'token.name', { max: 60 }));
     const form = await openCreationForm();
     typeName(form, 'CI');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() =>
-      expect(form.querySelector('.field [role="alert"]')?.textContent).toContain('60'),
+      expect(form.querySelector('#token-name-error')?.textContent).toContain('60'),
     );
   });
 
-  it('shows the limit of active tokens above the form', async () => {
+  it('shows the limit of active tokens in the summary above the form', async () => {
     const { api } = mockTokens();
     api.create.mockRejectedValueOnce(new ApiProblem(409, 'token.limit', { max: 20 }));
     const form = await openCreationForm();
     typeName(form, 'CI');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() =>
-      expect(form.querySelector('.banner')?.textContent).toContain('20 active tokens'),
+      expect(form.querySelector('[role="alert"] li')?.textContent).toContain('20 active tokens'),
     );
   });
 
@@ -225,6 +253,55 @@ describe('TokensPage', () => {
     expect(root.querySelectorAll('.tokens li')).toHaveLength(1);
   });
 
+  it('says the list is loading, then lists it: loading, failed and empty stay distinct', async () => {
+    const { api } = mockTokens();
+    let answer: (tokens: unknown[]) => void = () => undefined;
+    api.list.mockReturnValueOnce(new Promise((resolve) => (answer = resolve)));
+    const fixture = await openAccountPage(TokensPage, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+
+    expect(root.textContent).toContain('Loading…');
+    expect(root.textContent).not.toContain('You have no active token.');
+    answer([TOKEN]);
+
+    await waitForEffects(() => expect(root.querySelectorAll('.tokens li')).toHaveLength(1));
+    expect(root.textContent).not.toContain('Loading…');
+    expect(root.textContent).not.toContain('You have no active token.');
+  });
+
+  it('announces a revocation and moves the focus to the list heading', async () => {
+    mockTokens();
+    const fixture = await openAccountPage(TokensPage, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+    await waitForEffects(() => expect(root.querySelectorAll('.tokens li')).toHaveLength(1));
+
+    buttonNamed(root, 'Revoke').click();
+
+    await waitForEffects(() =>
+      expect(root.querySelector('section [role="status"]')?.textContent).toContain('Laptop'),
+    );
+    await waitForEffects(() =>
+      expect(document.activeElement).toBe(root.querySelector('#tokens-list-heading')),
+    );
+  });
+
+  it('selects the secret to copy by hand when the browser refuses the copy', async () => {
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'));
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    mockTokens();
+    const form = await openCreationForm();
+    typeName(form, 'Claude Code');
+    buttonNamed(form, 'Create').click();
+    const created = await shown<HTMLElement>('lp-created-token');
+
+    buttonNamed(created, 'Copy the token').click();
+
+    await vi.waitFor(() =>
+      expect(created.querySelector('.copy-state')?.textContent).toContain('select'),
+    );
+    expect(window.getSelection()?.toString()).toBe(CREATED.token);
+  });
+
   it('has no serious accessibility violation, listing tokens', async () => {
     mockTokens();
     const fixture = await openAccountPage(TokensPage, ACCOUNT);
@@ -239,7 +316,6 @@ describe('TokensPage', () => {
     const form = await openCreationForm();
     expect(await seriousViolations(document.body)).toEqual([]);
     typeName(form, 'Claude Code');
-    await vi.waitFor(() => expect(buttonNamed(form, 'Create').disabled).toBe(false));
     buttonNamed(form, 'Create').click();
     await shown('lp-created-token');
 

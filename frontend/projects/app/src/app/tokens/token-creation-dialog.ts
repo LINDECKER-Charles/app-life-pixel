@@ -15,7 +15,6 @@ import { TokenCreationForm } from './token-creation-form';
   imports: [CreatedToken, IonModal, ModalLabel, TokenCreationForm, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './token-creation-dialog.html',
-  styleUrl: './token-dialog.scss',
 })
 export class TokenCreationDialog {
   /** Whether the dialog shows. */
