@@ -23,6 +23,7 @@ use life_pixel_service::accounts::memory::RecordingMailer;
 use life_pixel_service::events::subject;
 use life_pixel_service::memory::InMemoryLibraryStore;
 use life_pixel_service::ports::ProductEvent;
+use life_pixel_service::support::memory::in_memory_stores;
 use serde_json::{Value, json};
 use sqlx::{FromRow, PgPool};
 use tempfile::TempDir;
@@ -64,6 +65,7 @@ impl EventsStack {
                 Arc::clone(&events),
             ),
             events,
+            support: in_memory_stores(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {

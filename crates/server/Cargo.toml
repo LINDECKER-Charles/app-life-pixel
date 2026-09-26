@@ -17,7 +17,7 @@ stack-tests = ["dep:rand", "dep:reqwest"]
 # One line per dependency, sorted. Each task adds those it uses.
 anyhow.workspace = true
 async-trait.workspace = true
-axum.workspace = true
+axum = { workspace = true, features = ["multipart"] }
 base64.workspace = true
 bytes.workspace = true
 clap.workspace = true
@@ -78,6 +78,11 @@ required-features = ["stack-tests"]
 # The product events' tests (H13), against a test database of the local stack.
 [[test]]
 name = "product_events"
+required-features = ["stack-tests"]
+
+# The support routes over the local stack (H9).
+[[test]]
+name = "support_api"
 required-features = ["stack-tests"]
 
 [lints]

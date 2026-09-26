@@ -16,6 +16,7 @@ pub mod readiness;
 pub mod routes;
 pub mod state;
 pub mod storage;
+pub mod support;
 pub mod telemetry;
 
 #[cfg(feature = "stack-tests")]
