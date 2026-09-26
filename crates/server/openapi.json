@@ -1,6 +1,67 @@
 {
   "components": {
     "schemas": {
+      "AccessTokenScope": {
+        "description": "What a token grants.",
+        "enum": [
+          "read",
+          "write",
+          "export"
+        ],
+        "type": "string"
+      },
+      "AccessTokenSummary": {
+        "description": "A token of the account, without its secret.",
+        "properties": {
+          "createdAt": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "When it stops working.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "description": "When it was last used, to the minute; never used when absent.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "The name its owner gave it.",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "The start of its secret, `lp_pat_` and 4 characters, to recognize it.",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "What it grants.",
+            "items": {
+              "$ref": "#/components/schemas/AccessTokenScope"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "createdAt",
+          "expiresAt"
+        ],
+        "type": "object"
+      },
       "Account": {
         "description": "An account as its owner sees it.",
         "properties": {
@@ -195,6 +256,68 @@
         "description": "A document, as the model serializes it: the format of the local library's files.",
         "type": "object"
       },
+      "CreatedAccessToken": {
+        "description": "A token just created: its secret is in this answer only.",
+        "properties": {
+          "createdAt": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "When it stops working.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "description": "When it was last used: never, yet.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "mcp": {
+            "$ref": "#/components/schemas/McpServer",
+            "description": "The MCP server to register it on."
+          },
+          "name": {
+            "description": "The name its owner gave it.",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "The start of its secret, `lp_pat_` and 4 characters, to recognize it.",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "What it grants.",
+            "items": {
+              "$ref": "#/components/schemas/AccessTokenScope"
+            },
+            "type": "array"
+          },
+          "token": {
+            "description": "The secret, `lp_pat_` and 43 characters: never shown again.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "createdAt",
+          "expiresAt",
+          "token",
+          "mcp"
+        ],
+        "type": "object"
+      },
       "EventName": {
         "description": "The one name the app's allow-list accepts today (`docs/v1/server.md`, H13); any other value\nfails to deserialize, and answers `request.malformed`.",
         "enum": [
@@ -248,6 +371,11 @@
         ],
         "type": "object"
       },
+      "ExportFileBody": {
+        "description": "An export file.",
+        "format": "binary",
+        "type": "string"
+      },
       "ExportFormat": {
         "description": "The format a completed export used, as `docs/v1/service.md` fixes the list.",
         "enum": [
@@ -278,6 +406,52 @@
           "ok"
         ],
         "type": "string"
+      },
+      "McpServer": {
+        "description": "The MCP server a token is for: what `claude mcp add` registers.",
+        "properties": {
+          "serverName": {
+            "description": "The name to register it under: `LP_MCP_SERVER_NAME`, distinct per environment.",
+            "type": "string"
+          },
+          "url": {
+            "description": "The endpoint's URL.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "serverName",
+          "url"
+        ],
+        "type": "object"
+      },
+      "NewAccessToken": {
+        "description": "A token to create.",
+        "properties": {
+          "expiresInDays": {
+            "description": "Its lifetime in days: 30, 90 or 365.",
+            "format": "int32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "description": "Its name: 1 to 60 characters once trimmed.",
+            "type": "string"
+          },
+          "scopes": {
+            "description": "What it grants: at least one scope.",
+            "items": {
+              "$ref": "#/components/schemas/AccessTokenScope"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "scopes",
+          "expiresInDays"
+        ],
+        "type": "object"
       },
       "Page_Animation": {
         "description": "A page of a list, from the most recently updated item.",
@@ -2614,6 +2788,66 @@
         ]
       }
     },
+    "/api/v1/exports/{link}": {
+      "get": {
+        "operationId": "downloadExport",
+        "parameters": [
+          {
+            "description": "The signed link the `export` tool answered",
+            "in": "path",
+            "name": "link",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportFileBody"
+                }
+              }
+            },
+            "description": "The file, as an attachment under its name",
+            "headers": {
+              "Content-Disposition": {
+                "description": "The file's name",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`export.link_invalid`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "summary": "The file the link names, compiled from the version it names; a link lives 15 minutes.",
+        "tags": [
+          "exports"
+        ]
+      }
+    },
     "/api/v1/projects": {
       "get": {
         "operationId": "listProjects",
@@ -3725,6 +3959,242 @@
         "summary": "Adds a reply to the request `id`: a request waiting for the person goes back to\n`in_progress`; a closed one refuses it.",
         "tags": [
           "support"
+        ]
+      }
+    },
+    "/api/v1/tokens": {
+      "get": {
+        "operationId": "listTokens",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AccessTokenSummary"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "The active tokens"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "session": []
+          }
+        ],
+        "summary": "The account's active tokens, the most recently created first; never their secret.",
+        "tags": [
+          "tokens"
+        ]
+      },
+      "post": {
+        "operationId": "createToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewAccessToken"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedAccessToken"
+                }
+              }
+            },
+            "description": "The token, its secret shown this once"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`token.limit`, with `max`"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`token.name` with `max`; `token.expiry` with `allowed`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Creates a token: its secret is in this answer only, with the MCP server to register it on.",
+        "tags": [
+          "tokens"
+        ]
+      }
+    },
+    "/api/v1/tokens/{id}": {
+      "delete": {
+        "operationId": "revokeToken",
+        "parameters": [
+          {
+            "description": "The token's id",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "The token is revoked"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a cursor, an id, a query or a body that does not parse"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.unauthenticated`: no session, or one that ended"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`auth.account_suspended`, `auth.csrf`"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`token.not_found`"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 600 a minute per account"
+          }
+        },
+        "security": [
+          {
+            "csrf": [],
+            "session": []
+          }
+        ],
+        "summary": "Revokes the token `id`: it stops working at once.",
+        "tags": [
+          "tokens"
         ]
       }
     },

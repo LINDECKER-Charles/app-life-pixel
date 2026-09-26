@@ -14,7 +14,7 @@ const CATALOGUES: [&str; 2] = ["en", "fr"];
 
 /// The status of every code outside `core`: the service's, the compiler's, those later tasks
 /// create, and the server's own.
-const STATUSES: [(&str, u16); 41] = [
+const STATUSES: [(&str, u16); 49] = [
     ("account.language", 422),
     ("admin.reason_length", 422),
     ("admin.screenshot_not_found", 404),
@@ -34,6 +34,7 @@ const STATUSES: [(&str, u16); 41] = [
     ("document.version_required", 428),
     ("draw.too_many_operations", 422),
     ("edit.palette_in_use", 422),
+    ("export.link_invalid", 410),
     ("export.scale", 422),
     ("export.tag_not_found", 422),
     ("export.too_large", 422),
@@ -42,6 +43,7 @@ const STATUSES: [(&str, u16); 41] = [
     ("library.project_not_found", 404),
     ("library.unavailable", 503),
     ("library.unsupported_version", 422),
+    ("mcp.daily_limit", 429),
     ("preview.too_large", 422),
     ("quota.storage_exceeded", 409),
     ("rate_limit.exceeded", 429),
@@ -56,6 +58,12 @@ const STATUSES: [(&str, u16); 41] = [
     ("support.request_closed", 409),
     ("support.request_not_found", 404),
     ("support.screenshot", 422),
+    ("token.expiry", 422),
+    ("token.invalid", 401),
+    ("token.limit", 409),
+    ("token.name", 422),
+    ("token.not_found", 404),
+    ("token.scope", 403),
 ];
 
 /// The params of the server's own codes.
