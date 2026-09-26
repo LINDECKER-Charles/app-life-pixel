@@ -9,8 +9,10 @@ use life_pixel_service::animation::EditingError;
 use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
 use life_pixel_service::local::LocalLibraryError;
+use life_pixel_service::mcp::McpError;
 use life_pixel_service::paging::MalformedCursor;
 use life_pixel_service::support::SupportError;
+use life_pixel_service::tokens::{TokenScope, TokensError};
 use life_pixel_service::{Coded, CodedError};
 use serde_json::{Map, Value};
 
@@ -46,7 +48,35 @@ fn every_error() -> Vec<CodedError> {
     let others = [CodedError::of(&MalformedCursor)];
     let known = library.chain(local).chain(editing).chain(others);
     let hosted = account_errors().into_iter().chain(support_errors());
+    let hosted = hosted.chain(token_errors()).chain(mcp_errors());
     known.chain(hosted).chain(admin_errors()).collect()
+}
+
+/// One error of each of the access tokens' codes.
+fn token_errors() -> Vec<CodedError> {
+    let errors = [
+        TokensError::Invalid,
+        TokensError::Scope {
+            required: TokenScope::Write,
+        },
+        TokensError::NotFound,
+        TokensError::Name,
+        TokensError::Expiry,
+        TokensError::Limit,
+    ];
+    errors.iter().map(CodedError::of).collect()
+}
+
+/// One error of each of the hosted MCP endpoint's codes.
+fn mcp_errors() -> Vec<CodedError> {
+    let errors = [
+        McpError::DailyLimit {
+            limit: 100,
+            resets_at: time::OffsetDateTime::UNIX_EPOCH,
+        },
+        McpError::LinkInvalid,
+    ];
+    errors.iter().map(CodedError::of).collect()
 }
 
 /// One error of each of the internal admin API's codes.
