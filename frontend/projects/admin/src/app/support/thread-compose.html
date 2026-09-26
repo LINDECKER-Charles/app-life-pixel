@@ -46,7 +46,7 @@
   @if (error(); as error) {
     <p class="error" role="alert">{{ error.key | transloco: error.params }}</p>
   }
-  <button type="submit" [disabled]="!ready()">
+  <button type="submit" class="primary" [disabled]="!ready()">
     {{ (internal() ? 'admin.support.add_note' : 'admin.support.send_reply') | transloco }}
   </button>
 </form>

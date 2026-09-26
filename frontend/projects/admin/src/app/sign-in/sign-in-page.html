@@ -36,6 +36,8 @@
       />
       <p id="sign-in-code-hint" class="hint">{{ 'admin.sign_in.code_hint' | transloco }}</p>
     </div>
-    <button type="submit" [disabled]="pending()">{{ 'admin.sign_in.submit' | transloco }}</button>
+    <button type="submit" class="primary" [disabled]="pending()">
+      {{ 'admin.sign_in.submit' | transloco }}
+    </button>
   </form>
 </div>
