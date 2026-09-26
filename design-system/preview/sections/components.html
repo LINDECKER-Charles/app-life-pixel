@@ -1,0 +1,88 @@
+<section id="components" class="section" aria-labelledby="components-title" hidden>
+  <span class="eyebrow" data-i18n="components.eyebrow"></span>
+  <h1 id="components-title" data-i18n="components.title"></h1>
+  <p class="section-lead" data-i18n="components.description"></p>
+  <div class="component-grid">
+    <article class="specimen">
+      <div class="specimen-heading">
+        <h2 data-i18n="buttons.title"></h2>
+        <code>01</code>
+      </div>
+      <div class="button-specimens">
+        <button type="button" class="button primary" data-open-dialog>
+          <span aria-hidden="true">＋</span><span data-i18n="button.create"></span>
+        </button>
+        <button
+          type="button"
+          class="button secondary"
+          data-feedback="feedback.saved"
+          data-i18n="button.save"
+        ></button>
+        <button
+          type="button"
+          class="button ghost"
+          data-feedback="feedback.cancelled"
+          data-i18n="button.cancel"
+        ></button>
+        <button
+          type="button"
+          class="button primary"
+          disabled
+          data-i18n="button.unavailable"
+        ></button>
+      </div>
+      <p class="small-note" data-i18n="buttons.note"></p>
+    </article>
+    <article class="specimen">
+      <div class="specimen-heading">
+        <h2 data-i18n="fields.title"></h2>
+        <code>02</code>
+      </div>
+      <label for="project-name" data-i18n="fields.label"></label>
+      <input
+        id="project-name"
+        data-i18n-placeholder="fields.placeholder"
+        aria-describedby="project-hint"
+      />
+      <p class="field-hint" id="project-hint" data-i18n="fields.hint"></p>
+      <label class="check-label"
+        ><input type="checkbox" id="onion-skin" checked /> <span data-i18n="fields.onion"></span
+      ></label>
+      <label class="check-label"
+        ><input type="checkbox" id="reduce-motion" /> <span data-i18n="fields.motion"></span
+      ></label>
+    </article>
+    <article class="specimen">
+      <div class="specimen-heading">
+        <h2 data-i18n="status.title"></h2>
+        <code>03</code>
+      </div>
+      <div class="status-message success">
+        <span aria-hidden="true">✓</span> <span data-i18n="status.success"></span>
+      </div>
+      <div class="status-message warning">
+        <span aria-hidden="true">!</span> <span data-i18n="status.warning"></span>
+      </div>
+      <div class="status-message danger">
+        <span aria-hidden="true">×</span> <span data-i18n="status.danger"></span>
+      </div>
+      <p class="small-note" data-i18n="status.note"></p>
+    </article>
+    <article class="specimen empty-specimen">
+      <span class="eyebrow" data-i18n="empty.eyebrow"></span>
+      <img src="../assets/pip.svg" width="88" height="88" alt="" />
+      <h2 data-i18n="empty.title"></h2>
+      <p data-i18n="empty.description"></p>
+      <button
+        type="button"
+        class="button secondary"
+        data-open-dialog
+        data-i18n="empty.action"
+      ></button>
+    </article>
+  </div>
+  <div class="note-panel">
+    <strong data-i18n="components.rule_title"></strong>
+    <p data-i18n="components.rule_body"></p>
+  </div>
+</section>

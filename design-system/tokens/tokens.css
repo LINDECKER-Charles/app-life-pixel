@@ -1,0 +1,236 @@
+/* Life Pixel / Rose Atelier. Proposal tokens; production adoption is incremental. */
+:root,
+:root[data-theme='light'] {
+  color-scheme: light;
+  --lp-bg: #fff8f5;
+  --lp-surface: #ffffff;
+  --lp-surface-soft: #ffedf1;
+  --lp-surface-raised: #ffffff;
+  --lp-text: #382631;
+  --lp-text-muted: #735b66;
+  --lp-accent: #a93663;
+  --lp-accent-hover: #8b294f;
+  --lp-on-accent: #ffffff;
+  --lp-accent-soft: #ffe0ec;
+  --lp-accent-text: #8b294f;
+  --lp-border: #ead5dd;
+  --lp-control-border: #a17c8c;
+  --lp-focus: #7950b1;
+  --lp-rose: #ffd8e5;
+  --lp-peach: #ffe4d4;
+  --lp-mint: #dff1e6;
+  --lp-lavender: #eae1f7;
+  --lp-success: #286447;
+  --lp-success-bg: #e8f5ed;
+  --lp-warning: #775113;
+  --lp-warning-bg: #fff2d8;
+  --lp-danger: #a12f46;
+  --lp-danger-bg: #ffedf0;
+  --lp-info: #40548e;
+  --lp-info-bg: #edf1ff;
+  --lp-disabled-bg: #f1e7eb;
+  --lp-disabled-text: #735b66;
+  --lp-scrim: rgb(56 38 49 / 36%);
+  --lp-canvas-bg: #dedee2;
+  --lp-checker-light: #ffffff;
+  --lp-checker-dark: #ececee;
+  --lp-canvas-grid: #68686f;
+  --lp-shadow-sm: 0 2px 6px rgb(80 38 60 / 6%);
+  --lp-shadow-md: 0 8px 24px rgb(80 38 60 / 10%);
+  --lp-shadow-lg: 0 20px 56px rgb(80 38 60 / 16%);
+
+  /* The preview loads bundled Nunito locally. Production can adopt it incrementally. */
+  --lp-font-ui: 'Nunito', 'Trebuchet MS', 'Segoe UI', sans-serif;
+  --lp-font-mono: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+  --lp-text-xs: 0.75rem;
+  --lp-text-sm: 0.875rem;
+  --lp-text-md: 1rem;
+  --lp-text-lg: 1.125rem;
+  --lp-text-xl: 1.5rem;
+  --lp-text-2xl: 2rem;
+  --lp-text-3xl: 2.5rem;
+  --lp-text-display: clamp(2.25rem, 5vw, 4rem);
+  --lp-weight-regular: 400;
+  --lp-weight-medium: 500;
+  --lp-weight-semibold: 600;
+  --lp-weight-bold: 700;
+  --lp-weight-display: 800;
+  --lp-leading-tight: 1.15;
+  --lp-leading-heading: 1.25;
+  --lp-leading-body: 1.6;
+  --lp-leading-control: 1.35;
+  --lp-tracking-heading: -0.025em;
+  --lp-tracking-label: 0.02em;
+  --lp-measure-copy: 65ch;
+
+  --lp-space-0: 0;
+  --lp-space-1: 0.25rem;
+  --lp-space-2: 0.5rem;
+  --lp-space-3: 0.75rem;
+  --lp-space-4: 1rem;
+  --lp-space-5: 1.25rem;
+  --lp-space-6: 1.5rem;
+  --lp-space-8: 2rem;
+  --lp-space-10: 2.5rem;
+  --lp-space-12: 3rem;
+  --lp-space-16: 4rem;
+  --lp-space-20: 5rem;
+  --lp-space-24: 6rem;
+  --lp-radius-xs: 0.25rem;
+  --lp-radius-sm: 0.5rem;
+  --lp-radius-md: 0.875rem;
+  --lp-radius-lg: 1.25rem;
+  --lp-radius-xl: 2rem;
+  --lp-radius-pill: 999px;
+  --lp-border-width: 1px;
+  --lp-border-width-strong: 2px;
+  --lp-focus-width: 3px;
+  --lp-focus-offset: 3px;
+  --lp-control-height: 2.75rem;
+  --lp-control-height-compact: 2.25rem;
+  --lp-control-height-large: 3rem;
+  --lp-touch-target: 2.75rem;
+  --lp-icon-sm: 1rem;
+  --lp-icon-md: 1.25rem;
+  --lp-icon-lg: 1.5rem;
+  --lp-icon-stroke: 1.75;
+  --lp-checker-size: 1rem;
+
+  --lp-layout-content: 80rem;
+  --lp-layout-reading: 48rem;
+  --lp-layout-sidebar: 15rem;
+  --lp-layout-inspector: 17rem;
+  --lp-layout-toolbar: 4rem;
+  --lp-layout-timeline: 11rem;
+  --lp-layout-gutter: clamp(1rem, 3vw, 2.5rem);
+  --lp-dialog-width: 34rem;
+  --lp-dialog-width-wide: 52rem;
+  --lp-sheet-max-height: 85dvh;
+  /* Documentation values: CSS custom properties cannot be used in media conditions. */
+  --lp-breakpoint-medium: 48rem;
+  --lp-breakpoint-wide: 75rem;
+  --lp-duration-instant: 0ms;
+  --lp-duration-fast: 120ms;
+  --lp-duration-normal: 180ms;
+  --lp-duration-slow: 240ms;
+  --lp-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --lp-ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --lp-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --lp-z-base: 0;
+  --lp-z-sticky: 10;
+  --lp-z-dropdown: 20;
+  --lp-z-scrim: 30;
+  --lp-z-dialog: 40;
+  --lp-z-popover: 50;
+  --lp-z-toast: 60;
+  --lp-z-tooltip: 70;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --lp-bg: #241b23;
+  --lp-surface: #30242e;
+  --lp-surface-soft: #3c2a38;
+  --lp-surface-raised: #392b36;
+  --lp-text: #fff4f7;
+  --lp-text-muted: #d3b8c7;
+  --lp-accent: #f3a6c5;
+  --lp-accent-hover: #ffc4da;
+  --lp-on-accent: #35212c;
+  --lp-accent-soft: #4f2c40;
+  --lp-accent-text: #ffbed8;
+  --lp-border: #624758;
+  --lp-control-border: #a8879a;
+  --lp-focus: #c8adff;
+  --lp-rose: #6b374c;
+  --lp-peach: #603f32;
+  --lp-mint: #264c41;
+  --lp-lavender: #47385f;
+  --lp-success: #abddc7;
+  --lp-success-bg: #23463b;
+  --lp-warning: #f2d59b;
+  --lp-warning-bg: #4c3b20;
+  --lp-danger: #ffb9bb;
+  --lp-danger-bg: #512d37;
+  --lp-info: #bfcbff;
+  --lp-info-bg: #303c5c;
+  --lp-disabled-bg: #44343f;
+  --lp-disabled-text: #c5aeba;
+  --lp-scrim: rgb(12 7 11 / 64%);
+  --lp-canvas-bg: #202023;
+  --lp-shadow-sm: 0 2px 6px rgb(0 0 0 / 14%);
+  --lp-shadow-md: 0 8px 24px rgb(0 0 0 / 22%);
+  --lp-shadow-lg: 0 20px 56px rgb(0 0 0 / 32%);
+}
+
+/* An omitted or system theme follows the OS; an explicit choice always wins. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    color-scheme: dark;
+    --lp-bg: #241b23;
+    --lp-surface: #30242e;
+    --lp-surface-soft: #3c2a38;
+    --lp-surface-raised: #392b36;
+    --lp-text: #fff4f7;
+    --lp-text-muted: #d3b8c7;
+    --lp-accent: #f3a6c5;
+    --lp-accent-hover: #ffc4da;
+    --lp-on-accent: #35212c;
+    --lp-accent-soft: #4f2c40;
+    --lp-accent-text: #ffbed8;
+    --lp-border: #624758;
+    --lp-control-border: #a8879a;
+    --lp-focus: #c8adff;
+    --lp-rose: #6b374c;
+    --lp-peach: #603f32;
+    --lp-mint: #264c41;
+    --lp-lavender: #47385f;
+    --lp-success: #abddc7;
+    --lp-success-bg: #23463b;
+    --lp-warning: #f2d59b;
+    --lp-warning-bg: #4c3b20;
+    --lp-danger: #ffb9bb;
+    --lp-danger-bg: #512d37;
+    --lp-info: #bfcbff;
+    --lp-info-bg: #303c5c;
+    --lp-disabled-bg: #44343f;
+    --lp-disabled-text: #c5aeba;
+    --lp-scrim: rgb(12 7 11 / 64%);
+    --lp-canvas-bg: #202023;
+    --lp-shadow-sm: 0 2px 6px rgb(0 0 0 / 14%);
+    --lp-shadow-md: 0 8px 24px rgb(0 0 0 / 22%);
+    --lp-shadow-lg: 0 20px 56px rgb(0 0 0 / 32%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  :root[data-theme] {
+    --lp-duration-fast: 0ms;
+    --lp-duration-normal: 0ms;
+    --lp-duration-slow: 0ms;
+  }
+}
+
+@media (forced-colors: active) {
+  :root,
+  :root[data-theme],
+  :root:not([data-theme='light']):not([data-theme='dark']) {
+    --lp-bg: Canvas;
+    --lp-surface: Canvas;
+    --lp-surface-soft: Canvas;
+    --lp-surface-raised: Canvas;
+    --lp-text: CanvasText;
+    --lp-text-muted: CanvasText;
+    --lp-accent: Highlight;
+    --lp-accent-hover: Highlight;
+    --lp-on-accent: HighlightText;
+    --lp-accent-soft: Canvas;
+    --lp-accent-text: LinkText;
+    --lp-border: CanvasText;
+    --lp-control-border: ButtonText;
+    --lp-focus: Highlight;
+    --lp-disabled-bg: Canvas;
+    --lp-disabled-text: GrayText;
+  }
+}

@@ -1,0 +1,187 @@
+<section id="studio" class="section" aria-labelledby="studio-title" hidden>
+  <span class="eyebrow" data-i18n="studio.eyebrow"></span>
+  <h1 id="studio-title" data-i18n="studio.title"></h1>
+  <p class="section-lead" data-i18n="studio.description"></p>
+  <div class="editor-demo">
+    <div class="editor-header">
+      <div>
+        <strong id="demo-name" data-i18n="studio.project"></strong>
+        <span class="editor-meta" data-i18n="studio.meta"></span>
+      </div>
+      <button
+        class="button primary"
+        type="button"
+        id="export-button"
+        aria-expanded="false"
+        aria-controls="export-options"
+        data-i18n="studio.export"
+      ></button>
+    </div>
+    <div id="export-options" class="export-options" hidden>
+      <label for="export-format" data-i18n="studio.format"></label>
+      <select id="export-format">
+        <option>WASM</option>
+        <option>GIF</option>
+        <option>APNG</option>
+        <option value="spritesheet" data-i18n="studio.spritesheet"></option>
+        <option value="frames" data-i18n="studio.png_frames"></option>
+      </select>
+      <p class="small-note" data-i18n="studio.export_note"></p>
+    </div>
+    <div class="editor-body">
+      <div class="tool-rail" role="group" data-i18n-label="studio.tools">
+        <button
+          type="button"
+          class="tool is-selected"
+          aria-pressed="true"
+          data-tool="pencil"
+          data-i18n-label="tool.pencil"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m5 15 11-11 4 4L9 19l-6 2zM14 6l4 4M5 15l4 4" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="tool"
+          aria-pressed="false"
+          data-tool="eraser"
+          data-i18n-label="tool.eraser"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m3 14 11-11 7 7-11 11H8zM8 9l7 7M10 21h11" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="tool"
+          aria-pressed="false"
+          data-tool="fill"
+          data-i18n-label="tool.fill"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m4 11 8-8 8 8-8 8zM4 11h16M8 2l4 5M20 16l2 4h-4z" />
+          </svg>
+        </button>
+        <button
+          type="button"
+          class="tool"
+          aria-pressed="false"
+          data-tool="selection"
+          data-i18n-label="tool.selection"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="4" y="4" width="16" height="16" stroke-dasharray="3 3" />
+          </svg>
+        </button>
+      </div>
+      <div class="canvas-space">
+        <div class="canvas-meta"><span>48 × 48</span><span data-i18n="studio.preview"></span></div>
+        <div class="canvas-art">
+          <img src="../assets/pip.svg" alt="" class="canvas-pip" id="canvas-pip" />
+        </div>
+        <div class="canvas-bottom">
+          <span id="selected-tool" data-i18n="tool.pencil"></span>
+          <label class="zoom-control"
+            ><span data-i18n="studio.zoom"></span>
+            <select id="zoom">
+              <option value="0.75">75 %</option>
+              <option value="1" selected>100 %</option>
+              <option value="1.5">150 %</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <aside class="editor-inspector" data-i18n-label="studio.inspector">
+        <h2 data-i18n="studio.palette"></h2>
+        <div class="swatches" role="group" data-i18n-label="studio.palette">
+          <button
+            class="swatch swatch-rose"
+            type="button"
+            aria-pressed="true"
+            data-i18n-label="color.rose"
+          ></button>
+          <button
+            class="swatch swatch-ink"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="color.ink"
+          ></button>
+          <button
+            class="swatch swatch-cream"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="color.cream"
+          ></button>
+          <button
+            class="swatch swatch-mint"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="color.mint"
+          ></button>
+          <button
+            class="swatch swatch-peach"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="color.peach"
+          ></button>
+          <button
+            class="swatch swatch-lavender"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="color.lavender"
+          ></button>
+        </div>
+        <h2 data-i18n="studio.layers"></h2>
+        <div class="layer-row">
+          <img src="../assets/pip.svg" width="32" height="32" alt="" />
+          <span data-i18n="studio.character"></span>
+        </div>
+        <p class="small-note" data-i18n="studio.neutral"></p>
+      </aside>
+    </div>
+    <div class="timeline">
+      <div class="timeline-header">
+        <strong data-i18n="studio.timeline"></strong>
+        <span class="small-note" data-i18n="studio.frames_note"></span>
+      </div>
+      <div class="frames" role="group" data-i18n-label="studio.timeline">
+        <button
+          type="button"
+          class="frame"
+          aria-pressed="true"
+          data-frame="1"
+          data-i18n-label="studio.frame_one"
+        >
+          <img src="../assets/pip.svg" alt="" /><span>01</span>
+        </button>
+        <button
+          type="button"
+          class="frame"
+          aria-pressed="false"
+          data-frame="2"
+          data-i18n-label="studio.frame_two"
+        >
+          <img src="../assets/pip.svg" alt="" /><span>02</span>
+        </button>
+        <button
+          type="button"
+          class="frame"
+          aria-pressed="false"
+          data-frame="3"
+          data-i18n-label="studio.frame_three"
+        >
+          <img src="../assets/pip.svg" alt="" /><span>03</span>
+        </button>
+        <div class="timeline-hint">
+          <span class="eyebrow" data-i18n="studio.step"></span>
+          <span data-i18n="studio.timeline_hint"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note-panel">
+    <strong data-i18n="studio.rule_title"></strong>
+    <p data-i18n="studio.rule_body"></p>
+  </div>
+</section>
