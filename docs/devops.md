@@ -2,7 +2,9 @@
 
 The pipeline follows the one already used by the other projects of the shared VPS: build once,
 promote the same artefact from staging to production, deploy over SSH behind the shared Caddy
-edge. Nothing below exists yet; this is the target of the first CI pull request.
+edge. The workflows, images and scripts below are built and checked on every pull request; only
+the maintainer's push to `dev`, the GitHub secrets and environments, and the VPS itself turn them
+into a running staging and production — see [docs/v1/README.md](v1/README.md#release).
 
 ## Environments
 

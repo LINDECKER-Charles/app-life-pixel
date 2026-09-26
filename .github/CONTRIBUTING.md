@@ -5,10 +5,11 @@ your environment, write code that follows the repository's conventions, and open
 
 Taking part in the project means respecting the [code of conduct](CODE_OF_CONDUCT.md).
 
-**The project is in its design phase.** Right now, the most useful contributions are feedback on
-the specification in [`docs/`](../docs/) — especially [decisions.md](../docs/decisions.md),
-which lists what is still proposed or open. Code contributions start with the milestones of
-[product.md](../docs/product.md).
+**V1 (M1 to M5 of [product.md](../docs/product.md)) is built.** The development loop below
+reflects it: every command it lists runs on the code in this repository today. Contributions are
+welcome as bug reports, feature requests, and code for the milestones still ahead — see
+[implementation-plan.md](../docs/implementation-plan.md) — or feedback on what remains proposed
+or open in [decisions.md](../docs/decisions.md).
 
 ## Licence of contributions
 
