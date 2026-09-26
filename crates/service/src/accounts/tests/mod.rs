@@ -2,6 +2,7 @@
 
 #![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
 
+mod account_data;
 mod emails;
 mod passwords;
 mod sessions;

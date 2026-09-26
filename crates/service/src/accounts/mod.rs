@@ -9,14 +9,20 @@
 //! request down, and a password reset takes the same time whether the address has an account or
 //! not. With the `testing` feature, [`memory`] holds in-memory adapters of the ports.
 //!
+//! What its owner does with the account itself (H6) builds on the [`Library`]: its data exported
+//! as a zip laid out like a local library ([`DataExport`]), and its deletion, documents first
+//! ([`AccountDeletion`]).
+//!
 //! [`AccountStore`]: ports::AccountStore
 //! [`SessionStore`]: ports::SessionStore
 //! [`EmailTokenStore`]: ports::EmailTokenStore
 //! [`Mailer`]: ports::Mailer
+//! [`Library`]: crate::library::Library
 
 mod account;
 mod cases;
 mod error;
+mod export;
 mod hashing;
 pub mod ports;
 mod values;
@@ -31,8 +37,9 @@ use std::sync::Arc;
 use time::{Duration, OffsetDateTime};
 
 pub use account::{Account, Authenticated, SignedIn};
-pub use cases::{Credentials, PasswordChange, PasswordReset, SignUp};
+pub use cases::{AccountDeletion, Credentials, PasswordChange, PasswordReset, SignUp};
 pub use error::AccountsError;
+pub use export::{ACCOUNT_FILE, DataExport};
 pub use hashing::{
     ARGON2_LANES, ARGON2_MEMORY_KIB, ARGON2_PASSES, PasswordHash, PasswordHashing, Verification,
 };
