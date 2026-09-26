@@ -195,6 +195,70 @@
         "description": "A document, as the model serializes it: the format of the local library's files.",
         "type": "object"
       },
+      "EventName": {
+        "description": "The one name the app's allow-list accepts today (`docs/v1/server.md`, H13); any other value\nfails to deserialize, and answers `request.malformed`.",
+        "enum": [
+          "export_completed"
+        ],
+        "type": "string"
+      },
+      "EventRequest": {
+        "description": "A product event the app reports, with the browsing context every one of them carries.",
+        "properties": {
+          "appVersion": {
+            "type": "string"
+          },
+          "language": {
+            "type": "string"
+          },
+          "name": {
+            "$ref": "#/components/schemas/EventName"
+          },
+          "platform": {
+            "type": "string"
+          },
+          "properties": {
+            "$ref": "#/components/schemas/ExportCompletedProperties"
+          }
+        },
+        "required": [
+          "name",
+          "properties",
+          "platform",
+          "appVersion",
+          "language"
+        ],
+        "type": "object"
+      },
+      "ExportCompletedProperties": {
+        "description": "`export_completed`'s properties: the format downloaded and its raw, uncompressed size.",
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "format": {
+            "$ref": "#/components/schemas/ExportFormat"
+          }
+        },
+        "required": [
+          "format",
+          "bytes"
+        ],
+        "type": "object"
+      },
+      "ExportFormat": {
+        "description": "The format a completed export used, as `docs/v1/service.md` fixes the list.",
+        "enum": [
+          "wasm",
+          "gif",
+          "apng",
+          "sprite_sheet",
+          "png_frames"
+        ],
+        "type": "string"
+      },
       "Health": {
         "description": "The server's health.",
         "properties": {
@@ -2219,6 +2283,50 @@
         "summary": "Sends the signed-in account's verification email again, with a new link; nothing once the\naddress is verified.",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/v1/events": {
+      "post": {
+        "operationId": "createEvent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Recorded, or silently dropped under load"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`request.malformed`: a name, property or value outside the allow-list"
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "`rate_limit.exceeded`: 60 a minute per address"
+          }
+        },
+        "summary": "Records an allowed product event; the subject comes from the session when there is one. Once\nthe request parses, this never fails: a full channel only drops the event, counted by\n`events_dropped_total`.",
+        "tags": [
+          "events"
         ]
       }
     },
