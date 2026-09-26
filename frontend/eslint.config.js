@@ -71,6 +71,7 @@ module.exports = defineConfig([
     // linted.
     ignores: [
       'projects/shared/src/lib/api/schema.d.ts',
+      'projects/shared/src/lib/admin-api/schema.d.ts',
       'projects/app/src/app/engine/wasm/generated/**',
     ],
   },
