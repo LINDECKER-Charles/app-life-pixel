@@ -1,0 +1,59 @@
+<form class="create" novalidate (submit)="create($event)">
+  <label for="library-new-project">{{ 'library.project.name_label' | transloco }}</label>
+  <input
+    id="library-new-project"
+    type="text"
+    name="name"
+    autocomplete="off"
+    [value]="newName()"
+    (input)="onNameInput($event)"
+  />
+  <button type="submit" [disabled]="newName().trim() === ''">
+    {{ 'library.project.create' | transloco }}
+  </button>
+</form>
+@if (list.failure(); as failure) {
+  <p class="failure" role="alert">{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+}
+@if (list.loaded() && list.items().length === 0) {
+  <p>{{ 'library.projects.empty' | transloco }}</p>
+}
+<ul class="items" [attr.aria-busy]="list.loading()">
+  @for (project of list.items(); track project.id) {
+    <li class="item">
+      <a class="name" [routerLink]="['/library/projects', project.id]">{{ project.name }}</a>
+      <span class="meta">
+        {{ 'library.project.count' | transloco: { count: project.animationCount } }}
+      </span>
+      <span class="actions">
+        <button
+          type="button"
+          [attr.aria-label]="'library.project.rename_label' | transloco: { name: project.name }"
+          (click)="actions.rename(project, list)"
+        >
+          {{ 'library.rename' | transloco }}
+        </button>
+        <button
+          type="button"
+          [attr.aria-label]="'library.project.duplicate_label' | transloco: { name: project.name }"
+          (click)="actions.duplicate(project, list)"
+        >
+          {{ 'library.duplicate' | transloco }}
+        </button>
+        <button
+          type="button"
+          class="danger"
+          [attr.aria-label]="'library.project.delete_label' | transloco: { name: project.name }"
+          (click)="actions.delete(project, list)"
+        >
+          {{ 'library.delete' | transloco }}
+        </button>
+      </span>
+    </li>
+  }
+</ul>
+@if (list.hasMore()) {
+  <button type="button" class="more" [disabled]="list.loading()" (click)="list.loadMore()">
+    {{ 'library.load_more' | transloco }}
+  </button>
+}

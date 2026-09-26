@@ -1,0 +1,80 @@
+<ion-modal
+  [isOpen]="kind() !== null"
+  [attr.aria-label]="titleKey() | transloco"
+  [lpModalLabel]="titleKey() | transloco"
+  (didDismiss)="onDismissed($event)"
+>
+  <ng-template>
+    <div class="dialog">
+      <h2 class="heading">{{ titleKey() | transloco }}</h2>
+      @switch (kind()) {
+        @case ('sign-in') {
+          <p>{{ 'library.save.sign_in.message' | transloco }}</p>
+          <div class="actions">
+            <button type="button" (click)="prompts.dismiss()">
+              {{ 'common.cancel' | transloco }}
+            </button>
+            <button type="button" (click)="prompts.answerSignIn('sign-up')">
+              {{ 'library.save.sign_in.sign_up' | transloco }}
+            </button>
+            <button type="button" class="primary" (click)="prompts.answerSignIn('sign-in')">
+              {{ 'library.save.sign_in.sign_in' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('project') {
+          <lp-project-picker
+            (chosen)="prompts.answerProject($event)"
+            (cancelled)="prompts.dismiss()"
+          />
+        }
+        @case ('conflict') {
+          <p>{{ 'library.save.conflict.message' | transloco }}</p>
+          <div class="actions">
+            <button type="button" (click)="prompts.dismiss()">
+              {{ 'common.cancel' | transloco }}
+            </button>
+            <button type="button" (click)="prompts.answerConflict('reload')">
+              {{ 'library.save.conflict.reload' | transloco }}
+            </button>
+            <button type="button" (click)="prompts.answerConflict('copy')">
+              {{ 'library.save.conflict.copy' | transloco }}
+            </button>
+            <button type="button" class="danger" (click)="prompts.answerConflict('overwrite')">
+              {{ 'library.save.conflict.overwrite' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('quota') {
+          @if (quota(); as usage) {
+            <p>
+              {{
+                'library.save.quota.message'
+                  | transloco: { used: usage.usedBytes, limit: usage.limitBytes ?? usage.usedBytes }
+              }}
+            </p>
+          }
+          <div class="actions">
+            <a routerLink="/library" (click)="prompts.dismiss()">
+              {{ 'library.save.quota.library_link' | transloco }}
+            </a>
+            <button type="button" class="primary" (click)="prompts.dismiss()">
+              {{ 'common.close' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('failure') {
+          @if (failure(); as failure) {
+            <p role="alert">{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+          }
+          <p>{{ 'library.save.failure.kept' | transloco }}</p>
+          <div class="actions">
+            <button type="button" class="primary" (click)="prompts.dismiss()">
+              {{ 'common.close' | transloco }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </ng-template>
+</ion-modal>

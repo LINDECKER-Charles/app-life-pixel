@@ -1,0 +1,59 @@
+/* Shared by the library's dialogs and forms: saving's questions, the project picker. */
+
+.dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-4);
+  padding: var(--lp-space-5);
+  overflow-y: auto;
+  background: var(--lp-color-background);
+  color: var(--lp-color-text);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--lp-font-size-large);
+}
+
+form,
+fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+}
+
+fieldset {
+  padding: var(--lp-space-3);
+  margin: 0;
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
+}
+
+.option,
+.field {
+  display: flex;
+  gap: var(--lp-space-2);
+  align-items: center;
+}
+
+.field {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+  justify-content: flex-end;
+}
+
+.primary {
+  color: var(--lp-color-on-accent);
+  background: var(--lp-color-accent);
+}
+
+.danger {
+  color: var(--lp-color-on-danger);
+  background: var(--lp-color-danger);
+}

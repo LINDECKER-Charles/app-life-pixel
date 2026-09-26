@@ -19,6 +19,8 @@ import { routes } from './app.routes';
 import { HostedExportObserver } from './events/hosted-export-observer';
 import { EXPORT_OBSERVER } from './export/export-observer';
 import { LegalLinks } from './legal/legal-links';
+import { HttpLibraryStore } from './library/http/http-library-store';
+import { LIBRARY_STORE } from './library/library-store';
 import { PreferencesStore } from './settings/preferences-store';
 import { provideAppearance } from './settings/provide-appearance';
 import { WebPreferencesStore } from './settings/web-preferences-store';
@@ -57,5 +59,6 @@ export const appConfig: ApplicationConfig = {
     // The hosted app's start-up load; T2 will guard this one call for the desktop, which never runs it.
     provideAppInitializer(() => inject(SessionStore).load()),
     { provide: EXPORT_OBSERVER, useClass: HostedExportObserver },
+    { provide: LIBRARY_STORE, useExisting: HttpLibraryStore },
   ],
 };
