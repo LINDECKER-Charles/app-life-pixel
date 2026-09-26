@@ -9,9 +9,10 @@ self-contained WebAssembly bundle of a few kilobytes that any web page or webvie
 a dependency. The product ships as a hosted service (web and Android), a desktop app and a
 self-hostable server, and AI agents drive it through an MCP server.
 
-**Status: design phase.** There is no application code yet. `docs/` is the specification, and
-the layout, commands and rules below are the target the first code must follow. When code and
-documentation disagree, fix one of them in the same pull request.
+**Status: V1 built.** M1 to M5 are merged and verified on the integration branch: `docs/` is the
+specification the code follows, and the layout, commands and rules below are those the code
+actually implements today. When code and documentation disagree, fix one of them in the same pull
+request.
 
 ## Language
 
