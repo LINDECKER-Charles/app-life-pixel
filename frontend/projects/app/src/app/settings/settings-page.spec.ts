@@ -41,6 +41,23 @@ async function openSettings(): Promise<ComponentFixture<SettingsPage>> {
   return fixture;
 }
 
+async function openSignedInSettings(): Promise<ComponentFixture<SettingsPage>> {
+  TestBed.configureTestingModule({
+    providers: [...appConfig.providers, provideHttpClientTesting()],
+  });
+  const initialization = TestBed.inject(ApplicationInitStatus).donePromise;
+  await answer('/i18n/languages.json', languages);
+  await answer('/i18n/en.json', en);
+  await answer('/api/v1/auth/session', {
+    account: { id: 'a1', email: 'lee@example.com', emailVerified: true, language: 'en' },
+    csrfToken: 't0k',
+  });
+  await initialization;
+  const fixture = TestBed.createComponent(SettingsPage);
+  await fixture.whenStable();
+  return fixture;
+}
+
 async function choose(fixture: ComponentFixture<SettingsPage>, selector: string): Promise<void> {
   const field: HTMLInputElement = fixture.nativeElement.querySelector(selector);
   field.checked = true;
@@ -104,6 +121,21 @@ describe('SettingsPage', () => {
     expect(
       violations.filter((violation) => SERIOUS_IMPACTS.includes(violation.impact ?? '')),
     ).toEqual([]);
+  });
+
+  it('has no link to the access tokens page while signed out', async () => {
+    const fixture = await openSettings();
+
+    expect(fixture.nativeElement.querySelector('a[href="/settings/tokens"]')).toBeNull();
+  });
+
+  it('links to the access tokens page for a signed-in visitor (mcp-cli.md, A3)', async () => {
+    const fixture = await openSignedInSettings();
+
+    const link: HTMLAnchorElement | null = fixture.nativeElement.querySelector(
+      'a[href="/settings/tokens"]',
+    );
+    expect(link?.textContent?.trim()).toBe(en['tokens.title']);
   });
 });
 
@@ -173,5 +205,11 @@ describe('SettingsPage on the desktop', () => {
     const fixture = await openSettings();
 
     expect(fixture.nativeElement.querySelector('.library-folder')).toBeNull();
+  });
+
+  it('has no link to the access tokens page: the desktop has no account', async () => {
+    const fixture = await openDesktopSettings();
+
+    expect(fixture.nativeElement.querySelector('a[href="/settings/tokens"]')).toBeNull();
   });
 });

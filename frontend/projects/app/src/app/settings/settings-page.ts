@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { AvailableLanguages, type MotionPreference, type ThemePreference } from 'shared';
+import { SessionStore } from '../account/session-store';
 import { DesktopPreferencesStore } from '../platform/desktop-preferences';
 import { isDesktop, PlatformService, type PlatformInfo } from '../platform/platform';
 import { PreferencesStore } from './preferences-store';
@@ -40,6 +41,8 @@ export class SettingsPage {
   /** Only the desktop gains a library folder to choose (desktop.md, T2). */
   protected readonly desktop = isDesktop();
   protected readonly platformInfo = signal<PlatformInfo | null>(null);
+  /** A signed-in visitor of the hosted app gains a link to their access tokens (mcp-cli.md, A3). */
+  protected readonly account = inject(SessionStore).account;
   private readonly platform = inject(PlatformService);
   private readonly desktopPreferences = inject(DesktopPreferencesStore, { optional: true });
 
