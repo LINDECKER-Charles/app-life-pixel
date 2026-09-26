@@ -18,7 +18,7 @@ use life_pixel_server::app;
 use life_pixel_server::mail::{EmailTemplates, SmtpMailer};
 use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::testing::{MailMessage, TestDatabase, TestMailbox, load_test_env};
-use life_pixel_service::memory::InMemoryLibraryStore;
+use life_pixel_service::memory::{InMemoryLibraryStore, RecordingEvents};
 use serde_json::{Value, json};
 use tempfile::TempDir;
 
@@ -53,10 +53,17 @@ impl AccountsStack {
         let config = read_config(&env).unwrap();
         let templates = EmailTemplates::load(&config.i18n_dir).unwrap();
         let mailer = SmtpMailer::new(&config.mail, templates).unwrap();
+        let events: Arc<dyn life_pixel_service::ports::EventSink> =
+            Arc::new(RecordingEvents::new());
         let backends = Backends {
             readiness: Arc::new(Database { answers: true }),
             library_store: Arc::new(InMemoryLibraryStore::new()),
-            accounts: accounts::hosted_ports(database.pool(), Arc::new(mailer)),
+            accounts: accounts::hosted_ports(
+                database.pool(),
+                Arc::new(mailer),
+                Arc::clone(&events),
+            ),
+            events,
         };
         let state = AppState::new(config, backends).unwrap();
         Self {

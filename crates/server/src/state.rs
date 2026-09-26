@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use life_pixel_service::accounts::{Accounts, AccountsPorts};
-use life_pixel_service::ports::LibraryStore;
+use life_pixel_service::ports::{EventSink, LibraryStore};
 use thiserror::Error;
 
 use crate::accounts;
@@ -33,6 +33,8 @@ pub struct Backends {
     pub library_store: Arc<dyn LibraryStore>,
     /// The accounts' stores, mailer, clock, ids and product events.
     pub accounts: AccountsPorts,
+    /// Where the app's own product events go (H13).
+    pub events: Arc<dyn EventSink>,
 }
 
 /// The shared state: cheap to clone, one field per line.
@@ -52,6 +54,8 @@ pub struct AppState {
     pub catalogues: Arc<Catalogues>,
     /// The built app.
     pub static_app: Arc<StaticApp>,
+    /// Where the app's own product events go (H13).
+    pub events: Arc<dyn EventSink>,
 }
 
 impl AppState {
@@ -72,6 +76,7 @@ impl AppState {
             rate_limits: Arc::new(RateLimits::new()),
             catalogues: Arc::new(catalogues),
             static_app: Arc::new(static_app),
+            events: backends.events,
         })
     }
 }

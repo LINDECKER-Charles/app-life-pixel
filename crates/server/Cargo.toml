@@ -64,5 +64,10 @@ tower = { workspace = true, features = ["util"] }
 name = "stack"
 required-features = ["stack-tests"]
 
+# The product events' tests (H13), against a test database of the local stack.
+[[test]]
+name = "product_events"
+required-features = ["stack-tests"]
+
 [lints]
 workspace = true

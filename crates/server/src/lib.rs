@@ -8,6 +8,7 @@ pub mod app;
 pub mod commands;
 pub mod config;
 pub mod database;
+pub mod events;
 pub mod http;
 pub mod mail;
 pub mod openapi;
