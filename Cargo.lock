@@ -2888,6 +2888,7 @@ dependencies = [
  "ipnet",
  "lettre",
  "life-pixel-core",
+ "life-pixel-mcp",
  "life-pixel-service",
  "metrics",
  "metrics-exporter-prometheus",
@@ -2897,6 +2898,8 @@ dependencies = [
  "opentelemetry_sdk",
  "rand 0.9.5",
  "reqwest",
+ "rmcp",
+ "schemars 1.2.2",
  "semver",
  "serde",
  "serde_json",
@@ -4323,19 +4326,28 @@ version = "3.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b6317cd8c13e3ec9033cf2aa5aa92cd743f0f4f8a93cddc42ea0ae6ce3b8898"
 dependencies = [
+ "async-trait",
+ "base64 0.23.1",
+ "bytes",
  "chrono",
  "futures",
+ "http",
+ "http-body",
+ "http-body-util",
  "indexmap 2.14.2",
  "pastey",
  "pin-project-lite",
  "process-wrap",
+ "rand 0.10.3",
  "schemars 1.2.2",
  "serde",
  "serde_json",
+ "sse-stream",
  "thiserror 2.0.21",
  "tokio",
  "tokio-stream",
  "tokio-util",
+ "tower-service",
  "tracing",
  "uuid",
 ]
@@ -5207,6 +5219,19 @@ dependencies = [
  "tracing",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "sse-stream"
+version = "0.2.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c25ac7aff0abd1dbc474536e40416e1102c7dd9bfba0b9861c6d357f835dcfb4"
+dependencies = [
+ "bytes",
+ "futures-util",
+ "http-body",
+ "http-body-util",
+ "pin-project-lite",
 ]
 
 [[package]]

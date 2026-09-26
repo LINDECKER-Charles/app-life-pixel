@@ -15,12 +15,14 @@ pub mod events;
 pub mod ids;
 pub mod library;
 pub mod local;
+pub mod mcp;
 pub mod owner;
 pub mod paging;
 pub mod plans;
 pub mod ports;
 pub mod quota;
 pub mod support;
+pub mod tokens;
 
 #[cfg(feature = "testing")]
 pub mod memory;

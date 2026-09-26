@@ -15,13 +15,14 @@ use crate::http::problem::{
 use crate::http::rate_limit::limit_api;
 use crate::http::security_headers::{self, SecurityHeaders};
 use crate::http::{i18n, request_id, static_app};
+use crate::mcp;
 use crate::openapi::API_PREFIX;
 use crate::routes::{self, health};
 use crate::state::AppState;
 use crate::telemetry::{observe, render_metrics};
 
-/// The public listener's router: `/healthz`, `/i18n`, `/api/v1`, and the app for the rest. One
-/// line per route group; the middleware from the inside out, the request id outermost.
+/// The public listener's router: `/healthz`, `/i18n`, `/api/v1`, `/mcp`, and the app for the
+/// rest. One line per route group; the middleware from the inside out, the request id outermost.
 pub fn public_router(state: AppState) -> Router {
     let security = SecurityHeaders::new(state.config.public_url.is_https());
     let proxies = state.config.trusted_proxies.clone();
@@ -29,6 +30,7 @@ pub fn public_router(state: AppState) -> Router {
         .merge(health::router())
         .nest("/i18n", i18n::router())
         .nest(API_PREFIX, api_router(&state))
+        .merge(mcp::router(&state))
         .fallback(static_app::serve)
         .layer(CatchPanicLayer::custom(panic_problem))
         .layer(map_response_with_state(security, security_headers::add))

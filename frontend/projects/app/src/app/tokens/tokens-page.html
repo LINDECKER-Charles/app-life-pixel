@@ -1,0 +1,56 @@
+<main class="page">
+  <h1>{{ 'tokens.title' | transloco }}</h1>
+  <p>{{ 'tokens.intro' | transloco }}</p>
+  <button type="button" class="primary" (click)="creating.set(true)">
+    {{ 'tokens.create.action' | transloco }}
+  </button>
+  <lp-token-creation-dialog [(open)]="creating" (created)="onCreated($event)" />
+
+  <section aria-labelledby="tokens-list-heading" [attr.aria-busy]="loading()">
+    <h2 id="tokens-list-heading">{{ 'tokens.list.heading' | transloco }}</h2>
+    @if (loadError(); as error) {
+      <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+      <button type="button" (click)="load()">{{ 'common.retry' | transloco }}</button>
+    }
+    @if (revokeError(); as error) {
+      <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+    }
+    @if (loaded() && tokens().length === 0) {
+      <p>{{ 'tokens.list.empty' | transloco }}</p>
+    }
+    <ul class="tokens">
+      @for (token of tokens(); track token.id) {
+        <li>
+          <div class="summary">
+            <h3 class="name">{{ token.name }}</h3>
+            <code>{{ token.prefix }}…</code>
+          </div>
+          <p class="scopes">
+            <span class="lp-visually-hidden">{{ 'tokens.list.scopes' | transloco }}</span>
+            @for (scope of token.scopes; track scope) {
+              <span class="scope">{{ scopeLabels[scope] | transloco }}</span>
+            }
+          </p>
+          <p class="hint">
+            {{ 'tokens.list.created' | transloco: { date: date(token.createdAt) } }} ·
+            {{ 'tokens.list.expires' | transloco: { date: date(token.expiresAt) } }} ·
+            @if (token.lastUsedAt; as lastUsedAt) {
+              {{ 'tokens.list.last_used' | transloco: { date: date(lastUsedAt) } }}
+            } @else {
+              {{ 'tokens.list.never_used' | transloco }}
+            }
+          </p>
+          <button
+            type="button"
+            class="danger"
+            [disabled]="revoking() === token.id"
+            [attr.aria-label]="'tokens.revoke.label' | transloco: { name: token.name }"
+            (click)="revoke(token)"
+          >
+            {{ 'tokens.revoke.action' | transloco }}
+          </button>
+        </li>
+      }
+    </ul>
+  </section>
+</main>

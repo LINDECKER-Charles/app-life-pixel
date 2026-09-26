@@ -5,12 +5,14 @@ use life_pixel_service::admin::ports::{
     EventCount, UserDetail, UserFilter, UserSession, UserSummary,
 };
 use life_pixel_service::paging::PageRequest;
+use life_pixel_service::tokens::ports::AccessTokenRecord;
 use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 
 use super::{non_blank, page, timestamp};
 use crate::http::problem::Problem;
 use crate::routes::support::schema::SupportRequestSummary;
+use crate::routes::tokens::schema::AccessTokenScope;
 
 /// Whether an account may sign in.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
@@ -115,8 +117,51 @@ impl From<UserSession> for AdminSession {
     }
 }
 
+/// A personal access token of the user, revoked or expired ones included; never its hash.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct AdminAccessToken {
+    /// Its id.
+    #[schema(format = "uuid")]
+    pub id: String,
+    /// The name the user gave it.
+    pub name: String,
+    /// The start of its secret, `lp_pat_` and 4 characters.
+    pub prefix: String,
+    /// What it grants.
+    pub scopes: Vec<AccessTokenScope>,
+    /// When it was created.
+    #[schema(format = DateTime)]
+    pub created_at: String,
+    /// When it stops, or stopped, working.
+    #[schema(format = DateTime)]
+    pub expires_at: String,
+    /// When it was last used, to the minute; `null` when never.
+    #[schema(format = DateTime)]
+    pub last_used_at: Option<String>,
+    /// When the user revoked it; `null` when they did not.
+    #[schema(format = DateTime)]
+    pub revoked_at: Option<String>,
+}
+
+impl From<AccessTokenRecord> for AdminAccessToken {
+    fn from(token: AccessTokenRecord) -> Self {
+        Self {
+            id: token.id.to_string(),
+            name: token.name,
+            prefix: token.prefix,
+            scopes: token.scopes.into_iter().map(Into::into).collect(),
+            created_at: timestamp(token.created_at),
+            expires_at: timestamp(token.expires_at),
+            last_used_at: token.last_used_at.map(timestamp),
+            revoked_at: token.revoked_at.map(timestamp),
+        }
+    }
+}
+
 /// A user in detail: as listed, plus the language, the counts of the library, the product
-/// events of the last 30 days by name, the sessions and the support requests.
+/// events of the last 30 days by name, the sessions, the support requests and the access
+/// tokens.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AdminUserDetail {
@@ -151,10 +196,14 @@ pub struct AdminUserDetail {
     pub sessions: Vec<AdminSession>,
     /// Its support requests, the most recently updated first.
     pub support_requests: Vec<SupportRequestSummary>,
+    /// Its personal access tokens, the most recently created first.
+    pub tokens: Vec<AdminAccessToken>,
 }
 
-impl From<UserDetail> for AdminUserDetail {
-    fn from(detail: UserDetail) -> Self {
+impl AdminUserDetail {
+    /// The body of `detail` and of the user's `tokens`.
+    #[must_use]
+    pub fn new(detail: UserDetail, tokens: Vec<AccessTokenRecord>) -> Self {
         let user = AdminUser::from(detail.summary);
         let events = detail
             .events
@@ -179,6 +228,7 @@ impl From<UserDetail> for AdminUserDetail {
                 .into_iter()
                 .map(Into::into)
                 .collect(),
+            tokens: tokens.into_iter().map(Into::into).collect(),
         }
     }
 }

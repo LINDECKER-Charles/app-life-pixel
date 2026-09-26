@@ -22,9 +22,11 @@ use life_pixel_service::AccountId;
 use life_pixel_service::accounts::memory::RecordingMailer;
 use life_pixel_service::admin::memory::unavailable_stores;
 use life_pixel_service::events::subject;
+use life_pixel_service::mcp::memory::in_memory_stores as mcp_stores;
 use life_pixel_service::memory::InMemoryLibraryStore;
 use life_pixel_service::ports::ProductEvent;
 use life_pixel_service::support::memory::in_memory_stores;
+use life_pixel_service::tokens::memory::InMemoryTokenStore;
 use serde_json::{Value, json};
 use sqlx::{FromRow, PgPool};
 use tempfile::TempDir;
@@ -68,6 +70,8 @@ impl EventsStack {
             events,
             support: in_memory_stores(),
             admin: unavailable_stores(),
+            tokens: Arc::new(InMemoryTokenStore::new()),
+            mcp: mcp_stores(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {

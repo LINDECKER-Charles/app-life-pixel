@@ -64,6 +64,12 @@ export const routes: Routes = [
     loadComponent: () => import('./account/account-page').then((m) => m.AccountPage),
   },
   {
+    path: 'settings/tokens',
+    title: 'tokens.title',
+    canActivate: [hostedOnly, requireAccount],
+    loadComponent: () => import('./tokens/tokens-page').then((m) => m.TokensPage),
+  },
+  {
     path: 'library',
     title: 'library.title',
     canActivate: [requireLibraryAccess],

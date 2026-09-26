@@ -23,10 +23,12 @@ pub const CODES: &[&str] = &[
     "document.version_conflict",
     "draw.too_many_operations",
     "edit.palette_in_use",
+    "export.link_invalid",
     "library.animation_not_found",
     "library.project_not_found",
     "library.unavailable",
     "library.unsupported_version",
+    "mcp.daily_limit",
     "preview.too_large",
     "quota.storage_exceeded",
     "request.malformed",
@@ -36,6 +38,12 @@ pub const CODES: &[&str] = &[
     "support.request_closed",
     "support.request_not_found",
     "support.screenshot",
+    "token.expiry",
+    "token.invalid",
+    "token.limit",
+    "token.name",
+    "token.not_found",
+    "token.scope",
 ];
 
 /// An error the product can show: a stable code and its parameters.

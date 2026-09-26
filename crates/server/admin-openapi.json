@@ -1,10 +1,79 @@
 {
   "components": {
     "schemas": {
+      "AccessTokenScope": {
+        "description": "What a token grants.",
+        "enum": [
+          "read",
+          "write",
+          "export"
+        ],
+        "type": "string"
+      },
       "AccountExport": {
         "description": "A data export: a zip laid out like a local library, plus `account.json`.",
         "format": "binary",
         "type": "string"
+      },
+      "AdminAccessToken": {
+        "description": "A personal access token of the user, revoked or expired ones included; never its hash.",
+        "properties": {
+          "createdAt": {
+            "description": "When it was created.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "expiresAt": {
+            "description": "When it stops, or stopped, working.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "description": "Its id.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lastUsedAt": {
+            "description": "When it was last used, to the minute; `null` when never.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "description": "The name the user gave it.",
+            "type": "string"
+          },
+          "prefix": {
+            "description": "The start of its secret, `lp_pat_` and 4 characters.",
+            "type": "string"
+          },
+          "revokedAt": {
+            "description": "When the user revoked it; `null` when they did not.",
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scopes": {
+            "description": "What it grants.",
+            "items": {
+              "$ref": "#/components/schemas/AccessTokenScope"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "createdAt",
+          "expiresAt"
+        ],
+        "type": "object"
       },
       "AdminEnvironment": {
         "description": "The server's environment and version.",
@@ -288,7 +357,7 @@
         "type": "object"
       },
       "AdminUserDetail": {
-        "description": "A user in detail: as listed, plus the language, the counts of the library, the product\nevents of the last 30 days by name, the sessions and the support requests.",
+        "description": "A user in detail: as listed, plus the language, the counts of the library, the product\nevents of the last 30 days by name, the sessions, the support requests and the access\ntokens.",
         "properties": {
           "animationCount": {
             "description": "How many animations it has.",
@@ -366,6 +435,13 @@
               "$ref": "#/components/schemas/SupportRequestSummary"
             },
             "type": "array"
+          },
+          "tokens": {
+            "description": "Its personal access tokens, the most recently created first.",
+            "items": {
+              "$ref": "#/components/schemas/AdminAccessToken"
+            },
+            "type": "array"
           }
         },
         "required": [
@@ -381,7 +457,8 @@
           "animationCount",
           "events",
           "sessions",
-          "supportRequests"
+          "supportRequests",
+          "tokens"
         ],
         "type": "object"
       },
@@ -1958,7 +2035,7 @@
             "description": "`admin.user_not_found`"
           }
         },
-        "summary": "The user `id`: as listed, plus the language, the counts of the library, the product events\nof the last 30 days by name, the sessions and the support requests.",
+        "summary": "The user `id`: as listed, plus the language, the counts of the library, the product events\nof the last 30 days by name, the sessions, the support requests and the access tokens.",
         "tags": [
           "users"
         ]
