@@ -34,3 +34,39 @@ services:
       resources:
         limits: { memory: 128M }
     restart: unless-stopped
+
+  # H14 — the app's images, started only with `docker compose --profile app up`, built from the
+  # repository. What differs inside a container replaces .env's host values: the image's
+  # listeners and folders, and the stack's addresses on the project's network.
+  server:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/app.Dockerfile
+    ports: ["127.0.0.1:8460:8080", "127.0.0.1:8461:9090"]
+    environment:
+      LP_HTTP_ADDR: 0.0.0.0:8080
+      LP_METRICS_ADDR: 0.0.0.0:9090
+      LP_ADMIN_API_ADDR: 0.0.0.0:9091
+      LP_APP_DIR: /srv/app
+      LP_I18N_DIR: /srv/i18n
+      LP_DATABASE_URL: postgres://life_pixel:${LP_DB_PASSWORD}@postgres:5432/life_pixel
+      LP_S3_ENDPOINT: http://objectstore:9090
+      LP_SMTP_URL: smtp://mail:1025
+    depends_on:
+      objectstore: { condition: service_healthy }
+      mail: { condition: service_healthy }
+
+  admin:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: docker/admin.Dockerfile
+    ports: ["127.0.0.1:8463:8080", "127.0.0.1:8464:9090"]
+    environment:
+      LPA_HTTP_ADDR: 0.0.0.0:8080
+      LPA_METRICS_ADDR: 0.0.0.0:9090
+      LPA_APP_DIR: /srv/admin
+      LPA_I18N_DIR: /srv/i18n
+      LPA_DATABASE_URL: postgres://life_pixel_admin:${LPA_DB_PASSWORD}@postgres:5432/life_pixel_admin
+      LPA_SERVER_ADMIN_API_URL: http://server:9091/internal/admin/v1
