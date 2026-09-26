@@ -7,6 +7,7 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import {
   ApiProblem,
@@ -25,7 +26,7 @@ import { SupportSignedOut } from './support-signed-out';
  */
 @Component({
   selector: 'lp-support-page',
-  imports: [NewSupportRequest, RouterLink, SupportSignedOut, TranslocoPipe],
+  imports: [IonContent, NewSupportRequest, RouterLink, SupportSignedOut, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './support-page.html',
   styleUrl: './support.scss',
