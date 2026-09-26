@@ -213,6 +213,7 @@ cargo run -p life-pixel-server                        # serve: the public, metri
 cargo run -p life-pixel-server -- migrate             # the migrations, then exit
 cargo run -p life-pixel-server -- healthcheck         # exit 0 when /healthz answers 200
 cargo run -p life-pixel-server -- openapi             # the API's description, on stdout
+cargo run -p life-pixel-server -- admin-openapi       # the internal admin API's, on stdout
 ```
 
 The stack tests run the server's store, sweeper and migrations against the local stack, each on a
@@ -236,11 +237,13 @@ A new migration is a file `crates/server/migrations/<UTC timestamp>_<topic>.sql`
 with the version running before it: it adds, it never renames nor drops what that version reads.
 
 A change to a route or to one of its types regenerates the API's description and its TypeScript
-types, and commits both; CI's `api` job fails when they differ.
+types, and the internal admin API's description, and commits them; CI's `api` job fails when
+they differ.
 
 ```shell
 npm run api:generate --prefix frontend
-git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts
+git diff --exit-code -- crates/server/openapi.json crates/server/admin-openapi.json \
+  frontend/projects/shared/src/lib/api/schema.d.ts
 ```
 
 ### Desktop
