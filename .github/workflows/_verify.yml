@@ -219,7 +219,8 @@ jobs:
         run: npm run size
 
   # H3: the server's API description and its TypeScript types regenerated, then compared with
-  # the committed ones; H10: the internal admin API's description too.
+  # the committed ones; H10: the internal admin API's description too; H11: the admin server's,
+  # and the console's types.
   api:
     name: API description
     runs-on: ubuntu-latest
@@ -252,11 +253,14 @@ jobs:
           git diff --exit-code --
           ../crates/server/openapi.json
           ../crates/server/admin-openapi.json
+          ../crates/admin-server/openapi.json
           projects/shared/src/lib/api/schema.d.ts
+          projects/shared/src/lib/admin-api/schema.d.ts
 
   # H4: the server against the local stack — Postgres, S3Mock and Mailpit — started from
-  # `.env.example`, then the tests behind the `stack-tests` feature. H11 adds
-  # `-p life-pixel-admin-server`; the packages are named, so that `tauri/` is not compiled here.
+  # `.env.example`, then the tests behind the `stack-tests` feature; H11: the admin server's too,
+  # on test databases owned by life_pixel_admin. The packages are named, so that `tauri/` is not
+  # compiled here.
   rust-stack:
     name: Rust on the local stack
     runs-on: ubuntu-latest
@@ -276,7 +280,9 @@ jobs:
       - name: Start the local stack
         run: docker compose up -d --wait
       - name: Test against the local stack
-        run: cargo test -p life-pixel-server --features stack-tests
+        run: >-
+          cargo test -p life-pixel-server -p life-pixel-admin-server
+          --features life-pixel-server/stack-tests,life-pixel-admin-server/stack-tests
       - name: Show the stack's logs
         if: failure()
         run: docker compose logs --no-color
