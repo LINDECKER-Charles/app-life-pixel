@@ -8,6 +8,7 @@ import {
   startUnsavedWork,
 } from '../testing/library-test-support';
 import { SaveButton } from './save-button';
+import { SaveFlow } from './save-flow';
 import { SavePrompts } from './save-prompts';
 
 /** Renders the Save button, whose template holds the save dialog. */
@@ -27,6 +28,13 @@ async function shown<T extends Element>(root: HTMLElement, selector: string): Pr
     if (!element) throw new Error(`${selector} not shown yet`);
     return element;
   });
+}
+
+/** The Save button itself: the page's only button until a dialog opens. */
+function saveButton(root: HTMLElement): HTMLButtonElement {
+  const button = root.querySelector<HTMLButtonElement>('button.lp-button');
+  if (!button) throw new Error('no Save button');
+  return button;
 }
 
 function buttonNamed(root: HTMLElement, text: string): HTMLButtonElement {
@@ -60,18 +68,18 @@ describe('the save button and its dialog', () => {
   it('saves into the project picked', async () => {
     const { store, root } = await renderButton();
     store.addProject('Sprites');
-    root.querySelector<HTMLElement>('ion-button')?.click();
+    saveButton(root).click();
     await shown(root, 'lp-project-picker input[type="radio"]:checked');
 
     (await shown<HTMLFormElement>(root, 'lp-project-picker form')).requestSubmit();
 
     await vi.waitFor(() => expect(store.animations).toHaveLength(1));
-    await vi.waitFor(() => expect(root.textContent).toContain('Saved'));
+    await vi.waitFor(() => expect(TestBed.inject(SaveFlow).status()).toBe('saved'));
   });
 
   it('saves into a new project named in the picker', async () => {
     const { store, root } = await renderButton();
-    root.querySelector<HTMLElement>('ion-button')?.click();
+    saveButton(root).click();
     const name = await shown<HTMLInputElement>(root, 'lp-project-picker input[name="name"]');
 
     name.value = 'Heroes';

@@ -34,10 +34,13 @@ describe('the export button', () => {
 
   afterEach(() => document.body.replaceChildren());
 
-  it('opens the dialog on click', async () => {
-    await configure();
+  it('is the primary action, and opens the dialog on click', async () => {
+    const root = await configure();
+    const button = root.querySelector<HTMLElement>('button');
+    expect(button?.classList).toContain('lp-button--primary');
+    expect(button?.textContent?.trim()).toBe('Export');
 
-    document.body.querySelector<HTMLElement>('ion-button')?.click();
+    button?.click();
 
     await vi.waitFor(() => expect(TestBed.inject(ExportFlow).isOpen()).toBe(true));
   });

@@ -1,5 +1,12 @@
-// Below this width, the regions stack and the page scrolls.
-$narrow-max-width: 767px;
+// The editor's layout (plan C7, design-system/docs/journeys.md §2): the document bar on top, the
+// tool rail, the canvas stage and the inspector in the middle, the timeline under the rail and the
+// stage. The stage takes the height left, never less than half the window, and the timeline gives
+// way first. Below 48 rem, the regions stack and the page scrolls (lot 6 adapts it).
+$narrow-max-width: 47.99rem;
+// Half the window, the least the stage keeps however many rows share the page.
+$stage-min-height: 50dvh;
+// The widest the rail grows: its buttons wrap within it rather than squeeze the stage.
+$rail-max-width: 10rem;
 
 :host {
   display: flex;
@@ -12,54 +19,135 @@ $narrow-max-width: 767px;
   min-height: 0;
   gap: var(--lp-space-2);
   padding: var(--lp-space-2);
-  // The outer columns shrink below their content's width before the canvas column does, so the
-  // canvas keeps its guaranteed minimum instead of being squeezed to zero by wide siblings.
-  grid-template-columns: minmax(0, auto) minmax(16rem, 1fr) minmax(0, auto);
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  // The rail takes its content's width up to a bound, and shrinks before the stage does.
+  grid-template-columns: fit-content($rail-max-width) minmax(16rem, 1fr) var(--lp-layout-inspector);
+  grid-template-rows: auto minmax($stage-min-height, 1fr) minmax(0, var(--lp-layout-timeline));
   grid-template-areas:
-    'header header header'
-    'tools canvas palette'
-    'timeline timeline timeline';
+    'docbar docbar docbar'
+    'rail stage inspector'
+    'timeline timeline inspector';
 
   @media (max-width: $narrow-max-width) {
     overflow-y: auto;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto minmax(16rem, 1fr) auto auto;
-    grid-template-areas: 'header' 'tools' 'canvas' 'palette' 'timeline';
+    grid-template-areas: 'docbar' 'rail' 'stage' 'inspector' 'timeline';
   }
 }
 
-.header {
+.docbar {
   display: flex;
   flex-wrap: wrap;
-  grid-area: header;
+  grid-area: docbar;
+  gap: var(--lp-space-2) var(--lp-space-4);
   align-items: center;
+  justify-content: space-between;
+  padding: var(--lp-space-2) var(--lp-space-3);
+  background: var(--lp-color-surface-soft);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+}
+
+.document {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
   gap: var(--lp-space-2);
+  align-items: center;
+  min-width: 0;
 }
 
 .title {
   flex: 1 1 12rem;
+  max-width: 32rem;
 }
 
-.region {
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+}
+
+.region,
+.inspector {
+  box-sizing: border-box;
   min-width: 0;
   min-height: 0;
   background: var(--lp-color-surface);
-  border-radius: var(--lp-radius-medium);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
 }
 
-.tools {
-  grid-area: tools;
+.rail {
+  grid-area: rail;
+  padding: var(--lp-space-2);
+  overflow-y: auto;
 }
 
-.canvas {
+// The canvas fills the stage; the welcome covers it while no document is open; the view bar (lot
+// 4) keeps a row of its own underneath.
+.stage {
+  display: grid;
+  grid-area: stage;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas: 'canvas' 'view-bar';
+  overflow: hidden;
+  background: var(--lp-color-canvas-bg);
+}
+
+.canvas,
+.welcome {
   grid-area: canvas;
+  min-height: 0;
 }
 
-.palette {
-  grid-area: palette;
+.welcome {
+  z-index: var(--lp-z-sticky);
+}
+
+.view-bar {
+  grid-area: view-bar;
+}
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  grid-area: inspector;
+  overflow-y: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-3);
+
+  & + & {
+    border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  }
+}
+
+.panel-title {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-heading);
+  color: var(--lp-color-text-muted);
 }
 
 .timeline {
   grid-area: timeline;
+  padding: var(--lp-space-2) var(--lp-space-3);
+  overflow: auto;
+}
+
+// Stacked, each region takes its content's height and the page scrolls instead.
+@media (max-width: $narrow-max-width) {
+  .rail,
+  .inspector,
+  .timeline {
+    min-height: auto;
+    overflow: visible;
+  }
 }

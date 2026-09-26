@@ -10,19 +10,29 @@ import { DiscardConfirmation } from './new-animation/discard-confirmation';
 import { NewAnimationFlow } from './new-animation/new-animation-flow';
 import { Shortcuts } from './shortcuts';
 
-const REGION_STUBS = [
-  'lp-tool-bar',
-  'lp-palette-panel',
-  'lp-canvas',
-  'lp-timeline',
-  'lp-export-button',
-];
+/** Each region of the layout, with what it holds. */
+const REGIONS = {
+  '.docbar': ['lp-animation-title', 'lp-save-state-pill', 'lp-save-button', 'lp-export-button'],
+  '.rail': ['lp-tool-bar'],
+  '.stage': ['lp-canvas'],
+  '.inspector': ['lp-palette-panel', 'lp-layer-list', 'lp-playback-preview'],
+  '.timeline': ['lp-timeline'],
+};
 
 /** The bytes of a document titled `title`, from an engine of its own. */
 async function documentTitled(title: string): Promise<Uint8Array> {
   const engine = new MockEditorEngine();
   await engine.create({ title, width: 8, height: 8, layerName: 'Base' });
   return engine.serialize();
+}
+
+/** The button whose text is `name`, within `root`. */
+function buttonNamed(root: HTMLElement, name: string): HTMLButtonElement {
+  const button = Array.from(root.querySelectorAll('button')).find(
+    (candidate) => candidate.textContent?.trim() === name,
+  );
+  if (!button) throw new Error(`no button "${name}"`);
+  return button;
 }
 
 describe('EditorPage', () => {
@@ -45,26 +55,55 @@ describe('EditorPage', () => {
 
   afterEach(() => document.body.replaceChildren());
 
-  it('holds the five regions the features fill', async () => {
+  it('lays out the document bar, the rail, the stage, the inspector and the timeline', async () => {
     await configure();
     const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
 
-    for (const selector of REGION_STUBS) {
-      expect(fixture.nativeElement.querySelector(selector), selector).not.toBeNull();
+    for (const [region, contents] of Object.entries(REGIONS)) {
+      for (const selector of contents) {
+        expect(root.querySelector(`${region} ${selector}`), `${region} ${selector}`).not.toBeNull();
+      }
     }
   });
 
-  it('asks for a new animation on a first visit', async () => {
+  it('welcomes a first visit in the empty stage, without opening the dialog on its own', async () => {
     await configure();
-    await open();
+    const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
 
-    expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(true);
+    expect(root.querySelector('.stage lp-editor-welcome')).not.toBeNull();
+    expect(root.querySelector('.stage lp-canvas')?.hasAttribute('inert')).toBe(true);
+    expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(false);
   });
 
-  it('leaves a saved animation to open to its route', async () => {
+  it('hides the welcome once an animation is created', async () => {
     await configure();
-    await open('42');
+    const fixture = await open();
 
+    await TestBed.inject(EngineStore).create({ title: 'New', width: 8, height: 8, layerName: 'A' });
+    await fixture.whenStable();
+
+    const root = fixture.nativeElement as HTMLElement;
+    expect(root.querySelector('lp-editor-welcome')).toBeNull();
+    expect(root.querySelector('.stage lp-canvas')?.hasAttribute('inert')).toBe(false);
+  });
+
+  it('opens the new-animation form from "Create animation", the title focused', async () => {
+    await configure();
+    const fixture = await open();
+
+    buttonNamed(fixture.nativeElement, 'Create animation').click();
+
+    await vi.waitFor(() => expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(true));
+    await vi.waitFor(() => expect(document.activeElement?.id).toBe('new-animation-title'));
+  });
+
+  it('shows no welcome on a saved animation’s route', async () => {
+    await configure();
+    const fixture = await open('42');
+
+    expect(fixture.nativeElement.querySelector('lp-editor-welcome')).toBeNull();
     expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(false);
   });
 
@@ -80,11 +119,14 @@ describe('EditorPage', () => {
     expect(TestBed.inject(CurrentAnimation).id()).toBe(saved.id);
   });
 
-  it('holds the Save button in its header', async () => {
+  it('holds native New, Save and Export buttons, Export as the primary action', async () => {
     await configure();
     const fixture = await open();
+    const docbar = fixture.nativeElement.querySelector('.docbar') as HTMLElement;
 
-    expect(fixture.nativeElement.querySelector('.header lp-save-button ion-button')).not.toBeNull();
+    expect(buttonNamed(docbar, 'New').classList).toContain('lp-button--secondary');
+    expect(buttonNamed(docbar, 'Save').classList).toContain('lp-button--secondary');
+    expect(buttonNamed(docbar, 'Export').classList).toContain('lp-button--primary');
   });
 
   it('starts a new animation from "New", asking first when there is unsaved work', async () => {
@@ -95,7 +137,7 @@ describe('EditorPage', () => {
     const fixture = await open();
     confirm.mockResolvedValue(true);
 
-    fixture.nativeElement.querySelector('.header ion-button').click();
+    buttonNamed(fixture.nativeElement, 'New').click();
 
     await vi.waitFor(() => expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(true));
     expect(confirm).toHaveBeenCalledOnce();

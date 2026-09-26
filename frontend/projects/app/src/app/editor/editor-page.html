@@ -1,23 +1,54 @@
 <div class="editor">
-  <header class="header">
+  <header class="docbar">
     <h1 class="lp-visually-hidden">{{ 'editor.heading' | transloco }}</h1>
-    <lp-animation-title class="title" />
-    <ion-button fill="outline" (click)="newAnimation.start()">
-      {{ 'editor.new.action' | transloco }}
-    </ion-button>
-    <lp-save-button />
-    <lp-open-status />
-    <lp-export-button class="export" />
+    <div class="document">
+      <lp-animation-title class="title" />
+      <lp-save-state-pill />
+      <lp-open-status />
+    </div>
+    <div class="actions">
+      <button
+        type="button"
+        class="lp-button lp-button--secondary new"
+        (click)="newAnimation.start()"
+      >
+        <lp-icon name="plus" />
+        {{ 'editor.new.action' | transloco }}
+      </button>
+      <lp-save-button />
+      <lp-export-button />
+    </div>
   </header>
-  <section class="region tools" [attr.aria-label]="'editor.region.tools' | transloco">
+  <section class="region rail" [attr.aria-label]="'editor.region.tools' | transloco">
     <lp-tool-bar />
   </section>
-  <section class="region canvas" [attr.aria-label]="'editor.region.canvas' | transloco">
-    <lp-canvas />
+  <section class="region stage" [attr.aria-label]="'editor.region.canvas' | transloco">
+    <lp-canvas class="canvas" [attr.inert]="showWelcome() ? '' : null" />
+    @if (showWelcome()) {
+      <lp-editor-welcome class="welcome" />
+    }
+    <!--
+      View bar (plan lot 4): `<lp-view-bar class="view-bar" />` from `canvas/view-bar/` goes here,
+      under the canvas, and `ViewBar` into this page's imports. The stage already keeps it a row
+      of its own (`.view-bar` in editor-page.scss), so that it never takes height from the canvas.
+    -->
   </section>
-  <section class="region palette" [attr.aria-label]="'editor.region.palette' | transloco">
-    <lp-palette-panel />
-  </section>
+  <div class="inspector">
+    <section class="panel" aria-labelledby="inspector-palette">
+      <h2 id="inspector-palette" class="panel-title">{{ 'editor.region.palette' | transloco }}</h2>
+      <lp-palette-panel />
+    </section>
+    <section class="panel" aria-labelledby="inspector-layers">
+      <h2 id="inspector-layers" class="panel-title">{{ 'timeline.layers.heading' | transloco }}</h2>
+      <lp-layer-list />
+    </section>
+    <section class="panel" aria-labelledby="inspector-playback">
+      <h2 id="inspector-playback" class="panel-title">
+        {{ 'timeline.playback.heading' | transloco }}
+      </h2>
+      <lp-playback-preview />
+    </section>
+  </div>
   <section class="region timeline" [attr.aria-label]="'editor.region.timeline' | transloco">
     <lp-timeline />
   </section>
