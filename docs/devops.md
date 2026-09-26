@@ -65,7 +65,7 @@ type/topic ──PR──► dev ──CI green──► test (fast-forward) ─
 | `_promote.yml` | push to `main` | retags `:<sha>` as `:prod`, without rebuilding |
 | `_deploy.yml` | after build or promotion | deploys to the VPS over SSH (below) |
 | `security.yml` | pull request, push, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`), dependency review, `cargo deny`, `npm audit` |
-| `release.yml` | tag `vX.Y.Z` | Tauri builds — desktop installers (Windows, macOS, Linux) and the Android bundle for the Play Console —, `@life-pixel/player` to npm, Docker version tags, GitHub Release with provenance attestations |
+| `release.yml` | tag `vX.Y.Z`, or by hand as a dry run | desktop installers (Windows, macOS universal, Ubuntu 22.04) with the signed updater, `@life-pixel/player` to npm, Docker version tags, a draft GitHub Release with provenance attestations, published once every job passes — see "Release" below. Android joins at M6 |
 
 The same checks run on the pull request and on the push that follows the merge: the second run
 validates the real merge commit before it is promoted.
@@ -144,16 +144,47 @@ keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`,
 the OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents
 each variable; the real files are never committed.
 
-Release secrets, when the matching distribution lands (D32): the Tauri updater signing key, the
-Apple Developer ID certificate and notarisation key, the Windows signing credentials, the Android
-upload key and a Play Console service account. They live in a GitHub `release` environment that
-requires the maintainer's approval. The updater key and the upload key also have an encrypted
-offline copy: without the updater key, no installed desktop app could ever update again. npm
-publishes through trusted publishing, without a token.
+Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
+Android upload key and Play Console service account join them at M6. The updater key and the
+upload key also have an encrypted offline copy: without the updater key, no installed desktop app
+could ever update again.
 
 Enrolment starts about a month before M5 and M6: an organisation account needs a D-U-N-S number
 first, and a new personal Play Console account must run a two-week closed test before it can
 publish.
+
+## Release
+
+`release.yml` runs on a `v*.*.*` tag, or by hand (`workflow_dispatch`) with a `dry_run` input
+(true by default): a dry run builds and signs every artifact but publishes nothing, for a
+rehearsal; running it with `dry_run: false` from an existing tag's ref republishes that tag, for
+recovery. Every job that publishes something runs in the `release` GitHub environment (D32),
+which requires the maintainer's approval and holds the signing secrets below.
+
+| Job | Does |
+|---|---|
+| `desktop` | builds the sidecar and the app for macOS (universal), Windows and Ubuntu 22.04 with `tauri-apps/tauri-action`, using `bundle.conf.json` and `release.conf.json` together; signs and notarises macOS, signs Windows when `WINDOWS_SIGN_COMMAND` is set; publishes a draft release with `latest.json`, or keeps the installers as workflow artifacts on a dry run |
+| `npm` | checks that `player-js`'s committed build is current, then publishes `@life-pixel/player` by trusted publishing (`id-token: write`, `--provenance`, no token) |
+| `docker` | retags the `app` and `admin` images already built for this commit (`_build.yml`) as `:vX.Y.Z` and `:latest`, without rebuilding |
+| `attest` | attaches a provenance attestation to every installer of the draft release |
+| `publish` | once every job above passes, turns the draft release into the release |
+
+The desktop build is only signed, and the updater only exists, in this workflow: `LP_UPDATER_PUBKEY`
+and `LP_UPDATER_ENDPOINT` are read by `tauri-plugin-updater` at compile time (`option_env!`), so a
+local or CI build has neither — a run through `cargo xtask build-desktop` proves it by having no
+updater at all. The installed app checks ten seconds after start, then every six hours, stays
+silent when offline or on any other failure, and only ever offers to install and restart; it never
+restarts on its own. `LP_UPDATER_ENDPOINT` is not a secret: it is computed from the repository, so
+a fork's release checks its own releases, not this one's.
+
+| Secret | Content |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | the updater's signing key pair, which signs every installer |
+| `TAURI_UPDATER_PUBKEY` | the matching public key, baked into every release build as `LP_UPDATER_PUBKEY` |
+| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | the Developer ID certificate and notarisation credentials for macOS |
+| `WINDOWS_SIGN_COMMAND` | optional until the Windows signing service is chosen (M5, D32); when set, patches `bundle.windows.signCommand` into `release.conf.json` before the build |
+
+Android is left out of `release.yml` until M6.
 
 ## Rollback
 
