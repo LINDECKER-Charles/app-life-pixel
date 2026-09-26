@@ -4,6 +4,122 @@
  */
 
 export interface paths {
+  '/api/v1/account': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The signed-in account, with its storage usage and quota. */
+    get: operations['getAccount'];
+    put?: never;
+    post?: never;
+    /** Deletes the signed-in account, its library and its sessions, and clears the session cookie. */
+    delete: operations['deleteAccount'];
+    options?: never;
+    head?: never;
+    /** Sets the language of the signed-in account's emails and interface. */
+    patch: operations['updateAccount'];
+    trace?: never;
+  };
+  '/api/v1/account/export': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The signed-in account's data: a zip laid out like a local library — the desktop app opens it
+     *     once unzipped —, plus `account.json` with its address, language, plan and sign-up date.
+     */
+    get: operations['exportAccount'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/animations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * A page of the account's animations, from the most recently updated: those of a project,
+     *     those whose title holds a text, or all.
+     */
+    get: operations['listAnimations'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/animations/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The animation `id`, without its document. */
+    get: operations['getAnimation'];
+    put?: never;
+    post?: never;
+    /** Deletes the animation `id`, whatever the quota. */
+    delete: operations['deleteAnimation'];
+    options?: never;
+    head?: never;
+    /**
+     * Retitles the animation `id` — a save of its document, under `If-Match` —, moves it to
+     *     another project, or both.
+     */
+    patch: operations['updateAnimation'];
+    trace?: never;
+  };
+  '/api/v1/animations/{id}/document': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The document of the animation `id`. */
+    get: operations['getDocument'];
+    /** Replaces the document of the animation `id`, when `If-Match` names its current version. */
+    put: operations['saveDocument'];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/animations/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Copies the animation `id` under a new title, into another project or beside the original. */
+    post: operations['duplicateAnimation'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/auth/password': {
     parameters: {
       query?: never;
@@ -163,6 +279,80 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/projects': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** A page of the account's projects, from the most recently updated. */
+    get: operations['listProjects'];
+    put?: never;
+    /** Creates an empty project. */
+    post: operations['createProject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/projects/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The project `id`. */
+    get: operations['getProject'];
+    put?: never;
+    post?: never;
+    /** Deletes the project `id` and its animations, whatever the quota. */
+    delete: operations['deleteProject'];
+    options?: never;
+    head?: never;
+    /** Renames the project `id`. */
+    patch: operations['renameProject'];
+    trace?: never;
+  };
+  '/api/v1/projects/{id}/animations': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Creates an animation in the project `id` from its document: the app's first save. */
+    post: operations['createAnimation'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/projects/{id}/duplicate': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Copies the project `id` and its animations into a new project; the whole copy is checked
+     *     against the quota first.
+     */
+    post: operations['duplicateProject'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/healthz': {
     parameters: {
       query?: never;
@@ -207,6 +397,93 @@ export interface components {
       /** @description Its documents' bytes and its quota. */
       storage: components['schemas']['Storage'];
     };
+    /** @description A change of the account: its language. */
+    AccountChange: {
+      /** @description The language code of its emails and interface, one of `languages.json`. */
+      language: string;
+    };
+    /** @description The confirmation of a deletion. */
+    AccountDeletionRequest: {
+      /** @description The account's password, asked again. */
+      password: string;
+    };
+    /**
+     * Format: binary
+     * @description A data export: a zip laid out like a local library, plus `account.json`.
+     */
+    AccountExport: string;
+    /** @description An animation of the account's library, without its document. */
+    Animation: {
+      /**
+       * Format: date-time
+       * @description When it was created.
+       */
+      createdAt: string;
+      /**
+       * Format: int64
+       * @description The size of its document, in bytes: what it counts against the quota.
+       */
+      documentBytes: number;
+      /**
+       * Format: int32
+       * @description Its frames.
+       */
+      frameCount: number;
+      /**
+       * Format: int32
+       * @description The canvas height, in pixels.
+       */
+      height: number;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /**
+       * Format: uuid
+       * @description The project holding it.
+       */
+      projectId: string;
+      /** @description Its title. */
+      title: string;
+      /**
+       * Format: date-time
+       * @description When its document last changed, or it moved.
+       */
+      updatedAt: string;
+      /**
+       * Format: int64
+       * @description Its version: the `ETag` of its document, which a write names in `If-Match`.
+       */
+      version: number;
+      /**
+       * Format: int32
+       * @description The canvas width, in pixels.
+       */
+      width: number;
+    };
+    /** @description A change of an animation: its title — a save, under `If-Match` —, its project, or both. */
+    AnimationChange: {
+      /**
+       * Format: uuid
+       * @description The project to move it to.
+       */
+      projectId?: string | null;
+      /** @description The new title. */
+      title?: string | null;
+    };
+    /** @description A copy of an animation. */
+    AnimationCopy: {
+      /**
+       * Format: uuid
+       * @description The project of the copy; the original's when absent.
+       */
+      projectId?: string | null;
+      /** @description The copy's title. */
+      title: string;
+    };
+    /** @description A document, as the model serializes it: the format of the local library's files. */
+    AnimationDocument: Record<string, never>;
     /** @description The server's health. */
     Health: {
       /** @description Always `ok`: a server that cannot answer sends a problem. */
@@ -217,6 +494,91 @@ export interface components {
      * @enum {string}
      */
     HealthStatus: 'ok';
+    /** @description A page of a list, from the most recently updated item. */
+    Page_Animation: {
+      /** @description The items. */
+      items: {
+        /**
+         * Format: date-time
+         * @description When it was created.
+         */
+        createdAt: string;
+        /**
+         * Format: int64
+         * @description The size of its document, in bytes: what it counts against the quota.
+         */
+        documentBytes: number;
+        /**
+         * Format: int32
+         * @description Its frames.
+         */
+        frameCount: number;
+        /**
+         * Format: int32
+         * @description The canvas height, in pixels.
+         */
+        height: number;
+        /**
+         * Format: uuid
+         * @description Its id.
+         */
+        id: string;
+        /**
+         * Format: uuid
+         * @description The project holding it.
+         */
+        projectId: string;
+        /** @description Its title. */
+        title: string;
+        /**
+         * Format: date-time
+         * @description When its document last changed, or it moved.
+         */
+        updatedAt: string;
+        /**
+         * Format: int64
+         * @description Its version: the `ETag` of its document, which a write names in `If-Match`.
+         */
+        version: number;
+        /**
+         * Format: int32
+         * @description The canvas width, in pixels.
+         */
+        width: number;
+      }[];
+      /** @description The `cursor` of the next page; `null` on the last one. */
+      nextCursor?: string | null;
+    };
+    /** @description A page of a list, from the most recently updated item. */
+    Page_Project: {
+      /** @description The items. */
+      items: {
+        /**
+         * Format: int32
+         * @description How many animations it holds.
+         */
+        animationCount: number;
+        /**
+         * Format: date-time
+         * @description When it was created.
+         */
+        createdAt: string;
+        /**
+         * Format: uuid
+         * @description Its id.
+         */
+        id: string;
+        /** @description Its name. */
+        name: string;
+        /**
+         * Format: date-time
+         * @description When it or one of its animations last changed.
+         */
+        updatedAt: string;
+      }[];
+      /** @description The `cursor` of the next page; `null` on the last one. */
+      nextCursor?: string | null;
+    };
     /** @description A change of password. */
     PasswordChangeRequest: {
       /** @description The current password. */
@@ -264,6 +626,36 @@ export interface components {
       status: number;
       /** @description `urn:life-pixel:problem:<code>`. */
       type: string;
+    };
+    /** @description A project of the account's library. */
+    Project: {
+      /**
+       * Format: int32
+       * @description How many animations it holds.
+       */
+      animationCount: number;
+      /**
+       * Format: date-time
+       * @description When it was created.
+       */
+      createdAt: string;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /** @description Its name. */
+      name: string;
+      /**
+       * Format: date-time
+       * @description When it or one of its animations last changed.
+       */
+      updatedAt: string;
+    };
+    /** @description A project's name: to create, rename or duplicate it. */
+    ProjectName: {
+      /** @description The name. */
+      name: string;
     };
     /** @description A session: the account signed in, and the token its unsafe requests send in `X-CSRF-Token`. */
     Session: {
@@ -315,6 +707,832 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  getAccount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The account */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Account'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteAccount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AccountDeletionRequest'];
+      };
+    };
+    responses: {
+      /** @description The account is deleted: `Set-Cookie` clears the session cookie */
+      204: {
+        headers: {
+          /** @description The cleared session cookie */
+          'Set-Cookie'?: string;
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.current_password`, `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateAccount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AccountChange'];
+      };
+    };
+    responses: {
+      /** @description The account, changed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Account'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `account.language` (`available`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  exportAccount: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The zip, as an attachment named `life-pixel-export-<YYYY-MM-DD>.zip` */
+      200: {
+        headers: {
+          /** @description The file's name */
+          'Content-Disposition'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/zip': components['schemas']['AccountExport'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listAnimations: {
+    parameters: {
+      query?: {
+        /** @description Only the animations of this project. */
+        project?: string;
+        /** @description Only the animations whose title holds this text, whatever its case. */
+        q?: string;
+        /** @description The `nextCursor` of the previous page; none for the first. */
+        cursor?: string;
+        /** @description The most items of the page: 1 to 100, 50 by default. */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description A page of the animations */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getAnimation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The animation */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteAnimation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The animation is deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  updateAnimation: {
+    parameters: {
+      query?: never;
+      header?: {
+        /** @description `"<version>"`, with a title */
+        'If-Match'?: string | null;
+      };
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnimationChange'];
+      };
+    };
+    responses: {
+      /** @description The animation, changed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found`, `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.version_conflict` (`current`): the document changed since */
+      412: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.version_required`: `If-Match` names the version replaced */
+      428: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getDocument: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The document; `ETag` is its version */
+      200: {
+        headers: {
+          /** @description `"<version>"` */
+          ETag?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/vnd.life-pixel.animation+json': components['schemas']['AnimationDocument'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  saveDocument: {
+    parameters: {
+      query?: never;
+      header: {
+        /** @description `"<version>"`: the version replaced */
+        'If-Match': string;
+      };
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/vnd.life-pixel.animation+json': components['schemas']['AnimationDocument'];
+      };
+    };
+    responses: {
+      /** @description The animation, saved; `ETag` is its new version */
+      200: {
+        headers: {
+          /** @description `"<version>"` */
+          ETag?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.version_conflict` (`current`): the document changed since */
+      412: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.too_large` (`maxBytes`) */
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `request.unsupported_media_type`: not `application/vnd.life-pixel.animation+json` */
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description A `document.*` code of the model, with its parameters */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.version_required`: `If-Match` names the version replaced */
+      428: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  duplicateAnimation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The animation's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['AnimationCopy'];
+      };
+    };
+    responses: {
+      /** @description The copy */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.animation_not_found`, `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
   changePassword: {
     parameters: {
       query?: never;
@@ -719,6 +1937,551 @@ export interface operations {
         };
       };
       /** @description `rate_limit.exceeded`: 3 an hour per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listProjects: {
+    parameters: {
+      query?: {
+        /** @description The `nextCursor` of the previous page; none for the first. */
+        cursor?: string;
+        /** @description The most items of the page: 1 to 100, 50 by default. */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description A page of the projects */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_Project'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createProject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProjectName'];
+      };
+    };
+    responses: {
+      /** @description The project */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Project'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getProject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The project's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The project */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Project'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  deleteProject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The project's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The project and its animations are deleted */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  renameProject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The project's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProjectName'];
+      };
+    };
+    responses: {
+      /** @description The project, renamed */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Project'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createAnimation: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The project's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/vnd.life-pixel.animation+json': components['schemas']['AnimationDocument'];
+      };
+    };
+    responses: {
+      /** @description The animation; `ETag` is its version */
+      201: {
+        headers: {
+          /** @description `"<version>"` */
+          ETag?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Animation'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.too_large` (`maxBytes`) */
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `request.unsupported_media_type`: not `application/vnd.life-pixel.animation+json` */
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description A `document.*` code of the model, with its parameters */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  duplicateProject: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The project's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ProjectName'];
+      };
+    };
+    responses: {
+      /** @description The copy */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Project'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `library.project_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `quota.storage_exceeded` (`used`, `limit`, `requested`); deleting always works */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
       429: {
         headers: {
           [name: string]: unknown;
