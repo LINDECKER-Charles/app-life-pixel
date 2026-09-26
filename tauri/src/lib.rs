@@ -7,6 +7,7 @@ pub mod errors;
 pub mod settings;
 pub mod sidecar;
 pub mod state;
+pub mod watcher;
 
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -18,6 +19,7 @@ use tracing_subscriber::EnvFilter;
 use crate::dialogs::SystemDialogs;
 use crate::settings::SETTINGS_FILE;
 use crate::state::{DesktopState, StateOptions};
+use crate::watcher::LibraryWatcher;
 
 /// The library folder of this run, whatever the settings say — as for the CLI.
 const LIBRARY_VARIABLE: &str = "LIFE_PIXEL_LIBRARY";
@@ -28,7 +30,8 @@ const APPIMAGE_VARIABLE: &str = "APPIMAGE";
 /// What the log keeps when `RUST_LOG` says nothing.
 const DEFAULT_LOG_FILTER: &str = "warn";
 
-/// Starts the app: the log, the dialog plugin, the state, the commands, the window.
+/// Starts the app: the log, the dialog plugin, the state and its watcher, the commands, the
+/// window.
 pub fn run() {
     init_log();
     let started = tauri::Builder::default()
@@ -36,6 +39,7 @@ pub fn run() {
         .setup(|app| {
             let state = DesktopState::open(state_options(app)?, dialogs(app));
             app.manage(state);
+            watch_library(app);
             Ok(())
         })
         .invoke_handler(commands::handler())
@@ -86,6 +90,15 @@ fn cli_path(app: &App) -> Option<PathBuf> {
         .then(|| app.path().app_data_dir().ok())
         .flatten();
     sidecar::locate(&executable, stable_folder.as_deref())
+}
+
+/// Starts watching the library folder, sending its changes to the webview as `library-changed`.
+fn watch_library(app: &App) {
+    let handle = app.handle().clone();
+    let watcher = LibraryWatcher::new(watcher::emitter(handle.clone()));
+    tauri::async_runtime::spawn(async move {
+        handle.state::<DesktopState>().watch_library(watcher).await;
+    });
 }
 
 /// The system's dialogs, attached to the app.
