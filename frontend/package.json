@@ -5,9 +5,9 @@
   "private": true,
   "scripts": {
     "ng": "ng",
-    "start": "node tools/prebuild.mjs && node tools/copy-i18n.mjs && ng serve app --port 4260",
+    "start": "node tools/prebuild.mjs && node tools/copy-i18n.mjs && node tools/copy-design-assets.mjs && ng serve app --port 4260",
     "start:admin": "ng serve admin --port 4263",
-    "build:app": "node tools/prebuild.mjs && node tools/copy-i18n.mjs && ng build app",
+    "build:app": "node tools/prebuild.mjs && node tools/copy-i18n.mjs && node tools/copy-design-assets.mjs && ng build app",
     "build:admin": "ng build admin",
     "build": "npm run build:app && npm run build:admin",
     "test:ci": "ng test app --watch=false && ng test shared --watch=false && ng test admin --watch=false",

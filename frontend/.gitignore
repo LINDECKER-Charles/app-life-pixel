@@ -45,3 +45,6 @@ Thumbs.db
 
 # Catalogues copied from ../i18n by tools/copy-i18n.mjs
 /projects/app/public/i18n/
+
+# Design-system assets copied from ../design-system/assets by tools/copy-design-assets.mjs
+/projects/app/public/design-system/

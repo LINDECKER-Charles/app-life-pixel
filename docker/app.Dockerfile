@@ -40,6 +40,8 @@ COPY player-js player-js
 COPY frontend/package.json frontend/package-lock.json frontend/
 RUN npm ci --prefix frontend --no-audit --no-fund
 COPY i18n i18n
+# The logo, Pip and the Nunito font, which the build copies into the app (copy-design-assets.mjs).
+COPY design-system/assets design-system/assets
 COPY frontend frontend
 COPY --from=rust /life-pixel/frontend/projects/app/src/app/engine/wasm/generated frontend/projects/app/src/app/engine/wasm/generated
 COPY --from=rust /life-pixel/frontend/projects/app/public/engine frontend/projects/app/public/engine

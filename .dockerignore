@@ -5,6 +5,7 @@
 !Cargo.lock
 !Cargo.toml
 !crates
+!design-system/assets
 !frontend
 !i18n
 !player-js
@@ -24,5 +25,6 @@
 **/target
 **/test-results
 frontend/projects/app/public/engine
+frontend/projects/app/public/design-system
 frontend/projects/app/public/i18n
 frontend/projects/app/src/app/engine/wasm/generated
