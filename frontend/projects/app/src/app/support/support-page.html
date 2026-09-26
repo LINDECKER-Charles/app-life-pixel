@@ -1,40 +1,42 @@
-<main class="page">
-  <h1>{{ 'support.title' | transloco }}</h1>
-  @if (account()) {
-    <section aria-labelledby="support-new-heading">
-      <h2 id="support-new-heading">{{ 'support.new.heading' | transloco }}</h2>
-      <lp-new-support-request (sent)="onSent($event)" />
-    </section>
+<ion-content>
+  <main class="page">
+    <h1>{{ 'support.title' | transloco }}</h1>
+    @if (account()) {
+      <section aria-labelledby="support-new-heading">
+        <h2 id="support-new-heading">{{ 'support.new.heading' | transloco }}</h2>
+        <lp-new-support-request (sent)="onSent($event)" />
+      </section>
 
-    <section aria-labelledby="support-list-heading" [attr.aria-busy]="loading()">
-      <h2 id="support-list-heading">{{ 'support.list.heading' | transloco }}</h2>
-      @if (loadError(); as error) {
-        <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
-        <button type="button" (click)="load()">{{ 'common.retry' | transloco }}</button>
-      }
-      @if (loaded() && requests().length === 0) {
-        <p>{{ 'support.list.empty' | transloco }}</p>
-      }
-      <ul class="requests">
-        @for (request of requests(); track request.id) {
-          <li>
-            <a [routerLink]="['/support', request.id]">
-              {{ categoryLabels[request.category] | transloco }}
-            </a>
-            <span> · {{ statusLabels[request.status] | transloco }}</span>
-            <p class="hint">
-              {{ 'support.list.updated' | transloco: { date: date(request.updatedAt) } }}
-            </p>
-          </li>
+      <section aria-labelledby="support-list-heading" [attr.aria-busy]="loading()">
+        <h2 id="support-list-heading">{{ 'support.list.heading' | transloco }}</h2>
+        @if (loadError(); as error) {
+          <p role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+          <button type="button" (click)="load()">{{ 'common.retry' | transloco }}</button>
         }
-      </ul>
-      @if (nextCursor(); as cursor) {
-        <button type="button" [disabled]="loading()" (click)="load(cursor)">
-          {{ 'support.list.more' | transloco }}
-        </button>
-      }
-    </section>
-  } @else {
-    <lp-support-signed-out returnUrl="/support" />
-  }
-</main>
+        @if (loaded() && requests().length === 0) {
+          <p>{{ 'support.list.empty' | transloco }}</p>
+        }
+        <ul class="requests">
+          @for (request of requests(); track request.id) {
+            <li>
+              <a [routerLink]="['/support', request.id]">
+                {{ categoryLabels[request.category] | transloco }}
+              </a>
+              <span> · {{ statusLabels[request.status] | transloco }}</span>
+              <p class="hint">
+                {{ 'support.list.updated' | transloco: { date: date(request.updatedAt) } }}
+              </p>
+            </li>
+          }
+        </ul>
+        @if (nextCursor(); as cursor) {
+          <button type="button" [disabled]="loading()" (click)="load(cursor)">
+            {{ 'support.list.more' | transloco }}
+          </button>
+        }
+      </section>
+    } @else {
+      <lp-support-signed-out returnUrl="/support" />
+    }
+  </main>
+</ion-content>
