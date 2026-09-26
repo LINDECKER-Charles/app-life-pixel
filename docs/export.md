@@ -155,19 +155,19 @@ compiler, `img2webp` and the two compressors are deterministic for a fixed input
 |---|---|---|---|
 | `mascot-wave.wasm` | 13501 B | 6231 B | 5736 B |
 | `mascot-wave.gif` | 1653 B | 852 B | 793 B |
-| `mascot-wave.apng` | 2313 B | 1255 B | 1175 B |
+| `mascot-wave.apng` | 2891 B | 1258 B | 1193 B |
 | `mascot-wave.webp` | 1552 B | 1281 B | 1189 B |
 | `loader-dots.wasm` | 12139 B | 5623 B | 5138 B |
 | `loader-dots.gif` | 321 B | 241 B | 205 B |
-| `loader-dots.apng` | 738 B | 587 B | 525 B |
+| `loader-dots.apng` | 1098 B | 543 B | 542 B |
 | `loader-dots.webp` | 480 B | 321 B | 295 B |
 | `hero-run.wasm` | 17448 B | 7926 B | 7200 B |
 | `hero-run.gif` | 5066 B | 2644 B | 2580 B |
-| `hero-run.apng` | 5992 B | 3693 B | 3556 B |
+| `hero-run.apng` | 7819 B | 3024 B | 2961 B |
 | `hero-run.webp` | 4576 B | 2270 B | 2184 B |
 | `empty-state.wasm` | 13648 B | 6010 B | 5461 B |
 | `empty-state.gif` | 5280 B | 2362 B | 2056 B |
-| `empty-state.apng` | 4646 B | 4114 B | 4028 B |
+| `empty-state.apng` | 7307 B | 2464 B | 2349 B |
 | `empty-state.webp` | 1744 B | 1322 B | 1241 B |
 | `player.wasm (no payload)` | 11838 B | 5429 B | 4933 B |
 | `life-pixel.js (loader)` | 4376 B | 1926 B | 1684 B |
