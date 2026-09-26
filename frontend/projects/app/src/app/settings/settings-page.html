@@ -69,5 +69,8 @@
         <a routerLink="/settings/agents">{{ 'mcp.agents.link' | transloco }}</a>
       </div>
     }
+    @if (account()) {
+      <a routerLink="/settings/tokens">{{ 'tokens.title' | transloco }}</a>
+    }
   </div>
 </ion-content>
