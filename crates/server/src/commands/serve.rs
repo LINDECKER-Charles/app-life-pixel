@@ -21,6 +21,7 @@ use crate::config::Config;
 use crate::database::{self, DatabaseError, DatabaseReadiness};
 use crate::http::rate_limit::RATE_LIMIT_UPKEEP_PERIOD;
 use crate::mail::{EmailTemplates, MailSetupError, SmtpMailer, TemplateError};
+use crate::routes;
 use crate::state::{AppState, Backends, StartError};
 use crate::storage::{self, HostedLibraryStore, ObjectStoreSetupError, Sweeper};
 use crate::telemetry::{self, METRICS_UPKEEP_PERIOD};
@@ -76,6 +77,7 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     let metrics = telemetry::recorder()?;
     storage::metrics::describe();
     accounts::metrics::describe();
+    routes::library::metrics::describe();
     let backends = backends(&pool, Arc::clone(&objects), mailer(&config)?);
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;
