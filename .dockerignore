@@ -1,0 +1,28 @@
+# An allow-list: nothing enters the build context — .git/, the .env files, .sillage/ and every
+# worktree under it — but the paths docker/app.Dockerfile and docker/admin.Dockerfile copy.
+*
+!.cargo/config.toml
+!Cargo.lock
+!Cargo.toml
+!crates
+!frontend
+!i18n
+!player-js
+!tauri/Cargo.toml
+!tauri/build.rs
+!tauri/src
+!xtask
+
+# What the allowed paths hold but the images build themselves: build outputs, dependencies,
+# the engine and the catalogues copied into the app, test reports.
+**/.angular
+**/.env
+**/.env.*
+**/dist
+**/node_modules
+**/playwright-report
+**/target
+**/test-results
+frontend/projects/app/public/engine
+frontend/projects/app/public/i18n
+frontend/projects/app/src/app/engine/wasm/generated
