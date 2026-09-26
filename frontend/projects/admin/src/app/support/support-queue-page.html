@@ -1,0 +1,98 @@
+<h1>{{ 'admin.support.title' | transloco }}</h1>
+
+<form class="filters" role="search" (submit)="submit($event)">
+  <label>
+    <span>{{ 'admin.support.status_label' | transloco }}</span>
+    <select name="status">
+      <option value="" [selected]="!filters().status">{{ 'admin.support.any' | transloco }}</option>
+      @for (status of statuses; track status) {
+        <option [value]="status" [selected]="status === filters().status">
+          {{ statusKeys[status] | transloco }}
+        </option>
+      }
+    </select>
+  </label>
+  <label>
+    <span>{{ 'admin.support.category_label' | transloco }}</span>
+    <select name="category">
+      <option value="" [selected]="!filters().category">
+        {{ 'admin.support.any' | transloco }}
+      </option>
+      @for (category of categories; track category) {
+        <option [value]="category" [selected]="category === filters().category">
+          {{ categoryKeys[category] | transloco }}
+        </option>
+      }
+    </select>
+  </label>
+  <label>
+    <span>{{ 'admin.support.assignee' | transloco }}</span>
+    <select name="assignee">
+      <option value="" [selected]="!filters().assignee">
+        {{ 'admin.support.anyone' | transloco }}
+      </option>
+      <option value="me" [selected]="!!filters().assignee">
+        {{ 'admin.support.me' | transloco }}
+      </option>
+    </select>
+  </label>
+  <button type="submit">{{ 'admin.support.filter' | transloco }}</button>
+</form>
+
+<section aria-labelledby="support-list">
+  <div class="table-header">
+    <h2 id="support-list">
+      {{ 'admin.support.found' | transloco: { count: table.rows().length } }}
+    </h2>
+    @if (table.rows().length > 0) {
+      <button type="button" (click)="exportCsv()">
+        {{ 'admin.table.export_csv' | transloco }}
+      </button>
+    }
+  </div>
+  @if (list.problem(); as problem) {
+    <lp-empty-state nothing="admin.support.empty" [problem]="problem" />
+  } @else if (list.loading() && table.rows().length === 0) {
+    <p role="status">{{ 'admin.loading' | transloco }}</p>
+  } @else if (table.rows().length === 0) {
+    <lp-empty-state nothing="admin.support.empty" />
+  }
+  @if (table.rows().length > 0) {
+    <table>
+      <thead>
+        <tr>
+          @for (column of columns; track column.key) {
+            <th scope="col" [attr.aria-sort]="table.ariaSort(column.key)">
+              <lp-sort-button
+                [direction]="table.ariaSort(column.key)"
+                (toggled)="table.toggle(column.key)"
+                >{{ column.labelKey | transloco }}</lp-sort-button
+              >
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (request of table.rows(); track request.id) {
+          <tr>
+            <th scope="row">
+              <a [routerLink]="['/support', request.id]" [queryParams]="params()">
+                {{ categoryKeys[request.category] | transloco }}
+              </a>
+            </th>
+            <td>{{ request.email }}</td>
+            <td>{{ statusKeys[request.status] | transloco }}</td>
+            <td>{{ age(request.ageSeconds) }}</td>
+            <td>{{ date(request.updatedAt) }}</td>
+            <td><lp-deadline-note [request]="request" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (list.hasMore()) {
+      <button type="button" [disabled]="list.loading()" (click)="list.more()">
+        {{ 'admin.table.more' | transloco }}
+      </button>
+    }
+  }
+</section>

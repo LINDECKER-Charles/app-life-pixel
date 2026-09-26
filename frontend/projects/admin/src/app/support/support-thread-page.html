@@ -1,0 +1,131 @@
+<nav class="crumbs" [attr.aria-label]="'admin.nav.breadcrumbs' | transloco">
+  <a routerLink="/support" [queryParams]="params()">{{ 'admin.support.title' | transloco }}</a>
+  <span aria-hidden="true">›</span>
+  <span>{{ 'admin.support.thread_title' | transloco }}</span>
+</nav>
+
+@if (notice(); as notice) {
+  <p class="notice" role="status">{{ notice | transloco }}</p>
+}
+
+@if (problem(); as problem) {
+  <lp-empty-state nothing="admin.support.thread_empty" [problem]="problem" />
+} @else if (thread(); as thread) {
+  <h1>
+    {{ categoryKeys[thread.request.category] | transloco }} ·
+    {{ statusKeys[thread.request.status] | transloco }}
+  </h1>
+  <p><lp-deadline-note [request]="thread.request" /></p>
+
+  <div class="layout">
+    <section class="messages" aria-labelledby="thread-messages">
+      <h2 id="thread-messages">{{ 'admin.support.messages' | transloco }}</h2>
+      <ol>
+        @for (message of thread.messages; track message.id) {
+          <li [attr.data-author]="message.author" [class.internal]="message.internal">
+            <p class="meta">
+              <strong>
+                @if (message.internal) {
+                  {{ 'admin.support.author_note' | transloco }}
+                } @else if (message.author === 'team') {
+                  {{ 'admin.support.author_team' | transloco }}
+                } @else {
+                  {{ 'admin.support.author_user' | transloco }}
+                }
+              </strong>
+              · <time [attr.datetime]="message.createdAt">{{ date(message.createdAt) }}</time>
+            </p>
+            <p class="body">{{ message.body }}</p>
+          </li>
+        }
+      </ol>
+      <h2>{{ 'admin.support.compose_title' | transloco }}</h2>
+      <lp-thread-compose
+        [requestId]="thread.request.id"
+        [email]="thread.request.email"
+        [closed]="thread.request.status === 'closed'"
+        (posted)="posted($event)"
+      />
+    </section>
+
+    <aside aria-labelledby="thread-request">
+      <h2 id="thread-request">{{ 'admin.support.request_title' | transloco }}</h2>
+      <dl class="facts">
+        <dt>{{ 'admin.support.email' | transloco }}</dt>
+        <dd>
+          <a [routerLink]="['/users', thread.request.accountId]" [queryParams]="params()">
+            {{ thread.request.email }}
+          </a>
+        </dd>
+        <dt>{{ 'admin.support.created' | transloco }}</dt>
+        <dd>{{ date(thread.request.createdAt) }} ({{ age(thread.request.ageSeconds) }})</dd>
+        <dt>{{ 'admin.support.first_response' | transloco }}</dt>
+        <dd>{{ date(thread.request.firstResponseAt) || ('admin.value.none' | transloco) }}</dd>
+        <dt>{{ 'admin.support.assignee' | transloco }}</dt>
+        <dd>
+          @if (!thread.request.assignedTo) {
+            {{ 'admin.support.nobody' | transloco }}
+          } @else if (thread.request.assignedTo === adminId()) {
+            {{ 'admin.support.you' | transloco }}
+          } @else {
+            <code>{{ thread.request.assignedTo }}</code>
+          }
+        </dd>
+      </dl>
+
+      @if (changeProblem(); as problem) {
+        <lp-empty-state nothing="admin.support.thread_empty" [problem]="problem" />
+      }
+      <form class="status" (submit)="setStatus($event, thread.request.id)">
+        <label for="thread-status">{{ 'admin.support.status_label' | transloco }}</label>
+        <select id="thread-status" name="status">
+          @for (status of statuses; track status) {
+            <option [value]="status" [selected]="status === thread.request.status">
+              {{ statusKeys[status] | transloco }}
+            </option>
+          }
+        </select>
+        <button type="submit">{{ 'admin.support.save_status' | transloco }}</button>
+      </form>
+      <p>
+        @if (thread.request.assignedTo === adminId()) {
+          <button type="button" (click)="assign(thread.request.id, null)">
+            {{ 'admin.support.unassign' | transloco }}
+          </button>
+        } @else {
+          <button type="button" (click)="assign(thread.request.id, adminId())">
+            {{ 'admin.support.assign_me' | transloco }}
+          </button>
+        }
+      </p>
+
+      <h3>{{ 'admin.support.context' | transloco }}</h3>
+      <dl class="facts">
+        <dt>{{ 'admin.support.app_version' | transloco }}</dt>
+        <dd>{{ thread.context.appVersion }}</dd>
+        <dt>{{ 'admin.support.platform' | transloco }}</dt>
+        <dd>{{ thread.context.platform }}</dd>
+        <dt>{{ 'admin.support.language' | transloco }}</dt>
+        <dd>{{ thread.context.language }}</dd>
+        <dt>{{ 'admin.support.screen' | transloco }}</dt>
+        <dd>
+          <code>{{ thread.context.screen }}</code>
+        </dd>
+      </dl>
+
+      <h3>{{ 'admin.support.screenshot' | transloco }}</h3>
+      @if (!thread.hasScreenshot) {
+        <p class="hint">{{ 'admin.support.no_screenshot' | transloco }}</p>
+      } @else if (screenshot(); as url) {
+        <img class="screenshot" [src]="url" [alt]="'admin.support.screenshot_alt' | transloco" />
+      } @else {
+        <button type="button" (click)="showScreenshot(thread.request.id)">
+          {{ 'admin.support.show_screenshot' | transloco }}
+        </button>
+        @if (screenshotProblem(); as problem) {
+          <lp-empty-state nothing="admin.support.no_screenshot" [problem]="problem" />
+        }
+      }
+    </aside>
+  </div>
+}

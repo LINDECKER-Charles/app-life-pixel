@@ -1,0 +1,52 @@
+<form class="compose" novalidate (submit)="send($event)">
+  @if (closed()) {
+    <p class="hint">{{ 'admin.support.closed_notes_only' | transloco }}</p>
+  } @else {
+    <fieldset>
+      <legend>{{ 'admin.support.compose_kind' | transloco }}</legend>
+      <label>
+        <input
+          type="radio"
+          name="kind"
+          value="reply"
+          [checked]="kind() === 'reply'"
+          (change)="onKind($event)"
+        />
+        {{ 'admin.support.kind_reply' | transloco: { email: email() } }}
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="kind"
+          value="note"
+          [checked]="kind() === 'note'"
+          (change)="onKind($event)"
+        />
+        {{ 'admin.support.kind_note' | transloco }}
+      </label>
+    </fieldset>
+  }
+  <div class="field">
+    <label for="compose-body">
+      {{ (internal() ? 'admin.support.note_label' : 'admin.support.reply_label') | transloco }}
+    </label>
+    <textarea
+      id="compose-body"
+      rows="5"
+      aria-describedby="compose-counter"
+      [attr.maxlength]="limits.max"
+      [value]="body()"
+      [disabled]="pending()"
+      (input)="onBody($event)"
+    ></textarea>
+    <p id="compose-counter" class="hint">
+      {{ 'admin.support.counter' | transloco: { count: length(), max: limits.max } }}
+    </p>
+  </div>
+  @if (error(); as error) {
+    <p class="error" role="alert">{{ error.key | transloco: error.params }}</p>
+  }
+  <button type="submit" [disabled]="!ready()">
+    {{ (internal() ? 'admin.support.add_note' : 'admin.support.send_reply') | transloco }}
+  </button>
+</form>

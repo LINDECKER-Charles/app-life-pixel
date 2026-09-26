@@ -1,0 +1,76 @@
+<h1>
+  {{ 'admin.alerts.title' | transloco }} ·
+  <lp-environment-name [environment]="state().env" />
+</h1>
+
+<section aria-labelledby="alerts-list">
+  <div class="table-header">
+    <h2 id="alerts-list">{{ 'admin.alerts.question' | transloco }}</h2>
+    @if (alerts().length > 0) {
+      <button type="button" (click)="exportCsv()">
+        {{ 'admin.table.export_csv' | transloco }}
+      </button>
+    }
+  </div>
+  @if (loading() && alerts().length === 0) {
+    <p role="status">{{ 'admin.loading' | transloco }}</p>
+  } @else if (alerts().length === 0) {
+    <lp-empty-state
+      nothing="admin.alerts.empty"
+      [params]="{ environment: state().env }"
+      [problem]="problem()"
+    />
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('name')">
+            <lp-sort-button [direction]="table.ariaSort('name')" (toggled)="table.toggle('name')">
+              {{ 'admin.alerts.name' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('severity')">
+            <lp-sort-button
+              [direction]="table.ariaSort('severity')"
+              (toggled)="table.toggle('severity')"
+            >
+              {{ 'admin.alerts.severity' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('state')">
+            <lp-sort-button [direction]="table.ariaSort('state')" (toggled)="table.toggle('state')">
+              {{ 'admin.alerts.state' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col" [attr.aria-sort]="table.ariaSort('startsAt')">
+            <lp-sort-button
+              [direction]="table.ariaSort('startsAt')"
+              (toggled)="table.toggle('startsAt')"
+            >
+              {{ 'admin.alerts.since' | transloco }}
+            </lp-sort-button>
+          </th>
+          <th scope="col">{{ 'admin.alerts.summary' | transloco }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (alert of table.rows(); track alert.fingerprint) {
+          <tr>
+            <th scope="row">{{ alert.name }}</th>
+            <td>{{ alert.severity ?? '' }}</td>
+            <td>{{ alert.state }}</td>
+            <td>
+              <time [attr.datetime]="alert.startsAt">{{ time(alert.startsAt) }}</time>
+            </td>
+            <td>
+              {{ alert.summary ?? '' }}
+              @if (alert.description; as description) {
+                <p class="hint">{{ description }}</p>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</section>
