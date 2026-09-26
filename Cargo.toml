@@ -39,6 +39,7 @@ life-pixel-mcp = { path = "crates/mcp" }
 life-pixel-service = { path = "crates/service" }
 metrics = "0.24.6"
 metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
+notify-debouncer-full = "0.7.0"
 object_store = { version = "0.14.2", default-features = false }
 opentelemetry = { version = "0.33.0", default-features = false }
 opentelemetry-otlp = { version = "0.33.0", default-features = false }

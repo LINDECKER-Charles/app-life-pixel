@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { requireAccount } from './account/require-account';
 import { requireLibraryAccess } from './library/require-library-access';
-import { hostedOnly } from './platform/platform-guards';
+import { desktopOnly, hostedOnly } from './platform/platform-guards';
 
 // One lazy route per feature; a route's title is an i18n key. The not-found route stays last.
 export const routes: Routes = [
@@ -20,6 +20,12 @@ export const routes: Routes = [
     path: 'settings',
     title: 'settings.title',
     loadComponent: () => import('./settings/settings-page').then((m) => m.SettingsPage),
+  },
+  {
+    path: 'settings/agents',
+    title: 'mcp.agents.title',
+    canActivate: [desktopOnly],
+    loadComponent: () => import('./mcp/agents-page').then((m) => m.AgentsPage),
   },
   {
     path: 'legal/:page',

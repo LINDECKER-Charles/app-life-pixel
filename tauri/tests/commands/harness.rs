@@ -106,6 +106,7 @@ fn options_in(folder: &Path) -> StateOptions {
         default_library: folder.join("Documents").join("Life Pixel"),
         library_override: None,
         export_dir: None,
+        cli_path: None,
     }
 }
 
