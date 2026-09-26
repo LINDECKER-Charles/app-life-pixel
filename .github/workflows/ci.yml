@@ -13,3 +13,61 @@ jobs:
     uses: ./.github/workflows/_verify.yml
     permissions:
       contents: read
+
+  # H14: delivery, on pushes only, once `verify` is green (devops.md, "Branches and promotion").
+  # A push to `dev` fast-forwards `test` to it, builds the images once and deploys them to
+  # staging; a push to `main` retags those images :prod and deploys them to production.
+  promote-test:
+    name: Promote to test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ssh-key: ${{ secrets.PROMOTION_DEPLOY_KEY }}
+          fetch-depth: 0
+      # Without --force: the push fails unless `test` fast-forwards to this commit.
+      - name: Fast-forward test
+        run: git push origin "$GITHUB_SHA:refs/heads/test"
+  build:
+    needs: promote-test
+    uses: ./.github/workflows/_build.yml
+    with:
+      sha: ${{ github.sha }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+  deploy-staging:
+    needs: build
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: staging
+      sha: ${{ github.sha }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: read
+  promote-images:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    uses: ./.github/workflows/_promote.yml
+    with:
+      sha: ${{ github.sha }}
+    permissions:
+      packages: write
+  deploy-production:
+    needs: promote-images
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: production
+      sha: ${{ github.sha }}
+    secrets: inherit
+    permissions:
+      contents: read
+      packages: read

@@ -1,0 +1,73 @@
+name: Deploy
+# H14: deploys a commit's images to staging or production on the shared VPS: scripts/deploy/
+# deploy.sh runs on the host over SSH, in the six steps of devops.md. Called by ci.yml after the
+# build or the promotion, with `secrets: inherit`; the secrets of the target are read by its
+# prefix, STAGING_ or PROD_, in its GitHub environment.
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: staging or production
+        type: string
+        required: true
+      sha:
+        description: The commit to deploy, whose images are tagged :<sha>
+        type: string
+        required: true
+permissions: {}
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      packages: read
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    env:
+      PREFIX: ${{ inputs.environment == 'production' && 'PROD' || 'STAGING' }}
+    steps:
+      - name: Check the environment
+        env:
+          ENVIRONMENT: ${{ inputs.environment }}
+        run: |
+          case "$ENVIRONMENT" in
+            staging | production) ;;
+            *) echo "::error::unknown environment '$ENVIRONMENT'"; exit 1 ;;
+          esac
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets[format('{0}_SSH_KEY', env.PREFIX)] }}
+          SSH_HOST: ${{ secrets[format('{0}_HOST', env.PREFIX)] }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+      # The .env and the registry token travel in a tar on SSH's standard input, each in a file of
+      # mode 600 in a folder the host removes afterwards: never on a command line.
+      - name: Run deploy.sh on the host
+        env:
+          SSH_HOST: ${{ secrets[format('{0}_HOST', env.PREFIX)] }}
+          SSH_USER: ${{ secrets[format('{0}_SSH_USER', env.PREFIX)] || 'root' }}
+          DEPLOY_PATH: ${{ secrets[format('{0}_PATH', env.PREFIX)] }}
+          ENV_FILE: ${{ secrets[format('ENV_{0}', env.PREFIX)] }}
+          REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REGISTRY_USER: ${{ github.actor }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          bundle="$(mktemp -d)"
+          trap 'rm -rf "$bundle"' EXIT
+          (umask 077 && printf '%s\n' "$ENV_FILE" > "$bundle/env" && printf '%s' "$REGISTRY_TOKEN" > "$bundle/token")
+          cp scripts/deploy/deploy.sh "$bundle/deploy.sh"
+          remote="$(printf 'DEPLOY_SHA=%q DEPLOY_PATH=%q DEPLOY_REGISTRY_USER=%q' "$SHA" "$DEPLOY_PATH" "$REGISTRY_USER")"
+          tar -C "$bundle" -cf - env token deploy.sh | ssh -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+            "set -eu; dir=\$(mktemp -d); trap 'rm -rf \"\$dir\"' EXIT; tar -xpf - -C \"\$dir\";
+            $remote DEPLOY_ENV_FILE=\"\$dir/env\" DEPLOY_REGISTRY_TOKEN_FILE=\"\$dir/token\" bash \"\$dir/deploy.sh\""
