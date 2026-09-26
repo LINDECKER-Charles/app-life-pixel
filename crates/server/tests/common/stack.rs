@@ -54,13 +54,17 @@ impl ApiStack {
         change(&mut env);
         let config = read_config(&env).unwrap();
         let events = Arc::new(RecordingEvents::new());
-        let mut ports = accounts::hosted_ports(database.pool(), Arc::new(RecordingMailer::new()));
-        ports.events = events.clone();
+        let ports = accounts::hosted_ports(
+            database.pool(),
+            Arc::new(RecordingMailer::new()),
+            events.clone(),
+        );
         let store = HostedLibraryStore::new(database.pool().clone(), storage.objects());
         let backends = Backends {
             readiness: Arc::new(Database { answers: true }),
             library_store: Arc::new(store),
             accounts: ports,
+            events: events.clone(),
         };
         let state = AppState::new(config, backends).unwrap();
         Self {
