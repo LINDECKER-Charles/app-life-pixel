@@ -51,5 +51,22 @@
         </label>
       }
     </fieldset>
+    @if (desktop) {
+      <div class="field library-folder">
+        <h2>{{ 'settings.library_folder.legend' | transloco }}</h2>
+        <p>{{ 'settings.library_folder.hint' | transloco }}</p>
+        @if (platformInfo(); as info) {
+          <p class="current-path">{{ info.libraryPath }}</p>
+        }
+        <button type="button" (click)="chooseLibraryFolder()">
+          {{ 'settings.library_folder.choose' | transloco }}
+        </button>
+        @if (platformInfo(); as info) {
+          <p class="platform-info">
+            {{ 'platform.version' | transloco: { version: info.version, os: info.os } }}
+          </p>
+        }
+      </div>
+    }
   </div>
 </ion-content>

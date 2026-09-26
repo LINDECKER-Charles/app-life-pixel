@@ -8,6 +8,7 @@ import languages from '../../../../../i18n/languages.json';
 import { App } from './app';
 import { appConfig } from './app.config';
 import { routes } from './app.routes';
+import { hostedOnly } from './platform/platform-guards';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 
@@ -45,6 +46,28 @@ describe('routes', () => {
 
     expect(pages.length).toBeGreaterThan(0);
     expect(pages.every((route) => route.loadComponent && !route.component)).toBe(true);
+  });
+
+  it('keeps the account, sign-in and support routes to the hosted app (desktop.md, T2)', () => {
+    const hostedOnlyPaths = [
+      'sign-in',
+      'sign-up',
+      'verify-email',
+      'reset-password',
+      'reset-password/confirm',
+      'account',
+      'support',
+      'support/:requestId',
+    ];
+
+    for (const path of hostedOnlyPaths) {
+      expect(routes.find((route) => route.path === path)?.canActivate).toContain(hostedOnly);
+    }
+    for (const path of ['editor', 'settings', 'library']) {
+      expect(routes.find((route) => route.path === path)?.canActivate ?? []).not.toContain(
+        hostedOnly,
+      );
+    }
   });
 });
 
