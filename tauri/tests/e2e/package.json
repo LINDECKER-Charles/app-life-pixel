@@ -1,0 +1,26 @@
+{
+  "name": "life-pixel-desktop-e2e",
+  "version": "0.0.0",
+  "description": "The desktop app's end-to-end smoke test, driven through tauri-driver",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cargo xtask build-sidecar && cd ../.. && cargo tauri build --ci --debug --no-bundle --config bundle.conf.json",
+    "test": "node --test --test-timeout=600000 \"src/**/*.test.ts\"",
+    "e2e": "npm run build && npm test",
+    "lint": "tsc && eslint . && prettier --check .",
+    "format": "prettier --write ."
+  },
+  "packageManager": "npm@11.19.0",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.6",
+    "@types/selenium-webdriver": "^4.35.7",
+    "eslint": "^10.11.0",
+    "prettier": "^3.9.9",
+    "selenium-webdriver": "^4.49.0",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.1"
+  }
+}
