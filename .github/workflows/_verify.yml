@@ -219,7 +219,7 @@ jobs:
         run: npm run size
 
   # H3: the server's API description and its TypeScript types regenerated, then compared with
-  # the committed ones.
+  # the committed ones; H10: the internal admin API's description too.
   api:
     name: API description
     runs-on: ubuntu-latest
@@ -248,7 +248,11 @@ jobs:
       - name: Regenerate the description and its types
         run: npm run api:generate
       - name: Check that the committed ones are current
-        run: git diff --exit-code -- ../crates/server/openapi.json projects/shared/src/lib/api/schema.d.ts
+        run: >-
+          git diff --exit-code --
+          ../crates/server/openapi.json
+          ../crates/server/admin-openapi.json
+          projects/shared/src/lib/api/schema.d.ts
 
   # H4: the server against the local stack — Postgres, S3Mock and Mailpit — started from
   # `.env.example`, then the tests behind the `stack-tests` feature. H11 adds
