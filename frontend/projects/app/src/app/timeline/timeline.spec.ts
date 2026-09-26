@@ -12,27 +12,8 @@ import { Timeline } from './timeline';
 const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] } };
 const NEW_ANIMATION = { title: 'Timeline', width: 4, height: 4, layerName: 'Base' };
 
-/** jsdom has no `IntersectionObserver`, which `<life-pixel>` needs once it connects. */
-class FakeIntersectionObserver {
-  observe(): void {
-    return undefined;
-  }
-
-  unobserve(): void {
-    return undefined;
-  }
-
-  disconnect(): void {
-    return undefined;
-  }
-}
-
 describe('the timeline', () => {
-  beforeEach(() => vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver));
-  afterEach(() => {
-    vi.unstubAllGlobals();
-    document.body.replaceChildren();
-  });
+  afterEach(() => document.body.replaceChildren());
 
   async function setup() {
     TestBed.configureTestingModule({
@@ -50,6 +31,16 @@ describe('the timeline', () => {
     fixture.detectChanges();
     return { fixture, engine, editor, shortcuts };
   }
+
+  it('holds the tags and the frame strip, leaving the layers and the preview to the inspector', async () => {
+    const { fixture } = await setup();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('lp-tag-bars')).not.toBeNull();
+    expect(root.querySelector('lp-frame-list')).not.toBeNull();
+    expect(root.querySelector('lp-layer-list')).toBeNull();
+    expect(root.querySelector('lp-playback-preview')).toBeNull();
+  });
 
   it('registers `,`, `.` and `O`, unregistered once destroyed', async () => {
     const { fixture, shortcuts } = await setup();

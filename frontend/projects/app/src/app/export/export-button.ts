@@ -1,24 +1,30 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
-import { IonButton } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { Shortcuts } from '../editor/shortcuts';
+import { Icon } from '../ui/icon/icon';
 import { ExportDialog } from './export-dialog';
 import { ExportFlow } from './export-flow';
 
 /**
- * The editor page's export button: opens the export dialog, also on Ctrl/⌘ E (editor.md, U5). It
- * takes no input, filling U1's stub in place; the dialog it opens lives in its own template so
- * that the editor page never changes.
+ * The document bar's export button, its primary action: opens the export dialog, also on Ctrl/⌘ E
+ * (editor.md, U5). It takes no input; the dialog it opens lives in its own template so that the
+ * editor page never changes.
  */
 @Component({
   selector: 'lp-export-button',
-  imports: [ExportDialog, IonButton, TranslocoPipe],
+  imports: [ExportDialog, Icon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <ion-button fill="outline" (click)="flow.open()">
+    <button type="button" class="lp-button lp-button--primary" (click)="flow.open()">
+      <lp-icon name="export" />
       {{ 'export.action' | transloco }}
-    </ion-button>
+    </button>
     <lp-export-dialog />
+  `,
+  styles: `
+    :host {
+      display: inline-flex;
+    }
   `,
 })
 export class ExportButton {

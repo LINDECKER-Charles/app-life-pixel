@@ -1,8 +1,9 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 import { EDITOR_ENGINE } from '../../engine/editor-engine';
 import { EngineStore } from '../../engine/engine-store';
+import type { DocumentSummary } from '../../engine/engine-types';
 import { CurrentAnimation } from '../current-animation';
 import { LIBRARY_ACCESS } from '../library-access';
 import { LIBRARY_STORE } from '../library-store';
@@ -10,8 +11,14 @@ import { toLibraryFailure, type AnimationSummary, type LibraryFailure } from '..
 import { SaveConflict } from './save-conflict';
 import { SavePrompts, type StorageUsage } from './save-prompts';
 
-/** Where saving stands: nothing yet, under way, or done — until the next edit. */
-export type SaveStatus = 'idle' | 'saving' | 'saved';
+/**
+ * Where saving stands: nothing yet, under way, done — until the next edit —, or failed, until
+ * the next attempt or the next change to the work.
+ */
+export type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
+
+/** How one save ended: written, given up by the person, or refused. */
+type SaveOutcome = 'saved' | 'cancelled' | 'failed';
 
 const EDITOR_PATH = '/editor';
 const SIGN_IN_PATHS = { 'sign-in': '/sign-in', 'sign-up': '/sign-up' } as const;
@@ -31,7 +38,8 @@ function numberParam(failure: LibraryFailure, name: string): number | undefined 
  * visitor is asked to sign in or up, then saving goes on once back in the editor; unsaved work
  * asks for a project, then creates the animation; a saved one is saved under its version, a
  * conflict or the quota asking what to do. Success marks the engine saved; a failure keeps the
- * work and says why.
+ * work open and says why, and the status stays `failed` until the next attempt or the next change
+ * to the work — an edit, a new animation, another one opened.
  */
 @Injectable({ providedIn: 'root' })
 export class SaveFlow {
@@ -44,9 +52,16 @@ export class SaveFlow {
   private readonly conflict = inject(SaveConflict);
   private readonly router = inject(Router);
   private readonly statusSignal = signal<SaveStatus>('idle');
+  /** The document a failed save left, as the engine last published it. */
+  private readonly failedDocument = signal<DocumentSummary | null>(null);
   private resumeInEditor = false;
 
-  readonly status = this.statusSignal.asReadonly();
+  /** A failure holds while the engine still publishes the document it failed on. */
+  readonly status = computed<SaveStatus>(() => {
+    const status = this.statusSignal();
+    if (status === 'failed' && this.engine.document() !== this.failedDocument()) return 'idle';
+    return status;
+  });
 
   constructor() {
     this.router.events
@@ -58,17 +73,22 @@ export class SaveFlow {
   async save(): Promise<void> {
     if (this.statusSignal() === 'saving' || this.engine.document() === null) return;
     this.statusSignal.set('saving');
-    const saved = await this.saveNow().catch((error: unknown) => {
-      this.statusSignal.set('idle');
+    const outcome = await this.saveNow().catch((error: unknown) => {
+      this.settle('failed');
       throw error;
     });
-    this.statusSignal.set(saved ? 'saved' : 'idle');
+    this.settle(outcome);
   }
 
-  private async saveNow(): Promise<boolean> {
+  private settle(outcome: SaveOutcome): void {
+    if (outcome === 'failed') this.failedDocument.set(this.engine.document());
+    this.statusSignal.set(outcome === 'cancelled' ? 'idle' : outcome);
+  }
+
+  private async saveNow(): Promise<SaveOutcome> {
     if (!this.access.signedIn()) {
       await this.askToSignIn();
-      return false;
+      return 'cancelled';
     }
     const document = await this.editorEngine.serialize();
     try {
@@ -92,43 +112,47 @@ export class SaveFlow {
   }
 
   /** Records `saved` as the editor's animation, and its route; `null` when nothing was saved. */
-  private async finish(saved: AnimationSummary | null): Promise<boolean> {
-    if (saved === null) return false;
+  private async finish(saved: AnimationSummary | null): Promise<SaveOutcome> {
+    if (saved === null) return 'cancelled';
     this.current.setSaved(saved);
     await this.engine.markSaved();
     const route = `${EDITOR_PATH}/${saved.id}`;
     if (this.router.url !== route) await this.router.navigateByUrl(route, { replaceUrl: true });
-    return true;
+    return 'saved';
   }
 
-  /** What a failed save leads to: signing in again, a conflict, the quota, or its message. */
-  private async recover(failure: LibraryFailure, document: Uint8Array): Promise<boolean> {
+  /**
+   * What a failed write leads to: signing in again, a conflict, the quota, or its message. The
+   * work stays open in the editor; only a resolved conflict ends in a save.
+   */
+  private async recover(failure: LibraryFailure, document: Uint8Array): Promise<SaveOutcome> {
     switch (failure.code) {
       case UNAUTHENTICATED:
         await this.askToSignIn();
-        return false;
+        return 'failed';
       case VERSION_CONFLICT:
         return this.resolveConflict(document);
       case STORAGE_EXCEEDED:
         await this.prompts.showQuota(await this.usageOf(failure));
-        return false;
+        return 'failed';
       case ANIMATION_NOT_FOUND:
         // Deleted elsewhere: the work is kept as unsaved, and the next save asks for a project.
         this.current.setUnsaved();
         break;
     }
     await this.prompts.showFailure(failure);
-    return false;
+    return 'failed';
   }
 
-  private async resolveConflict(document: Uint8Array): Promise<boolean> {
+  /** The person's way out of a conflict; closing the question leaves the work as it was. */
+  private async resolveConflict(document: Uint8Array): Promise<SaveOutcome> {
     const state = this.current.state();
     const choice = await this.prompts.askAboutConflict();
-    if (choice === null || state.kind !== 'saved') return false;
+    if (choice === null || state.kind !== 'saved') return 'cancelled';
     const conflict = { id: state.id, projectId: state.projectId, document };
     try {
       const saved = await this.conflict.resolve(conflict, choice);
-      return saved === null ? true : await this.finish(saved);
+      return saved === null ? 'saved' : await this.finish(saved);
     } catch (error: unknown) {
       return this.recover(toLibraryFailure(error), document);
     }

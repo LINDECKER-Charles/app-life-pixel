@@ -4,19 +4,17 @@ import { EditorStore } from '../editor/editor-store';
 import { Shortcuts } from '../editor/shortcuts';
 import { EngineStore } from '../engine/engine-store';
 import { FrameList } from './frames/frame-list';
-import { LayerList } from './layers/layer-list';
-import { PlaybackPreview } from './playback/playback-preview';
 import { TagBars } from './tags/tag-bars';
 import { TagDialog } from './tags/tag-dialog';
 
 /**
- * The editor page's timeline (editor.md, U3): the layer list, the frame strip with its tags, and
- * the playback preview. Registers `,` and `.` to step through frames and `O` for onion skin; `P`
- * is `PlaybackPreview`'s own.
+ * The editor page's timeline (editor.md, U3): the frame strip with its tags and durations. The
+ * layer list and the playback preview sit in the editor's inspector (plan C7). Registers `,` and
+ * `.` to step through frames and `O` for onion skin; `P` is `PlaybackPreview`'s own.
  */
 @Component({
   selector: 'lp-timeline',
-  imports: [FrameList, LayerList, PlaybackPreview, TagBars, TagDialog, TranslocoPipe],
+  imports: [FrameList, TagBars, TagDialog, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './timeline.html',
   styleUrl: './timeline.scss',

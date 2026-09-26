@@ -1,0 +1,15 @@
+{
+  "editor.new.context": "Nommez votre animation et choisissez sa taille. Vous pourrez la renommer plus tard.",
+  "editor.new.side_error": "Saisissez un nombre entier de {min} à {max}.",
+  "editor.new.title_error": "Saisissez un titre de 1 à {max} caractères.",
+  "editor.new.title_hint": "Jusqu’à {max} caractères.",
+  "editor.new.unit": "px",
+  "editor.welcome.create": "Créer une animation",
+  "editor.welcome.description": "Dessinez votre première image, animez-la, puis exportez-la.",
+  "editor.welcome.guest_loss": "Le travail non enregistré est perdu si cette page est fermée ou rechargée.",
+  "editor.welcome.guest_notice": "Dessinez et exportez sans compte. Enregistrez dans un compte avant de partir pour continuer.",
+  "editor.welcome.title": "Un petit univers, un pixel à la fois.",
+  "library.save.state.failed": "Enregistrement impossible",
+  "library.save.state.not_saved": "Non enregistrée",
+  "library.save.state.unsaved": "Modifications non enregistrées"
+}

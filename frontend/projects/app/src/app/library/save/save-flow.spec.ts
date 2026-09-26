@@ -213,6 +213,78 @@ describe('SaveFlow', () => {
     await saving;
 
     expect(engine.hasUnsavedWork()).toBe(true);
+    expect(TestBed.inject(SaveFlow).status()).toBe('failed');
+  });
+
+  describe('once a save failed', () => {
+    /** A saved animation, changed, whose next save the store refuses; the dialog dismissed. */
+    async function failedSave(): Promise<{ store: FakeLibraryStore; engine: EngineStore }> {
+      const { store } = await configureLibrary();
+      const engine = await startUnsavedWork('Walk cycle');
+      await firstSave(store);
+      await engine.apply({ kind: 'setTitle', title: 'Run cycle' });
+      store.failNext('service.unavailable');
+      const saving = TestBed.inject(SaveFlow).save();
+      await question('failure');
+      TestBed.inject(SavePrompts).dismiss();
+      await saving;
+      return { store, engine };
+    }
+
+    it('says so, with the work still open and unsaved', async () => {
+      const { engine } = await failedSave();
+
+      expect(TestBed.inject(SaveFlow).status()).toBe('failed');
+      expect(engine.document()?.title).toBe('Run cycle');
+      expect(engine.hasUnsavedWork()).toBe(true);
+    });
+
+    it('stops saying so once the work changes', async () => {
+      const { engine } = await failedSave();
+
+      await engine.apply({ kind: 'setTitle', title: 'Jump cycle' });
+
+      expect(TestBed.inject(SaveFlow).status()).toBe('idle');
+    });
+
+    it('saves on the next attempt', async () => {
+      const { store, engine } = await failedSave();
+
+      await TestBed.inject(SaveFlow).save();
+
+      expect(TestBed.inject(SaveFlow).status()).toBe('saved');
+      expect(store.animations[0]?.version).toBe(2);
+      expect(engine.hasUnsavedWork()).toBe(false);
+    });
+  });
+
+  it('fails a first save the store refuses, keeping the new work', async () => {
+    const { store } = await configureLibrary();
+    const engine = await startUnsavedWork('Walk cycle');
+    const project = store.addProject('Sprites');
+    store.failNext('service.unavailable');
+
+    const saving = TestBed.inject(SaveFlow).save();
+    await question('project');
+    TestBed.inject(SavePrompts).answerProject({ projectId: project.id });
+    await question('failure');
+    TestBed.inject(SavePrompts).dismiss();
+    await saving;
+
+    expect(TestBed.inject(SaveFlow).status()).toBe('failed');
+    expect(TestBed.inject(CurrentAnimation).state()).toEqual({ kind: 'unsaved' });
+    expect(engine.document()?.title).toBe('Walk cycle');
+  });
+
+  it('is back to idle, not failed, when the person closes the first save', async () => {
+    await configureLibrary();
+    await startUnsavedWork();
+
+    const saving = TestBed.inject(SaveFlow).save();
+    await question('project');
+    TestBed.inject(SavePrompts).dismiss();
+    await saving;
+
     expect(TestBed.inject(SaveFlow).status()).toBe('idle');
   });
 });

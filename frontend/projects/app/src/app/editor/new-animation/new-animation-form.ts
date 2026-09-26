@@ -9,13 +9,17 @@ import {
 } from '@angular/core';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import type { Limits } from '../../engine/engine-types';
+import { Icon } from '../../ui/icon/icon';
 import { NewAnimationFlow } from './new-animation-flow';
 import { defaultSide, isValidSide, isValidTitle, sideBounds } from './new-animation-values';
 
-/** The new-animation dialog's form: a title and a size, 32 × 32 by default, within the limits. */
+/**
+ * The new-animation dialog's form: a title and a size in pixels, 32 × 32 by default, within the
+ * engine's limits, which its hints state. A value out of them is kept, marked and explained.
+ */
 @Component({
   selector: 'lp-new-animation-form',
-  imports: [TranslocoPipe],
+  imports: [Icon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './new-animation-form.html',
   styleUrl: './new-animation-form.scss',

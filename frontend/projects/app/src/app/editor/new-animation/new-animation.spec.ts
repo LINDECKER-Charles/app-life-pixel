@@ -3,6 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
 import { firstValueFrom } from 'rxjs';
 import en from '../../../../../../../i18n/en.json';
 import { EngineStore } from '../../engine/engine-store';
@@ -21,6 +22,7 @@ describe('the new-animation dialog', () => {
       providers: [
         provideIonicAngular({ animated: false }),
         importProvidersFrom(TranslocoTestingModule.forRoot(I18N_TESTING)),
+        provideTranslocoMessageformat(),
         { provide: DiscardConfirmation, useValue: { confirm } },
         provideRouter([{ path: '**', children: [] }]),
       ],
@@ -82,6 +84,41 @@ describe('the new-animation dialog', () => {
 
     expect(width.getAttribute('aria-invalid')).toBe('true');
     expect(form.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
+  });
+
+  it('focuses the title, its default selected, once the dialog is shown', async () => {
+    const form = await openDialog();
+    const title = field(form, 'new-animation-title');
+
+    await vi.waitFor(() => expect(document.activeElement).toBe(title));
+    expect(title.selectionStart).toBe(0);
+    expect(title.selectionEnd).toBe(title.value.length);
+  });
+
+  it('states the sides in pixels, within the engine limits', async () => {
+    const form = await openDialog();
+    const limits = TestBed.inject(EngineStore).limits();
+    const hint = form.querySelector('#new-animation-size-hint')?.textContent?.trim();
+
+    expect(hint).toBe(
+      `From ${limits?.canvasMinSide} to ${limits?.canvasMaxSide} pixels on each side.`,
+    );
+    const units = Array.from(form.querySelectorAll('.lp-field__unit'), (unit) => unit.textContent);
+    expect(units.map((unit) => unit?.trim())).toEqual(['px', 'px']);
+  });
+
+  it('explains a side out of the limits next to it, keeping what was typed', async () => {
+    const form = await openDialog();
+    const height = field(form, 'new-animation-height');
+
+    height.value = '0';
+    height.dispatchEvent(new Event('input'));
+    TestBed.tick();
+
+    const error = form.querySelector('#new-animation-height-error');
+    expect(error?.textContent).toContain('Enter a whole number from');
+    expect(height.getAttribute('aria-describedby')).toBe('new-animation-height-error');
+    expect(height.value).toBe('0');
   });
 
   it('asks before replacing unsaved work, and opens only once allowed', async () => {

@@ -4,7 +4,7 @@ import { EngineStore } from '../../engine/engine-store';
 
 /**
  * The animation's title, editable in place: Enter or leaving the field renames it (`setTitle`),
- * Escape restores it. With no document, it says so.
+ * Escape restores it. With no document, it says so. It opens the editor's document bar.
  */
 @Component({
   selector: 'lp-animation-title',
@@ -37,22 +37,30 @@ import { EngineStore } from '../../engine/engine-store';
       min-width: 0;
     }
     .title {
+      box-sizing: border-box;
       width: 100%;
+      min-height: var(--lp-control-height-compact);
       padding: var(--lp-space-1) var(--lp-space-2);
+      margin: 0;
       font: inherit;
       font-size: var(--lp-font-size-large);
       font-weight: var(--lp-font-weight-bold);
+      line-height: var(--lp-font-line-height-heading);
       color: var(--lp-color-text);
+      text-overflow: ellipsis;
       background: transparent;
-      border: 1px solid transparent;
-      border-radius: var(--lp-radius-small);
+      border: var(--lp-border-width) solid transparent;
+      border-radius: var(--lp-radius-medium);
+      transition: border-color var(--lp-duration-fast) var(--lp-ease-standard);
     }
     .title:hover,
     .title:focus {
+      background: var(--lp-color-surface);
       border-color: var(--lp-color-border);
     }
     .empty {
       margin: 0;
+      padding-inline: var(--lp-space-2);
       color: var(--lp-color-text-muted);
     }
   `,
