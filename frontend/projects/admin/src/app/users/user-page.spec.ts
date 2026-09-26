@@ -110,8 +110,9 @@ describe('UserPage', () => {
     const dialog = await ask(fixture, 'Export the data');
     expect(textOf(dialog.querySelector('.target'))).toBe('lee@example.com');
 
-    await confirmWith(fixture, '');
+    await confirmWith(fixture, 'Right-of-access request');
 
+    expect(api.export).toHaveBeenCalledWith('u1', 'Right-of-access request');
     const saver = TestBed.inject(FileSaver) as unknown as { save: ReturnType<typeof vi.fn> };
     await settled(() =>
       expect(saver.save).toHaveBeenCalledWith(expect.any(Blob), 'life-pixel-export-u1.zip'),

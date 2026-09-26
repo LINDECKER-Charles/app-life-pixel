@@ -52,11 +52,14 @@ describe('UsersApi', () => {
     ]);
   });
 
-  it('downloads a user’s export', async () => {
+  it('downloads a user’s export, with its reason', async () => {
     const file = { blob: new Blob(['zip']), fileName: 'export.zip' };
-    client.download.mockResolvedValue(file);
+    client.downloadPost.mockResolvedValue(file);
 
-    expect(await api.export('u1')).toBe(file);
-    expect(client.download).toHaveBeenCalledWith('/api/admin/v1/users/{id}/export', { id: 'u1' });
+    expect(await api.export('u1', 'Right-of-access request')).toBe(file);
+    expect(client.downloadPost).toHaveBeenCalledWith('/api/admin/v1/users/{id}/export', {
+      path: { id: 'u1' },
+      body: { reason: 'Right-of-access request' },
+    });
   });
 });
