@@ -14,8 +14,12 @@ const CATALOGUES: [&str; 2] = ["en", "fr"];
 
 /// The status of every code outside `core`: the service's, the compiler's, those later tasks
 /// create, and the server's own.
-const STATUSES: [(&str, u16); 37] = [
+const STATUSES: [(&str, u16); 41] = [
     ("account.language", 422),
+    ("admin.reason_length", 422),
+    ("admin.screenshot_not_found", 404),
+    ("admin.unauthenticated", 401),
+    ("admin.user_not_found", 404),
     ("auth.account_suspended", 403),
     ("auth.csrf", 403),
     ("auth.current_password", 403),
@@ -55,7 +59,8 @@ const STATUSES: [(&str, u16); 37] = [
 ];
 
 /// The params of the server's own codes.
-const PARAMS: [(&str, &[&str]); 9] = [
+const PARAMS: [(&str, &[&str]); 10] = [
+    ("admin.unauthenticated", &[]),
     ("auth.csrf", &[]),
     ("client.update_required", &["minimum"]),
     ("document.version_required", &[]),

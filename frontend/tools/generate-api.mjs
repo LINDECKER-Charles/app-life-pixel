@@ -1,6 +1,7 @@
 // Regenerates the API descriptions and their types (docs/v1/server.md, H3): each server prints
 // its OpenAPI description, committed beside its crate, then openapi-typescript turns it into the
-// schema its typed client reads. CI's `api` job runs it and fails on any difference.
+// schema its typed client reads. The internal admin API's description (H10) has no types here:
+// the admin server (H11) relays it. CI's `api` job runs it and fails on any difference.
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -14,19 +15,25 @@ const PRETTIER = fileURLToPath(
   new URL('../node_modules/prettier/bin/prettier.cjs', import.meta.url),
 );
 
-// One entry per description, H11 adds the admin server's: the binary that prints it, the
-// committed JSON, and its types, from the root of the repository.
+// One entry per description, H11 adds the admin server's: the binary and the command that print
+// it, the committed JSON, and its types if any, from the root of the repository.
 const DESCRIPTIONS = [
   {
     binary: 'life-pixel-server',
+    command: 'openapi',
     json: 'crates/server/openapi.json',
     types: 'frontend/projects/shared/src/lib/api/schema.d.ts',
   },
+  {
+    binary: 'life-pixel-server',
+    command: 'admin-openapi',
+    json: 'crates/server/admin-openapi.json',
+  },
 ];
 
-/** The description `binary openapi` prints, built from the locked dependencies. */
-function printDescription(binary) {
-  const args = ['run', '--quiet', '--locked', '--package', binary, '--', 'openapi'];
+/** The description `binary command` prints, built from the locked dependencies. */
+function printDescription(binary, command) {
+  const args = ['run', '--quiet', '--locked', '--package', binary, '--', command];
   return execFileSync('cargo', args, {
     cwd: REPO_DIR,
     encoding: 'utf8',
@@ -47,8 +54,12 @@ function generateTypes(json, types) {
   });
 }
 
-for (const { binary, json, types } of DESCRIPTIONS) {
-  writeFileSync(`${REPO_DIR}${json}`, printDescription(binary));
+for (const { binary, command, json, types } of DESCRIPTIONS) {
+  writeFileSync(`${REPO_DIR}${json}`, printDescription(binary, command));
+  if (types === undefined) {
+    console.log(`${json} regenerated.`);
+    continue;
+  }
   generateTypes(json, types);
   console.log(`${json} and ${types} regenerated.`);
 }

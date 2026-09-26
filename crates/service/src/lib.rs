@@ -8,6 +8,7 @@
 //! suites every adapter runs from its own crate's tests.
 
 pub mod accounts;
+pub mod admin;
 pub mod animation;
 pub mod error;
 pub mod events;

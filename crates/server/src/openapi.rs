@@ -64,7 +64,8 @@ pub fn to_json() -> serde_json::Result<String> {
     Ok(format!("{}\n", serde_json::to_string_pretty(&value)?))
 }
 
-fn sort_keys(value: Value) -> Value {
+/// `value` with the keys of every object sorted.
+pub(crate) fn sort_keys(value: Value) -> Value {
     match value {
         Value::Object(object) => {
             let mut entries: Vec<_> = object.into_iter().collect();

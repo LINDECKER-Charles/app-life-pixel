@@ -10,9 +10,10 @@ use life_pixel_server::testing::{TEST_DATABASE_OWNER, TestDatabase};
 use sqlx::postgres::PgConnectOptions;
 
 /// The tables of the schema.
-const TABLES: [&str; 7] = [
+const TABLES: [&str; 8] = [
     "accounts",
     "animations",
+    "audit_log",
     "email_tokens",
     "projects",
     "sessions",
@@ -20,10 +21,13 @@ const TABLES: [&str; 7] = [
     "support_requests",
 ];
 /// The indexes of the schema, beside the primary and unique keys.
-const INDEXES: [&str; 11] = [
+const INDEXES: [&str; 14] = [
     "animations_account_updated",
     "animations_project_updated",
     "animations_title_trgm",
+    "audit_log_action",
+    "audit_log_admin",
+    "audit_log_target",
     "email_tokens_account",
     "email_tokens_expires",
     "projects_account_updated",
