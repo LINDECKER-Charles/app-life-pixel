@@ -1,0 +1,80 @@
+@if (projectId() === undefined) {
+  <form class="search" role="search" novalidate (submit)="search($event)">
+    <label for="library-search">{{ 'library.animations.search_label' | transloco }}</label>
+    <input
+      id="library-search"
+      type="search"
+      name="q"
+      autocomplete="off"
+      [value]="typedQuery()"
+      (input)="onQueryInput($event)"
+    />
+    <button type="submit">{{ 'library.animations.search' | transloco }}</button>
+  </form>
+}
+@if (list.failure(); as failure) {
+  <p class="failure" role="alert">{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+}
+@if (list.loaded() && list.items().length === 0) {
+  <p>{{ 'library.animations.empty' | transloco }}</p>
+}
+<ul class="items" [attr.aria-busy]="list.loading()">
+  @for (animation of list.items(); track animation.id) {
+    <li class="item">
+      <a class="name" [routerLink]="['/editor', animation.id]">{{ animation.title }}</a>
+      <span class="meta">
+        {{
+          'library.animation.meta'
+            | transloco
+              : {
+                  width: animation.width,
+                  height: animation.height,
+                  frames: animation.frameCount,
+                }
+        }}
+      </span>
+      <span class="actions">
+        <button
+          type="button"
+          [attr.aria-label]="
+            'library.animation.rename_label' | transloco: { name: animation.title }
+          "
+          (click)="actions.rename(animation, list)"
+        >
+          {{ 'library.rename' | transloco }}
+        </button>
+        <button
+          type="button"
+          [attr.aria-label]="'library.animation.move_label' | transloco: { name: animation.title }"
+          (click)="actions.move(animation, list, projectId() !== undefined)"
+        >
+          {{ 'library.move' | transloco }}
+        </button>
+        <button
+          type="button"
+          [attr.aria-label]="
+            'library.animation.duplicate_label' | transloco: { name: animation.title }
+          "
+          (click)="actions.duplicate(animation, list)"
+        >
+          {{ 'library.duplicate' | transloco }}
+        </button>
+        <button
+          type="button"
+          class="danger"
+          [attr.aria-label]="
+            'library.animation.delete_label' | transloco: { name: animation.title }
+          "
+          (click)="actions.delete(animation, list)"
+        >
+          {{ 'library.delete' | transloco }}
+        </button>
+      </span>
+    </li>
+  }
+</ul>
+@if (list.hasMore()) {
+  <button type="button" class="more" [disabled]="list.loading()" (click)="list.loadMore()">
+    {{ 'library.load_more' | transloco }}
+  </button>
+}

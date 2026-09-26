@@ -5,6 +5,8 @@
     <ion-button fill="outline" (click)="newAnimation.start()">
       {{ 'editor.new.action' | transloco }}
     </ion-button>
+    <lp-save-button />
+    <lp-open-status />
     <lp-export-button class="export" />
   </header>
   <section class="region tools" [attr.aria-label]="'editor.region.tools' | transloco">
