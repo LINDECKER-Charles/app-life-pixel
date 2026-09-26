@@ -21,6 +21,8 @@ mod queue;
 mod router;
 #[path = "common/stack.rs"]
 mod stack;
+#[path = "common/tokens.rs"]
+mod tokens;
 #[path = "admin_api/users.rs"]
 mod users;
 

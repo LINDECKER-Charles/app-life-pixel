@@ -57,7 +57,6 @@ async fn the_reserved_prefixes_never_get_the_index() {
         "/api/v1/editor",
         "/i18n",
         "/i18n/xx/yy.json",
-        "/mcp",
         "/mcp/tools",
     ] {
         server

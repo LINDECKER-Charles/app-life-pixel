@@ -19,11 +19,12 @@ use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::storage::HostedLibraryStore;
 use life_pixel_server::support;
 use life_pixel_server::testing::{TestDatabase, TestStorage, load_test_env};
-use life_pixel_server::{accounts, admin};
+use life_pixel_server::{accounts, admin, mcp, tokens};
 use life_pixel_service::accounts::memory::RecordingMailer;
 use life_pixel_service::accounts::ports::Mailer;
 use life_pixel_service::admin::AdminStores;
 use life_pixel_service::memory::RecordingEvents;
+use life_pixel_service::ports::Clock;
 use life_pixel_service::testing::sample_document;
 use serde_json::{Value, json};
 use tempfile::TempDir;
@@ -53,7 +54,17 @@ impl ApiStack {
 
     /// The local configuration that `change` adjusts, over a new database and bucket prefix.
     pub async fn with(change: impl FnOnce(&mut HashMap<String, String>)) -> Self {
-        Self::build(change, false).await
+        Self::build(change, (false, None)).await
+    }
+
+    /// The local configuration that `change` adjusts, over a new database and bucket prefix,
+    /// with `clock` as the accounts' clock — and so the library's, the tokens' and the MCP
+    /// endpoint's.
+    pub async fn with_clock(
+        change: impl FnOnce(&mut HashMap<String, String>),
+        clock: Arc<dyn Clock>,
+    ) -> Self {
+        Self::build(change, (false, Some(clock))).await
     }
 
     /// The local configuration with the stack's SMTP server, where the emails go, over a new
@@ -64,12 +75,15 @@ impl ApiStack {
                 env.insert(SMTP_URL.to_owned(), url);
             }
         };
-        Self::build(smtp, true).await
+        Self::build(smtp, (true, None)).await
     }
 
-    /// The configuration that `change` adjusts, with its SMTP mailer when `sends_emails`, over a
-    /// new database and bucket prefix.
-    async fn build(change: impl FnOnce(&mut HashMap<String, String>), sends_emails: bool) -> Self {
+    /// The configuration that `change` adjusts, with its SMTP mailer when `sends_emails` and
+    /// `clock` when given, over a new database and bucket prefix.
+    async fn build(
+        change: impl FnOnce(&mut HashMap<String, String>),
+        (sends_emails, clock): (bool, Option<Arc<dyn Clock>>),
+    ) -> Self {
         load_test_env();
         let database = TestDatabase::create().await.unwrap();
         let storage = TestStorage::create().unwrap();
@@ -85,7 +99,10 @@ impl ApiStack {
             Arc::new(RecordingMailer::new())
         };
         let admin = admin::hosted_stores(database.pool(), config.secrets.events.clone());
-        let backends = hosted_backends((&database, &storage), (events.clone(), mailer), admin);
+        let mut backends = hosted_backends((&database, &storage), (events.clone(), mailer), admin);
+        if let Some(clock) = clock {
+            backends.accounts.clock = clock;
+        }
         let state = AppState::new(config, backends).unwrap();
         Self {
             database,
@@ -159,6 +176,8 @@ fn hosted_backends(
         events,
         support: support::hosted_stores(database.pool(), storage.objects()),
         admin,
+        tokens: tokens::hosted_store(database.pool()),
+        mcp: mcp::hosted_stores(database.pool()),
     }
 }
 

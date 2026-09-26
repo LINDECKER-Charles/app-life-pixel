@@ -13,8 +13,8 @@ pub use support::{
     QueueQuery, RequestPatch, Screenshot,
 };
 pub use users::{
-    AdminSession, AdminUser, AdminUserDetail, AdminUserStatus, EventCountBody, ReasonBody,
-    UserQuery,
+    AdminAccessToken, AdminSession, AdminUser, AdminUserDetail, AdminUserStatus, EventCountBody,
+    ReasonBody, UserQuery,
 };
 
 use life_pixel_service::paging::{Cursor, PageRequest};

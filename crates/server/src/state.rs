@@ -5,8 +5,11 @@ use std::sync::Arc;
 use life_pixel_service::accounts::{Accounts, AccountsPorts};
 use life_pixel_service::admin::{Admin, AdminPorts, AdminSettings, AdminStores};
 use life_pixel_service::library::{Library, LibraryPorts};
+use life_pixel_service::mcp::McpStores;
 use life_pixel_service::ports::{EventSink, LibraryStore};
 use life_pixel_service::support::{Support, SupportPorts, SupportStores};
+use life_pixel_service::tokens::ports::TokenStore;
+use life_pixel_service::tokens::{Tokens, TokensPorts};
 use thiserror::Error;
 
 use crate::accounts;
@@ -14,6 +17,7 @@ use crate::config::Config;
 use crate::http::i18n::{CatalogueError, Catalogues};
 use crate::http::rate_limit::RateLimits;
 use crate::http::static_app::StaticApp;
+use crate::mcp::{HostedMcp, HostedMcpParts};
 use crate::readiness::Readiness;
 
 /// Why the state could not be built.
@@ -42,6 +46,10 @@ pub struct Backends {
     pub support: SupportStores,
     /// The admin stores: accounts, support queue, audit log and metrics (H10).
     pub admin: AdminStores,
+    /// Where personal access tokens are kept (A3).
+    pub tokens: Arc<dyn TokenStore>,
+    /// The MCP endpoint's daily usage and the animations' owners (A3).
+    pub mcp: McpStores,
 }
 
 /// The shared state: cheap to clone, one field per line.
@@ -69,6 +77,10 @@ pub struct AppState {
     pub support: Support,
     /// The internal admin API's use cases (H10).
     pub admin: Admin,
+    /// The personal access tokens (A3).
+    pub tokens: Tokens,
+    /// The hosted MCP endpoint and the downloads of its links (A3).
+    pub mcp: HostedMcp,
 }
 
 impl AppState {
@@ -85,6 +97,8 @@ impl AppState {
         let support = support(&backends);
         let accounts = Accounts::new(backends.accounts.clone(), settings);
         let admin = admin(&backends, (&accounts, &library), &config);
+        let tokens = tokens(&backends);
+        let mcp = mcp(&backends, &library, &config);
         Ok(Self {
             config: Arc::new(config),
             readiness: backends.readiness,
@@ -97,6 +111,8 @@ impl AppState {
             events: backends.events,
             support,
             admin,
+            tokens,
+            mcp,
         })
     }
 }
@@ -145,4 +161,25 @@ fn admin(
         public_url: config.public_url.as_str().trim_end_matches('/').to_owned(),
     };
     Admin::new(ports, settings)
+}
+
+/// The token use cases over the store of `backends`, with the accounts' clock and ids.
+fn tokens(backends: &Backends) -> Tokens {
+    Tokens::new(TokensPorts {
+        store: Arc::clone(&backends.tokens),
+        clock: Arc::clone(&backends.accounts.clock),
+        ids: Arc::clone(&backends.accounts.ids),
+    })
+}
+
+/// The hosted MCP endpoint over `library` and the MCP stores of `backends`, with the accounts'
+/// clock and product events, and the name, secret, URL and plans of `config`.
+fn mcp(backends: &Backends, library: &Library, config: &Config) -> HostedMcp {
+    let parts = HostedMcpParts {
+        library: library.clone(),
+        stores: backends.mcp.clone(),
+        clock: Arc::clone(&backends.accounts.clock),
+        events: Arc::clone(&backends.accounts.events),
+    };
+    HostedMcp::new(config, parts)
 }

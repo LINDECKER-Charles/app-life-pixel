@@ -12,6 +12,7 @@ pub mod database;
 pub mod events;
 pub mod http;
 pub mod mail;
+pub mod mcp;
 pub mod openapi;
 pub mod readiness;
 pub mod routes;
@@ -19,6 +20,7 @@ pub mod state;
 pub mod storage;
 pub mod support;
 pub mod telemetry;
+pub mod tokens;
 
 #[cfg(feature = "stack-tests")]
 pub mod testing;

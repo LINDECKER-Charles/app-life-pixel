@@ -10,8 +10,9 @@ use uuid::Uuid;
 use life_pixel_server::config::{FromVariable, HmacKey};
 
 use crate::router::SECRET;
-use crate::router::auth::with_json;
+use crate::router::auth::{with_json, without_body};
 use crate::stack::{ApiStack, api};
+use crate::tokens::create_token;
 use crate::{UNKNOWN, admin_get, call, expect, support_request, user};
 
 /// A product event of the subject `$1`, named `$2`, `$3` days ago.
@@ -142,6 +143,38 @@ async fn a_user_in_detail_has_its_library_events_sessions_and_requests() {
     assert_eq!(detail["supportRequests"][0]["id"], request);
     assert_eq!(detail["supportRequests"][0]["status"], "new");
     assert!(!detail.to_string().contains("It crashes"));
+}
+
+#[tokio::test]
+async fn a_user_in_detail_has_its_tokens_revoked_ones_included_never_their_secret() {
+    let stack = ApiStack::new().await;
+    let (browser, ada) = user(&stack, "ada@example.org").await;
+    let laptop = create_token(&stack, &browser, ("Laptop", &["read"], 30)).await;
+    let ci = create_token(&stack, &browser, ("CI", &["read", "export"], 365)).await;
+    let revoke = api(
+        &browser,
+        Method::DELETE,
+        &format!("/tokens/{}", laptop["id"].as_str().unwrap()),
+    );
+    stack.expect(204, without_body(revoke)).await;
+
+    let detail = expect(&stack, 200, admin_get(&format!("/users/{ada}")))
+        .await
+        .json();
+
+    let tokens = detail["tokens"].as_array().unwrap();
+    assert_eq!(tokens.len(), 2);
+    assert_eq!(tokens[0]["name"], "CI");
+    assert_eq!(tokens[0]["prefix"], ci["prefix"]);
+    assert_eq!(tokens[0]["scopes"], json!(["read", "export"]));
+    assert_eq!(tokens[0]["revokedAt"], Value::Null);
+    assert_eq!(tokens[1]["id"], laptop["id"]);
+    assert!(tokens[1]["revokedAt"].is_string());
+    for created in [&laptop, &ci] {
+        let secret = created["token"].as_str().unwrap();
+        assert!(!detail.to_string().contains(&secret[11..]));
+    }
+    assert!(tokens[0].get("tokenHash").is_none());
 }
 
 #[tokio::test]
