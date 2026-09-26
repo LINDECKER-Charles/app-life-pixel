@@ -1,0 +1,42 @@
+// Reading width, as the settings have it: long lines are hard to scan.
+$page-max-width: 44rem;
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-5);
+  max-width: $page-max-width;
+  padding: var(--lp-space-5) var(--lp-space-4);
+  margin-inline: auto;
+}
+
+h1 {
+  margin: 0;
+  font-size: var(--lp-font-size-title);
+}
+
+h2 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+}
+
+ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+  padding-inline-start: var(--lp-space-5);
+  margin: 0;
+}
+
+.library {
+  overflow-wrap: anywhere;
+}
