@@ -60,8 +60,11 @@ uuid = { workspace = true, features = ["serde", "v7"] }
 [dev-dependencies]
 # One line per dependency, sorted.
 life-pixel-service = { workspace = true, features = ["testing"] }
+png.workspace = true
+rmcp = { workspace = true, features = ["client", "transport-streamable-http-client-reqwest"] }
 tempfile.workspace = true
 tower = { workspace = true, features = ["util"] }
+wasmi.workspace = true
 zip.workspace = true
 
 # The tests of the local stack (H4), in one target: tests/stack/main.rs.
@@ -100,6 +103,11 @@ required-features = ["stack-tests"]
 
 [[test]]
 name = "mcp_api"
+required-features = ["stack-tests"]
+
+# The end-to-end MCP session over the hosted HTTP transport (A5).
+[[test]]
+name = "mcp_http"
 required-features = ["stack-tests"]
 
 [lints]
