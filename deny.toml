@@ -20,6 +20,13 @@ allow = ["0BSD", "Apache-2.0", "Apache-2.0 WITH LLVM-exception", "BSD-2-Clause",
          "CDLA-Permissive-2.0", "ISC", "MIT", "MPL-2.0", "Unicode-3.0", "Zlib"]
 confidence-threshold = 0.93
 
+# One crate at a time, each with its reason.
+[[licenses.exceptions]]
+# The file-system watcher under notify-debouncer-full, the desktop's library watcher (T3):
+# dedicated to the public domain, which the AGPL accepts.
+crate = "notify"
+allow = ["CC0-1.0"]
+
 # Our own crates are unpublished: `cargo xtask check-boundaries` checks their licences instead.
 [licenses.private]
 ignore = true
