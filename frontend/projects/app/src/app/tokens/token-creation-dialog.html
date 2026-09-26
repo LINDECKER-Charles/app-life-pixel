@@ -1,0 +1,17 @@
+<ion-modal
+  [isOpen]="open()"
+  [attr.aria-label]="titleKey() | transloco"
+  [lpModalLabel]="titleKey() | transloco"
+  (didDismiss)="close()"
+>
+  <ng-template>
+    <div class="dialog">
+      <h2 class="heading">{{ titleKey() | transloco }}</h2>
+      @if (token(); as token) {
+        <lp-created-token [token]="token" (done)="close()" />
+      } @else {
+        <lp-token-creation-form (created)="onCreated($event)" (cancelled)="close()" />
+      }
+    </div>
+  </ng-template>
+</ion-modal>
