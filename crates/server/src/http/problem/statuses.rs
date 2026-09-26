@@ -101,6 +101,7 @@ const STATUSES: &[(&str, StatusCode)] = &[
     ),
     ("edit.stroke_too_long", StatusCode::UNPROCESSABLE_ENTITY),
     ("edit.tag_not_found", StatusCode::UNPROCESSABLE_ENTITY),
+    ("export.link_invalid", StatusCode::GONE),
     ("export.scale", StatusCode::UNPROCESSABLE_ENTITY),
     ("export.tag_not_found", StatusCode::UNPROCESSABLE_ENTITY),
     ("export.too_large", StatusCode::UNPROCESSABLE_ENTITY),
@@ -118,6 +119,7 @@ const STATUSES: &[(&str, StatusCode)] = &[
         "library.unsupported_version",
         StatusCode::UNPROCESSABLE_ENTITY,
     ),
+    ("mcp.daily_limit", StatusCode::TOO_MANY_REQUESTS),
     ("preview.too_large", StatusCode::UNPROCESSABLE_ENTITY),
     ("quota.storage_exceeded", StatusCode::CONFLICT),
     ("rate_limit.exceeded", StatusCode::TOO_MANY_REQUESTS),
@@ -135,6 +137,12 @@ const STATUSES: &[(&str, StatusCode)] = &[
     ("support.request_closed", StatusCode::CONFLICT),
     ("support.request_not_found", StatusCode::NOT_FOUND),
     ("support.screenshot", StatusCode::UNPROCESSABLE_ENTITY),
+    ("token.expiry", StatusCode::UNPROCESSABLE_ENTITY),
+    ("token.invalid", StatusCode::UNAUTHORIZED),
+    ("token.limit", StatusCode::CONFLICT),
+    ("token.name", StatusCode::UNPROCESSABLE_ENTITY),
+    ("token.not_found", StatusCode::NOT_FOUND),
+    ("token.scope", StatusCode::FORBIDDEN),
 ];
 
 /// The HTTP status of `code`, or `None` for a code the table does not know.

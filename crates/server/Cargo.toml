@@ -28,6 +28,7 @@ hmac.workspace = true
 ipnet.workspace = true
 lettre = { workspace = true, features = ["aws-lc-rs", "builder", "hostname", "pool", "smtp-transport", "tokio1-rustls", "webpki-roots"] }
 life-pixel-core.workspace = true
+life-pixel-mcp.workspace = true
 life-pixel-service.workspace = true
 metrics.workspace = true
 metrics-exporter-prometheus.workspace = true
@@ -37,6 +38,8 @@ opentelemetry-otlp = { workspace = true, features = ["http-proto", "reqwest-bloc
 opentelemetry_sdk = { workspace = true, features = ["trace"] }
 rand = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true, features = ["json", "query"] }
+rmcp = { workspace = true, features = ["server", "transport-streamable-http-server"] }
+schemars.workspace = true
 semver.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -88,6 +91,15 @@ required-features = ["stack-tests"]
 # The internal admin API over the local stack (H10).
 [[test]]
 name = "admin_api"
+required-features = ["stack-tests"]
+
+# The personal access tokens and the hosted MCP endpoint over the local stack (A3).
+[[test]]
+name = "tokens_api"
+required-features = ["stack-tests"]
+
+[[test]]
+name = "mcp_api"
 required-features = ["stack-tests"]
 
 [lints]

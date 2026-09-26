@@ -23,11 +23,13 @@ use crate::database::{self, DatabaseError, DatabaseReadiness};
 use crate::events::{self, PostgresEventSink};
 use crate::http::rate_limit::RATE_LIMIT_UPKEEP_PERIOD;
 use crate::mail::{EmailTemplates, MailSetupError, SmtpMailer, TemplateError};
+use crate::mcp;
 use crate::routes;
 use crate::state::{AppState, Backends, StartError};
 use crate::storage::{self, HostedLibraryStore, ObjectStoreSetupError, Sweeper};
 use crate::support;
 use crate::telemetry::{self, METRICS_UPKEEP_PERIOD};
+use crate::tokens;
 
 /// Why the server stopped.
 #[derive(Debug, Error)]
@@ -79,15 +81,7 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     let (pool, objects) = open_storage(&config).await?;
     let metrics = telemetry::recorder()?;
     describe_metrics();
-    let events_sink = PostgresEventSink::spawn(pool.clone(), config.secrets.events.clone());
-    let backends = Backends {
-        readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
-        library_store: Arc::new(HostedLibraryStore::new(pool.clone(), Arc::clone(&objects))),
-        accounts: accounts::hosted_ports(&pool, mailer(&config)?, Arc::clone(&events_sink)),
-        events: events_sink,
-        support: support::hosted_stores(&pool, Arc::clone(&objects)),
-        admin: admin::hosted_stores(&pool, config.secrets.events.clone()),
-    };
+    let backends = hosted_backends(&config, (&pool, &objects))?;
     let addresses = [config.http_addr, config.metrics_addr, config.admin_api_addr];
     let state = AppState::new(config, backends)?;
     spawn_upkeep(&state, metrics.clone());
@@ -105,12 +99,31 @@ pub async fn serve(config: Config) -> Result<(), ServeError> {
     Ok(())
 }
 
+/// The hosted backends over `pool` and `objects`, with the mailer and the secrets of `config`.
+fn hosted_backends(
+    config: &Config,
+    (pool, objects): (&PgPool, &Arc<dyn ObjectStore>),
+) -> Result<Backends, ServeError> {
+    let events_sink = PostgresEventSink::spawn(pool.clone(), config.secrets.events.clone());
+    Ok(Backends {
+        readiness: Arc::new(DatabaseReadiness::new(pool.clone())),
+        library_store: Arc::new(HostedLibraryStore::new(pool.clone(), Arc::clone(objects))),
+        accounts: accounts::hosted_ports(pool, mailer(config)?, Arc::clone(&events_sink)),
+        events: events_sink,
+        support: support::hosted_stores(pool, Arc::clone(objects)),
+        admin: admin::hosted_stores(pool, config.secrets.events.clone()),
+        tokens: tokens::hosted_store(pool),
+        mcp: mcp::hosted_stores(pool),
+    })
+}
+
 /// Describes the metrics of each area to the recorder.
 fn describe_metrics() {
     storage::metrics::describe();
     accounts::metrics::describe();
     routes::library::metrics::describe();
     events::metrics::describe();
+    mcp::metrics::describe();
 }
 
 /// The migrated database's pool, and the object storage.

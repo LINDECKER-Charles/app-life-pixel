@@ -34,7 +34,7 @@ pub(super) async fn list_users(
 }
 
 /// The user `id`: as listed, plus the language, the counts of the library, the product events
-/// of the last 30 days by name, the sessions and the support requests.
+/// of the last 30 days by name, the sessions, the support requests and the access tokens.
 #[utoipa::path(
     get,
     path = "/users/{id}",
@@ -50,5 +50,7 @@ pub(super) async fn get_user(
     State(state): State<AppState>,
     user: OnUser,
 ) -> Result<Json<AdminUserDetail>, Problem> {
-    Ok(Json(state.admin.user(user.id).await?.into()))
+    let detail = state.admin.user(user.id).await?;
+    let tokens = state.tokens.list_all(user.id).await?;
+    Ok(Json(AdminUserDetail::new(detail, tokens)))
 }

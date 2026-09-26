@@ -4,9 +4,11 @@
 pub mod account;
 pub mod auth;
 pub mod events;
+pub mod exports;
 pub mod health;
 pub mod library;
 pub mod support;
+pub mod tokens;
 
 use utoipa_axum::router::OpenApiRouter;
 
@@ -19,6 +21,8 @@ pub fn api_rate_limited() -> OpenApiRouter<AppState> {
         .merge(library::rate_limited())
         .merge(account::rate_limited())
         .merge(support::rate_limited())
+        .merge(tokens::rate_limited())
+        .merge(exports::rate_limited())
 }
 
 /// The routes under `/api/v1` that check a rate-limit policy of their own: one line per route
