@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { requireAccount } from './account/require-account';
 
 // One lazy route per feature; a route's title is an i18n key. The not-found route stays last.
 export const routes: Routes = [
@@ -22,6 +23,38 @@ export const routes: Routes = [
     path: 'legal/:page',
     title: 'legal.title',
     loadComponent: () => import('./legal/legal-page').then((m) => m.LegalPage),
+  },
+  {
+    path: 'sign-in',
+    title: 'auth.sign_in.title',
+    loadComponent: () => import('./account/sign-in-page').then((m) => m.SignInPage),
+  },
+  {
+    path: 'sign-up',
+    title: 'auth.sign_up.title',
+    loadComponent: () => import('./account/sign-up-page').then((m) => m.SignUpPage),
+  },
+  {
+    path: 'verify-email',
+    title: 'auth.verify_email.title',
+    loadComponent: () => import('./account/verify-email-page').then((m) => m.VerifyEmailPage),
+  },
+  {
+    path: 'reset-password',
+    title: 'auth.reset_password.title',
+    loadComponent: () => import('./account/reset-password-page').then((m) => m.ResetPasswordPage),
+  },
+  {
+    path: 'reset-password/confirm',
+    title: 'auth.reset_password_confirm.title',
+    loadComponent: () =>
+      import('./account/reset-password-confirm-page').then((m) => m.ResetPasswordConfirmPage),
+  },
+  {
+    path: 'account',
+    title: 'account.title',
+    canActivate: [requireAccount],
+    loadComponent: () => import('./account/account-page').then((m) => m.AccountPage),
   },
   {
     path: '**',

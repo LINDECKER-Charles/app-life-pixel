@@ -23,6 +23,11 @@ async function openSettings(): Promise<ComponentFixture<SettingsPage>> {
   const initialization = TestBed.inject(ApplicationInitStatus).donePromise;
   await answer('/i18n/languages.json', languages);
   await answer('/i18n/en.json', en);
+  const http = TestBed.inject(HttpTestingController);
+  (await vi.waitFor(() => http.expectOne('/api/v1/auth/session'))).flush(
+    { code: 'auth.unauthenticated', params: {} },
+    { status: 401, statusText: 'Unauthorized' },
+  );
   await initialization;
   const fixture = TestBed.createComponent(SettingsPage);
   await fixture.whenStable();

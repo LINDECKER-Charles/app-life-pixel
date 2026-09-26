@@ -11,6 +11,14 @@ async function answer(url: string, body: object): Promise<void> {
   (await vi.waitFor(() => http.expectOne(url))).flush(body);
 }
 
+async function answerAnonymousSession(): Promise<void> {
+  const http = TestBed.inject(HttpTestingController);
+  (await vi.waitFor(() => http.expectOne('/api/v1/auth/session'))).flush(
+    { code: 'auth.unauthenticated', params: {} },
+    { status: 401, statusText: 'Unauthorized' },
+  );
+}
+
 describe('LegalLinks', () => {
   afterEach(() => TestBed.inject(HttpTestingController).verify());
 
@@ -21,6 +29,7 @@ describe('LegalLinks', () => {
     const initialization = TestBed.inject(ApplicationInitStatus).donePromise;
     await answer('/i18n/languages.json', languages);
     await answer('/i18n/en.json', en);
+    await answerAnonymousSession();
     await initialization;
 
     const fixture = TestBed.createComponent(LegalLinks);

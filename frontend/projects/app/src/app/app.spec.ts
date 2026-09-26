@@ -19,6 +19,10 @@ async function startApp(): Promise<ComponentFixture<App>> {
   const http = TestBed.inject(HttpTestingController);
   (await vi.waitFor(() => http.expectOne('/i18n/languages.json'))).flush(languages);
   (await vi.waitFor(() => http.expectOne('/i18n/en.json'))).flush(en);
+  (await vi.waitFor(() => http.expectOne('/api/v1/auth/session'))).flush(
+    { code: 'auth.unauthenticated', params: {} },
+    { status: 401, statusText: 'Unauthorized' },
+  );
   await initialization;
   const fixture = TestBed.createComponent(App);
   await fixture.whenStable();
