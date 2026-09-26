@@ -172,16 +172,23 @@ data export unzipped and opened by H2's adapter; deletion leaving nothing of the
 | `sign-in-page.ts`, `sign-up-page.ts` | the forms |
 | `verify-email-page.ts` | reads `token` from the URL, verifies, says the result |
 | `reset-password-page.ts`, `reset-password-confirm-page.ts` | request a link; set a new password |
-| `account-page.ts` | the address and its verification (resend), storage used against the quota, language, data export, deletion, sign-out |
+| `account-page.ts` | the address and its verification (resend), storage used against the quota, language, data export, sign-out |
+| `deletion/account-deletion.ts` | the account deletion, last on the account page |
+| `form/` | `FormErrors`, the error summary and the password field shared by the forms |
 | `account-menu.ts` | the header menu: "Sign in", or the address with Account, Library, Sign out |
 
 - `SessionStore.load()` runs at start-up on the hosted app — never on the desktop — through
   `GET /auth/session`. A `401` on a later call clears the session; a `426` opens a blocking dialog
   asking to reload.
-- Forms: labelled Ionic inputs, `autocomplete` set (`email`, `current-password`, `new-password`),
-  lengths from the engine's limits, the server's codes shown next to their field as
-  `errors.<code>`, focus moved to the first error, a show-password toggle.
-- Deleting the account asks for the password and an explicit confirmation naming the address.
+- Forms: native inputs with visible labels, `autocomplete` set (`email`, `current-password`,
+  `new-password`), lengths from the engine's limits, a show-password toggle. Submit buttons stay
+  enabled: submitting checks the fields, then an error summary lists each error (a link to its
+  field) and the focus moves to the first invalid field — or to the summary for an error of the
+  whole form. The server's codes are shown next to their field as `errors.<code>`, tied to it by
+  `aria-describedby`.
+- Deleting the account states its consequences, then asks for the password and an explicit
+  confirmation naming the address; the final button stays disabled until the address matches.
+  It carries no decoration.
 - Sign-up links H16's terms and privacy policy (`/legal/terms`, `/legal/privacy`).
 - Sign-in and sign-up are pages of the same app: the work in the editor survives them, and a
   `returnUrl` brings the person back.
