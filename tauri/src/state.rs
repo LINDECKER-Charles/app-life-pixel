@@ -1,7 +1,7 @@
 //! What the commands share: the library, opened on the chosen folder, and the settings.
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 use life_pixel_service::Plans;
 use life_pixel_service::library::{Library, LibraryPorts};
@@ -12,6 +12,7 @@ use tokio::sync::RwLock;
 use crate::dialogs::Dialogs;
 use crate::errors::CommandError;
 use crate::settings::Settings;
+use crate::watcher::LibraryWatcher;
 
 /// The local library has no plan: its values are never read for [`Owner::Local`].
 ///
@@ -49,6 +50,7 @@ pub struct DesktopState {
     dialogs: Arc<dyn Dialogs>,
     settings: RwLock<Settings>,
     opened: RwLock<Opened>,
+    watcher: OnceLock<LibraryWatcher>,
 }
 
 impl DesktopState {
@@ -68,6 +70,17 @@ impl DesktopState {
             dialogs,
             settings: RwLock::new(settings),
             opened: RwLock::new(opened),
+            watcher: OnceLock::new(),
+        }
+    }
+
+    /// Hands the library folder in use to `watcher`, and each folder a settings change opens
+    /// from now on. Only the first watcher is kept.
+    pub async fn watch_library(&self, watcher: LibraryWatcher) {
+        let opened = self.opened.read().await;
+        watcher.watch(&opened.path);
+        if self.watcher.set(watcher).is_err() {
+            tracing::warn!("the library already has a watcher");
         }
     }
 
@@ -116,9 +129,17 @@ impl DesktopState {
         blocking(move || written.write(&file).map_err(CommandError::unavailable)).await??;
         *stored = settings;
         if let Some(reopened) = reopened {
+            self.rewatch(&reopened.path);
             *opened = reopened;
         }
         Ok(())
+    }
+
+    /// Points the watcher, once there is one, at the library folder `path`.
+    fn rewatch(&self, path: &Path) {
+        if let Some(watcher) = self.watcher.get() {
+            watcher.watch(path);
+        }
     }
 
     /// The library in the folder `requested`, or in the default one — created — when `None`.
