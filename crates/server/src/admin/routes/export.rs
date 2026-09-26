@@ -1,6 +1,8 @@
-//! `GET /users/{id}/export`: the account's data export, H6's zip, as its owner would get it. The
-//! read is audited before the zip is made.
+//! `POST /users/{id}/export`: the account's data export, H6's zip, as its owner would get it. Like
+//! every action on an account, it is made for a reason, and the read is audited with it before
+//! the zip is made.
 
+use axum::Json;
 use axum::body::Body;
 use axum::extract::State;
 use axum::http::header::{CONTENT_DISPOSITION, CONTENT_LENGTH, CONTENT_TYPE};
@@ -9,7 +11,8 @@ use axum::response::{IntoResponse, Response};
 use tokio_util::io::ReaderStream;
 
 use super::OnUser;
-use super::responses::{AdminUnauthenticated, UserNotFound};
+use super::responses::{AdminUnauthenticated, InvalidReason, UserNotFound};
+use crate::admin::schema::ReasonBody;
 use crate::http::problem::Problem;
 use crate::routes::account::schema::AccountExport;
 use crate::routes::library::responses::Malformed;
@@ -20,11 +23,12 @@ const ZIP_MEDIA_TYPE: &str = "application/zip";
 
 /// The data of the account `id`: the zip of `GET /api/v1/account/export`.
 #[utoipa::path(
-    get,
+    post,
     path = "/users/{id}/export",
     tag = "users",
     operation_id = "exportUser",
     params(("id" = Uuid, Path, description = "The account's id")),
+    request_body = ReasonBody,
     responses(
         (
             status = OK,
@@ -33,14 +37,18 @@ const ZIP_MEDIA_TYPE: &str = "application/zip";
             content_type = "application/zip",
             headers(("Content-Disposition" = String, description = "The file's name"))
         ),
-        Malformed, AdminUnauthenticated, UserNotFound
+        Malformed, AdminUnauthenticated, UserNotFound, InvalidReason
     )
 )]
 pub(super) async fn export_user(
     State(state): State<AppState>,
     user: OnUser,
+    Json(body): Json<ReasonBody>,
 ) -> Result<Response, Problem> {
-    let export = state.admin.export_user(&user.admin, user.id).await?;
+    let export = state
+        .admin
+        .export_user(&user.admin, (user.id, &body.reason))
+        .await?;
     let disposition = format!("attachment; filename=\"{}\"", export.file_name());
     let disposition =
         HeaderValue::try_from(disposition).map_err(|error| Problem::internal(&error))?;

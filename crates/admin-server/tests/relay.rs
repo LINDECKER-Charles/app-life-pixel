@@ -177,9 +177,16 @@ async fn a_body_is_streamed_to_the_server() {
 
 #[tokio::test]
 async fn a_download_streams_back_with_its_headers() {
-    let (router, _) = relay_to_fake().await;
-    let (status, headers, body) = send(&router, get("/api/admin/v1/users/0190/export")).await;
+    let (router, log) = relay_to_fake().await;
+    let request = Request::post("/api/admin/v1/users/0190/export")
+        .header("content-type", "application/json")
+        .body(Body::from("{\"reason\":\"Access request\"}"))
+        .unwrap();
+    let (status, headers, body) = send(&router, request).await;
     assert_eq!(status, StatusCode::OK);
+    let received = only(&log);
+    assert_eq!(received.method, Method::POST);
+    assert_eq!(&received.body[..], b"{\"reason\":\"Access request\"}");
     assert_eq!(headers.get(CONTENT_TYPE).unwrap(), "application/zip");
     let disposition = headers.get(CONTENT_DISPOSITION).unwrap();
     assert_eq!(disposition, "attachment; filename=\"export.zip\"");
