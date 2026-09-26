@@ -122,6 +122,11 @@ const STATUSES: &[(&str, StatusCode)] = &[
         StatusCode::UNSUPPORTED_MEDIA_TYPE,
     ),
     ("service.unavailable", StatusCode::SERVICE_UNAVAILABLE),
+    ("support.category", StatusCode::UNPROCESSABLE_ENTITY),
+    ("support.message_length", StatusCode::UNPROCESSABLE_ENTITY),
+    ("support.request_closed", StatusCode::CONFLICT),
+    ("support.request_not_found", StatusCode::NOT_FOUND),
+    ("support.screenshot", StatusCode::UNPROCESSABLE_ENTITY),
 ];
 
 /// The HTTP status of `code`, or `None` for a code the table does not know.

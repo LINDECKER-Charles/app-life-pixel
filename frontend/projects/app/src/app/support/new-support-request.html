@@ -1,0 +1,64 @@
+<form novalidate (submit)="submit($event)">
+  @if (errors.of('form'); as error) {
+    <p class="banner" role="alert">{{ 'errors.' + error.code | transloco: error.params }}</p>
+  }
+  @if (confirmed()) {
+    <p role="status">{{ 'support.new.sent' | transloco }}</p>
+  }
+  <ion-select
+    [label]="'support.new.category_label' | transloco"
+    labelPlacement="stacked"
+    interface="popover"
+    [value]="category()"
+    [disabled]="pending()"
+    [errorText]="errorText('category')"
+    [class.ion-invalid]="!!errorText('category')"
+    [class.ion-touched]="!!errorText('category')"
+    (ionChange)="onCategory($event)"
+  >
+    @for (entry of categories; track entry[0]) {
+      <ion-select-option [value]="entry[0]">{{ entry[1] | transloco }}</ion-select-option>
+    }
+  </ion-select>
+  <div class="field">
+    <label for="support-message">{{ 'support.new.message_label' | transloco }}</label>
+    <textarea
+      id="support-message"
+      rows="6"
+      [value]="message()"
+      [disabled]="pending()"
+      [attr.aria-invalid]="!!errorText('message') || length() > maxChars"
+      aria-describedby="support-message-counter support-message-error"
+      (input)="onMessage($event)"
+    ></textarea>
+    <p id="support-message-counter" class="hint">
+      {{ 'support.new.counter' | transloco: { count: length(), max: maxChars } }}
+    </p>
+    @if (errorText('message'); as error) {
+      <p id="support-message-error" role="alert">{{ error }}</p>
+    }
+  </div>
+  <div class="field screenshot">
+    <label for="support-screenshot">{{ 'support.new.screenshot_label' | transloco }}</label>
+    <input
+      #fileInput
+      id="support-screenshot"
+      type="file"
+      [accept]="accept"
+      [disabled]="pending()"
+      aria-describedby="support-screenshot-hint"
+      (change)="onScreenshot($event)"
+    />
+    <p id="support-screenshot-hint" class="hint">
+      {{ 'support.new.screenshot_hint' | transloco: { maxMegabytes } }}
+    </p>
+    @if (screenshotRefusal(); as refusal) {
+      <p role="alert">{{ refusal | transloco: { maxMegabytes } }}</p>
+    }
+    @if (errorText('screenshot'); as error) {
+      <p role="alert">{{ error }}</p>
+    }
+  </div>
+  <p class="hint">{{ 'support.new.context_note' | transloco }}</p>
+  <button type="submit" [disabled]="!ready()">{{ 'support.new.submit' | transloco }}</button>
+</form>

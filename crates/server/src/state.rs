@@ -5,6 +5,7 @@ use std::sync::Arc;
 use life_pixel_service::accounts::{Accounts, AccountsPorts};
 use life_pixel_service::library::{Library, LibraryPorts};
 use life_pixel_service::ports::{EventSink, LibraryStore};
+use life_pixel_service::support::{Support, SupportPorts, SupportStores};
 use thiserror::Error;
 
 use crate::accounts;
@@ -36,6 +37,8 @@ pub struct Backends {
     pub accounts: AccountsPorts,
     /// Where the app's own product events go (H13).
     pub events: Arc<dyn EventSink>,
+    /// Where support requests and their screenshots are kept (H9).
+    pub support: SupportStores,
 }
 
 /// The shared state: cheap to clone, one field per line.
@@ -59,6 +62,8 @@ pub struct AppState {
     pub static_app: Arc<StaticApp>,
     /// Where the app's own product events go (H13).
     pub events: Arc<dyn EventSink>,
+    /// The support requests (H9).
+    pub support: Support,
 }
 
 impl AppState {
@@ -72,6 +77,7 @@ impl AppState {
         let static_app = StaticApp::load(&config.app_dir)?;
         let settings = accounts::settings(&config, catalogues.languages().to_vec());
         let library = library(&backends, &config);
+        let support = support(&backends);
         Ok(Self {
             config: Arc::new(config),
             readiness: backends.readiness,
@@ -82,6 +88,7 @@ impl AppState {
             catalogues: Arc::new(catalogues),
             static_app: Arc::new(static_app),
             events: backends.events,
+            support,
         })
     }
 }
@@ -96,4 +103,15 @@ fn library(backends: &Backends, config: &Config) -> Library {
         events: Arc::clone(&backends.accounts.events),
     };
     Library::new(ports, config.plans)
+}
+
+/// The support use cases over the stores of `backends`, with the accounts' clock, ids and
+/// product events.
+fn support(backends: &Backends) -> Support {
+    Support::new(SupportPorts {
+        stores: backends.support.clone(),
+        clock: Arc::clone(&backends.accounts.clock),
+        ids: Arc::clone(&backends.accounts.ids),
+        events: Arc::clone(&backends.accounts.events),
+    })
 }

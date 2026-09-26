@@ -1,6 +1,8 @@
 //! Where documents are stored: `documents/<account>/<animation>/<uuid>.json`, a new key per
-//! write, so that a write never overwrites the object a row still points at.
+//! write, so that a write never overwrites the object a row still points at. Support
+//! screenshots are stored at `support/<request>/screenshot.png` (H9).
 
+use life_pixel_service::support::SupportRequestId;
 use life_pixel_service::{AccountId, AnimationId};
 use object_store::path::Path;
 use uuid::Uuid;
@@ -9,6 +11,10 @@ use uuid::Uuid;
 pub const DOCUMENTS_PREFIX: &str = "documents";
 /// The extension of a document's key.
 const DOCUMENT_EXTENSION: &str = "json";
+/// The prefix of every support screenshot.
+pub const SUPPORT_PREFIX: &str = "support";
+/// The name of a support request's screenshot, under its prefix.
+const SCREENSHOT_NAME: &str = "screenshot.png";
 
 /// A new key for a document of `animation`.
 #[must_use]
@@ -24,6 +30,16 @@ pub fn animation_prefix(account: AccountId, animation: AnimationId) -> Path {
         DOCUMENTS_PREFIX.to_owned(),
         account.to_string(),
         animation.to_string(),
+    ])
+}
+
+/// The key of the screenshot of the support request `request`.
+#[must_use]
+pub fn screenshot_key(request: SupportRequestId) -> Path {
+    Path::from_iter([
+        SUPPORT_PREFIX.to_owned(),
+        request.to_string(),
+        SCREENSHOT_NAME.to_owned(),
     ])
 }
 
@@ -44,5 +60,13 @@ mod tests {
                       00000000-0000-0000-0000-000000000002/";
         assert!(first.as_ref().starts_with(prefix), "{first}");
         assert!(first.as_ref().ends_with(".json"), "{first}");
+    }
+
+    #[test]
+    fn a_screenshot_key_is_under_its_request() {
+        let request = SupportRequestId::from_uuid(Uuid::from_u128(3));
+        let key = screenshot_key(request);
+        let expected = "support/00000000-0000-0000-0000-000000000003/screenshot.png";
+        assert_eq!(key.as_ref(), expected);
     }
 }

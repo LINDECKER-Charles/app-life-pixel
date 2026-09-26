@@ -28,6 +28,7 @@ futures-util = { version = "0.3.34", default-features = false }
 gif = { version = "0.14.2", default-features = false, features = ["std"] }
 governor = "0.10.4"
 hmac = "0.13.0"
+image = { version = "0.25.10", default-features = false }
 ipnet = "2.12.2"
 lettre = { version = "0.11.23", default-features = false }
 life-pixel-compiler = { path = "crates/compiler" }

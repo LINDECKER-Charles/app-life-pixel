@@ -19,6 +19,7 @@ use life_pixel_server::mail::{EmailTemplates, SmtpMailer};
 use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::testing::{MailMessage, TestDatabase, TestMailbox, load_test_env};
 use life_pixel_service::memory::{InMemoryLibraryStore, RecordingEvents};
+use life_pixel_service::support::memory::in_memory_stores;
 use serde_json::{Value, json};
 use tempfile::TempDir;
 
@@ -39,6 +40,19 @@ pub struct AccountsStack {
     _app_dir: TempDir,
 }
 
+/// The hosted accounts' ports over `database`, sending with `mailer`, and the other backends in
+/// memory.
+fn backends(database: &TestDatabase, mailer: SmtpMailer) -> Backends {
+    let events: Arc<dyn life_pixel_service::ports::EventSink> = Arc::new(RecordingEvents::new());
+    Backends {
+        readiness: Arc::new(Database { answers: true }),
+        library_store: Arc::new(InMemoryLibraryStore::new()),
+        accounts: accounts::hosted_ports(database.pool(), Arc::new(mailer), Arc::clone(&events)),
+        events,
+        support: in_memory_stores(),
+    }
+}
+
 impl AccountsStack {
     /// A new test database, the local configuration with the stack's SMTP server, and the
     /// hosted accounts' ports.
@@ -53,18 +67,7 @@ impl AccountsStack {
         let config = read_config(&env).unwrap();
         let templates = EmailTemplates::load(&config.i18n_dir).unwrap();
         let mailer = SmtpMailer::new(&config.mail, templates).unwrap();
-        let events: Arc<dyn life_pixel_service::ports::EventSink> =
-            Arc::new(RecordingEvents::new());
-        let backends = Backends {
-            readiness: Arc::new(Database { answers: true }),
-            library_store: Arc::new(InMemoryLibraryStore::new()),
-            accounts: accounts::hosted_ports(
-                database.pool(),
-                Arc::new(mailer),
-                Arc::clone(&events),
-            ),
-            events,
-        };
+        let backends = backends(&database, mailer);
         let state = AppState::new(config, backends).unwrap();
         Self {
             database,

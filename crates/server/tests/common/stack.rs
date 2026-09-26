@@ -16,6 +16,7 @@ use life_pixel_server::app;
 use life_pixel_server::routes::library::DOCUMENT_MEDIA_TYPE;
 use life_pixel_server::state::{AppState, Backends};
 use life_pixel_server::storage::HostedLibraryStore;
+use life_pixel_server::support;
 use life_pixel_server::testing::{TestDatabase, TestStorage, load_test_env};
 use life_pixel_service::accounts::memory::RecordingMailer;
 use life_pixel_service::memory::RecordingEvents;
@@ -54,18 +55,7 @@ impl ApiStack {
         change(&mut env);
         let config = read_config(&env).unwrap();
         let events = Arc::new(RecordingEvents::new());
-        let ports = accounts::hosted_ports(
-            database.pool(),
-            Arc::new(RecordingMailer::new()),
-            events.clone(),
-        );
-        let store = HostedLibraryStore::new(database.pool().clone(), storage.objects());
-        let backends = Backends {
-            readiness: Arc::new(Database { answers: true }),
-            library_store: Arc::new(store),
-            accounts: ports,
-            events: events.clone(),
-        };
+        let backends = hosted_backends(&database, &storage, events.clone());
         let state = AppState::new(config, backends).unwrap();
         Self {
             database,
@@ -120,6 +110,27 @@ impl ApiStack {
     pub async fn count(&self, query: &'static str, value: &str) -> i64 {
         let query = sqlx::query_scalar(query).bind(value);
         query.fetch_one(self.database.pool()).await.unwrap()
+    }
+}
+
+/// The hosted backends over `database` and `storage`, recording emails and `events`.
+fn hosted_backends(
+    database: &TestDatabase,
+    storage: &TestStorage,
+    events: Arc<RecordingEvents>,
+) -> Backends {
+    let ports = accounts::hosted_ports(
+        database.pool(),
+        Arc::new(RecordingMailer::new()),
+        events.clone(),
+    );
+    let store = HostedLibraryStore::new(database.pool().clone(), storage.objects());
+    Backends {
+        readiness: Arc::new(Database { answers: true }),
+        library_store: Arc::new(store),
+        accounts: ports,
+        events,
+        support: support::hosted_stores(database.pool(), storage.objects()),
     }
 }
 

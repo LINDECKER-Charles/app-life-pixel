@@ -9,6 +9,7 @@ use life_pixel_service::error::CODES;
 use life_pixel_service::library::LibraryError;
 use life_pixel_service::local::LocalLibraryError;
 use life_pixel_service::paging::MalformedCursor;
+use life_pixel_service::support::SupportError;
 use life_pixel_service::{Coded, CodedError};
 use serde_json::{Map, Value};
 
@@ -43,7 +44,20 @@ fn every_error() -> Vec<CodedError> {
     let editing = editing.iter().map(CodedError::of);
     let others = [CodedError::of(&MalformedCursor)];
     let known = library.chain(local).chain(editing).chain(others);
-    known.chain(account_errors()).collect()
+    let hosted = account_errors().into_iter().chain(support_errors());
+    known.chain(hosted).collect()
+}
+
+/// One error of each of the support codes.
+fn support_errors() -> Vec<CodedError> {
+    let errors = [
+        SupportError::RequestNotFound,
+        SupportError::Category,
+        SupportError::MessageLength,
+        SupportError::Screenshot,
+        SupportError::RequestClosed,
+    ];
+    errors.iter().map(CodedError::of).collect()
 }
 
 /// One error of each of the accounts' codes.

@@ -70,6 +70,16 @@ export const routes: Routes = [
     loadComponent: () => import('./library/pages/project-page').then((m) => m.ProjectPage),
   },
   {
+    path: 'support',
+    title: 'support.title',
+    loadComponent: () => import('./support/support-page').then((m) => m.SupportPage),
+  },
+  {
+    path: 'support/:requestId',
+    title: 'support.thread.title',
+    loadComponent: () => import('./support/support-request-page').then((m) => m.SupportRequestPage),
+  },
+  {
     path: '**',
     title: 'not_found.title',
     loadComponent: () => import('./not-found/not-found-page').then((m) => m.NotFoundPage),

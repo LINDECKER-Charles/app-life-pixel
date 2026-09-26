@@ -28,6 +28,11 @@ pub const CODES: &[&str] = &[
     "quota.storage_exceeded",
     "request.malformed",
     "service.unavailable",
+    "support.category",
+    "support.message_length",
+    "support.request_closed",
+    "support.request_not_found",
+    "support.screenshot",
 ];
 
 /// An error the product can show: a stable code and its parameters.

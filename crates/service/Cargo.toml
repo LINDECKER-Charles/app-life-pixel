@@ -19,6 +19,7 @@ base64.workspace = true
 bytes.workspace = true
 fd-lock.workspace = true
 hmac.workspace = true
+image = { workspace = true, features = ["jpeg", "png"] }
 life-pixel-compiler.workspace = true
 life-pixel-core.workspace = true
 png.workspace = true
