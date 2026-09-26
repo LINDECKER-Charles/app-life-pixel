@@ -1,2 +1,0 @@
-# Lot 7: the quota message is split into its explanation and the usage.
-library.save.quota.message
