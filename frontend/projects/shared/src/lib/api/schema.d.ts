@@ -374,6 +374,68 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/support-requests': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** A page of the account's requests, from the most recently updated. */
+    get: operations['listSupportRequests'];
+    put?: never;
+    /**
+     * Sends a support request: its message becomes its first message, its screenshot is decoded
+     *     under the limits and re-encoded as PNG, and the context is kept for the team. Records
+     *     `support_request_created`.
+     */
+    post: operations['createSupportRequest'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/support-requests/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * The request `id`, with its messages: the team's internal notes never appear, and neither
+     *     does its screenshot.
+     */
+    get: operations['getSupportRequest'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/support-requests/{id}/messages': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Adds a reply to the request `id`: a request waiting for the person goes back to
+     *     `in_progress`; a closed one refuses it.
+     */
+    post: operations['replyToSupportRequest'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/healthz': {
     parameters: {
       query?: never;
@@ -625,6 +687,35 @@ export interface components {
       /** @description The `cursor` of the next page; `null` on the last one. */
       nextCursor?: string | null;
     };
+    /** @description A page of a list, from the most recently updated item. */
+    Page_SupportRequestSummary: {
+      /** @description The items. */
+      items: {
+        /** @description What it is about. */
+        category: components['schemas']['SupportCategory'];
+        /**
+         * Format: date-time
+         * @description When it was sent.
+         */
+        createdAt: string;
+        /** @description Whether a screenshot came with it; the screenshot itself is never served back. */
+        hasScreenshot: boolean;
+        /**
+         * Format: uuid
+         * @description Its id.
+         */
+        id: string;
+        /** @description Where it stands. */
+        status: components['schemas']['SupportRequestStatus'];
+        /**
+         * Format: date-time
+         * @description When it last changed.
+         */
+        updatedAt: string;
+      }[];
+      /** @description The `cursor` of the next page; `null` on the last one. */
+      nextCursor?: string | null;
+    };
     /** @description A change of password. */
     PasswordChangeRequest: {
       /** @description The current password. */
@@ -738,6 +829,122 @@ export interface components {
        * @description The bytes of its documents.
        */
       usedBytes: number;
+    };
+    /**
+     * @description Who wrote a message.
+     * @enum {string}
+     */
+    SupportAuthor: 'user' | 'team';
+    /**
+     * @description What a support request is about.
+     * @enum {string}
+     */
+    SupportCategory: 'bug' | 'account' | 'billing' | 'data_protection' | 'abuse' | 'other';
+    /** @description A reply of the account to one of its requests. */
+    SupportReplyRequest: {
+      /** @description The reply: 1 to 5,000 characters once trimmed. */
+      body: string;
+    };
+    /** @description The context part, as JSON. */
+    SupportRequestContext: {
+      /** @description The app's version. */
+      appVersion: string;
+      /** @description The interface's language code. */
+      language: string;
+      /** @description The app's platform: `web`, `android`… */
+      platform: string;
+      /**
+       * @description The route template of the screen the person was on, `/editor/:animationId`: never a URL
+       *     with ids.
+       */
+      screen: string;
+    };
+    /** @description The form a request is sent as: its description, the handler reads the parts one by one. */
+    SupportRequestForm: {
+      /** @description What it is about. */
+      category: components['schemas']['SupportCategory'];
+      /** @description What the app attaches without asking. */
+      context: components['schemas']['SupportRequestContext'];
+      /** @description The message: 1 to 5,000 characters once trimmed. */
+      message: string;
+      /**
+       * Format: binary
+       * @description A PNG or a JPEG of at most 4,096 pixels a side and 5,242,880 bytes, re-encoded as PNG
+       *     before it is stored; an empty part counts as none.
+       */
+      screenshot?: string | null;
+    };
+    /** @description A message of a request: never an internal note of the team. */
+    SupportRequestMessage: {
+      /** @description Who wrote it. */
+      author: components['schemas']['SupportAuthor'];
+      /** @description Its text. */
+      body: string;
+      /**
+       * Format: date-time
+       * @description When it was written.
+       */
+      createdAt: string;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+    };
+    /**
+     * @description Where a support request stands.
+     * @enum {string}
+     */
+    SupportRequestStatus: 'new' | 'in_progress' | 'waiting_for_user' | 'resolved' | 'closed';
+    /** @description A request of the account, without its messages. */
+    SupportRequestSummary: {
+      /** @description What it is about. */
+      category: components['schemas']['SupportCategory'];
+      /**
+       * Format: date-time
+       * @description When it was sent.
+       */
+      createdAt: string;
+      /** @description Whether a screenshot came with it; the screenshot itself is never served back. */
+      hasScreenshot: boolean;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /** @description Where it stands. */
+      status: components['schemas']['SupportRequestStatus'];
+      /**
+       * Format: date-time
+       * @description When it last changed.
+       */
+      updatedAt: string;
+    };
+    /** @description A request of the account and its messages, oldest first: the first is the request's own. */
+    SupportRequestThread: {
+      /** @description What it is about. */
+      category: components['schemas']['SupportCategory'];
+      /**
+       * Format: date-time
+       * @description When it was sent.
+       */
+      createdAt: string;
+      /** @description Whether a screenshot came with it; the screenshot itself is never served back. */
+      hasScreenshot: boolean;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /** @description Its messages, the team's internal notes left out. */
+      messages: components['schemas']['SupportRequestMessage'][];
+      /** @description Where it stands. */
+      status: components['schemas']['SupportRequestStatus'];
+      /**
+       * Format: date-time
+       * @description When it last changed.
+       */
+      updatedAt: string;
     };
     /** @description The token of an emailed verification link. */
     VerifyEmailRequest: {
@@ -2559,6 +2766,312 @@ export interface operations {
         };
       };
       /** @description `document.name` (`max`) */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listSupportRequests: {
+    parameters: {
+      query?: {
+        /** @description The `nextCursor` of the previous page; none for the first. */
+        cursor?: string;
+        /** @description The most items of the page: 1 to 100, 50 by default. */
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description A page of the requests */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Page_SupportRequestSummary'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createSupportRequest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'multipart/form-data': components['schemas']['SupportRequestForm'];
+      };
+    };
+    responses: {
+      /** @description The request */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SupportRequestThread'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `request.too_large`, with `maxBytes`: 6 MiB */
+      413: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `request.unsupported_media_type` */
+      415: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `support.category`; `support.message_length` with `min` and `max`; `support.screenshot` with `maxSide` and `maxBytes` */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 10 a day per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  getSupportRequest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The request's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The request and its messages */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SupportRequestThread'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `support.request_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  replyToSupportRequest: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The request's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SupportReplyRequest'];
+      };
+    };
+    responses: {
+      /** @description The reply */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['SupportRequestMessage'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `support.request_not_found` */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `support.request_closed` */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `support.message_length`, with `min` and `max` */
       422: {
         headers: {
           [name: string]: unknown;

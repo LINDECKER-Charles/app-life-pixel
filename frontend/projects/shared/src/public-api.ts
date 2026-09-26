@@ -12,6 +12,7 @@ export * from './lib/api/events-api';
 export type * from './lib/api/schema';
 export * from './lib/api/session-events';
 export * from './lib/api/session-interceptor';
+export * from './lib/api/support-api';
 export * from './lib/appearance/appearance';
 export * from './lib/appearance/apply-appearance';
 export * from './lib/i18n/available-languages';
