@@ -15,7 +15,7 @@ const ADMIN_ROUTES: [(&str, &[&str]); 12] = [
     ("/support-requests/{id}/screenshot", &["get"]),
     ("/users", &["get"]),
     ("/users/{id}", &["delete", "get"]),
-    ("/users/{id}/export", &["get"]),
+    ("/users/{id}/export", &["post"]),
     ("/users/{id}/reactivate", &["post"]),
     ("/users/{id}/suspend", &["post"]),
 ];

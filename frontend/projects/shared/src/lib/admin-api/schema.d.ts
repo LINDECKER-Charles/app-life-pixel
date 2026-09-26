@@ -314,10 +314,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** The data of the account `id`: the zip of `GET /api/v1/account/export`. */
-    get: operations['exportUser'];
+    get?: never;
     put?: never;
-    post?: never;
+    /** The data of the account `id`: the zip of `GET /api/v1/account/export`. */
+    post: operations['exportUser'];
     delete?: never;
     options?: never;
     head?: never;
@@ -2143,7 +2143,11 @@ export interface operations {
       };
       cookie?: never;
     };
-    requestBody?: never;
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReasonBody'];
+      };
+    };
     responses: {
       /** @description The zip, as an attachment named `life-pixel-export-<YYYY-MM-DD>.zip` */
       200: {
@@ -2174,8 +2178,26 @@ export interface operations {
           'application/problem+json': components['schemas']['Problem'];
         };
       };
+      /** @description `admin.csrf`: another origin, or no valid `X-CSRF-Token` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
       /** @description `admin.user_not_found` */
       404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `admin.reason_length`, with `min` and `max` */
+      422: {
         headers: {
           [name: string]: unknown;
         };
