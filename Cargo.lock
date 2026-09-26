@@ -2816,11 +2816,14 @@ name = "life-pixel-cli"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base64 0.23.1",
  "clap",
  "dirs 7.0.0",
  "life-pixel-compiler",
+ "life-pixel-core",
  "life-pixel-mcp",
  "life-pixel-service",
+ "png 0.18.1",
  "rmcp",
  "schemars 1.2.2",
  "serde",
@@ -2832,6 +2835,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "uuid",
+ "wasmi",
 ]
 
 [[package]]
@@ -2955,6 +2959,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
+ "png 0.18.1",
  "rand 0.9.5",
  "reqwest",
  "rmcp",
@@ -2977,6 +2982,7 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "uuid",
+ "wasmi",
  "zip",
 ]
 
@@ -4439,6 +4445,7 @@ dependencies = [
  "pin-project-lite",
  "process-wrap",
  "rand 0.10.3",
+ "reqwest",
  "schemars 1.2.2",
  "serde",
  "serde_json",
