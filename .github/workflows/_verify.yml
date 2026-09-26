@@ -288,8 +288,8 @@ jobs:
         run: docker compose logs --no-color
 
   # T1: the desktop app built in debug and bundled as a .deb by `cargo xtask build-desktop`, with
-  # Tauri's system packages and CLI, and the engine the `frontend` job built. T5 adds tauri-driver,
-  # WebKitGTK's WebDriver and its smoke test under Xvfb.
+  # Tauri's system packages and CLI, and the engine the `frontend` job built. T5: tauri-driver and
+  # WebKitGTK's WebDriver drive that debug app through tauri/tests/e2e's smoke test, under Xvfb.
   desktop:
     name: Desktop
     runs-on: ubuntu-latest
@@ -306,6 +306,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev
+      # T5: the native WebDriver tauri-driver drives, and the display the app opens its window on.
+      - name: Install WebKitGTK's WebDriver and Xvfb
+        run: sudo apt-get install -y --no-install-recommends webkit2gtk-driver xvfb
       - name: Install the pinned toolchain
         run: |
           rustup toolchain install
@@ -314,12 +317,16 @@ jobs:
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       - name: Install the Tauri CLI
         run: cargo install tauri-cli --version ^2 --locked
+      - name: Install tauri-driver
+        run: cargo install tauri-driver --version 2.0.6 --locked
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
           cache: npm
-          cache-dependency-path: frontend/package-lock.json
+          cache-dependency-path: |
+            frontend/package-lock.json
+            tauri/tests/e2e/package-lock.json
       - name: Install the front-end
         run: npm ci --prefix frontend
       - name: Download the engine
@@ -329,6 +336,23 @@ jobs:
           path: frontend/projects/app
       - name: Build the desktop app
         run: cargo xtask build-desktop --debug
+      # The smoke test drives the debug app and the sidecar build-desktop left in target/debug/.
+      - name: Install the smoke test
+        working-directory: tauri/tests/e2e
+        run: npm ci
+      - name: Lint the smoke test
+        working-directory: tauri/tests/e2e
+        run: npm run lint
+      - name: Smoke test the desktop app
+        working-directory: tauri/tests/e2e
+        run: xvfb-run --auto-servernum npm test
+      - name: Keep the screenshot of the smoke test that failed
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-smoke-test
+          path: tauri/tests/e2e/test-results/
+          if-no-files-found: ignore
 
   # U6: the editor's end-to-end path in Chromium — draw, animate, export, then play the export
   # with its loader —, the same drawing with the keyboard alone, and axe on the editor's screens.
