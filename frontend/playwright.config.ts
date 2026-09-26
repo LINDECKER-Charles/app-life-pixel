@@ -10,8 +10,8 @@ const EDITOR_START_TIMEOUT_MS = 10 * 60 * 1000;
 
 /**
  * Whether this run includes the project `name`: every project runs when none is named. The
- * editor's dev server and the hosted stack are global to a run, so each starts only when its
- * project runs.
+ * editor's dev server and the hosted stack are global to a run, so each starts only when a
+ * project that needs it runs.
  */
 function runs(name: string): boolean {
   const named = process.argv.flatMap((argument, index, all) => {
@@ -46,6 +46,20 @@ export default defineConfig({
       },
     },
     {
+      // C12 (Rose Atelier redesign): screenshots of the editor served alone, at four widths, in
+      // both themes and both languages, and the layout measurements; see e2e/visual/.
+      name: 'visual',
+      testDir: 'e2e/visual',
+      outputDir: 'e2e/visual/test-results',
+      timeout: 180_000,
+      expect: { timeout: 15_000 },
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: EDITOR_URL,
+        actionTimeout: 15_000,
+      },
+    },
+    {
       // H17: M3's journeys on the built app, served by the server on the local stack, and the
       // admin console served by the admin server.
       name: 'hosted',
@@ -62,14 +76,15 @@ export default defineConfig({
       },
     },
   ],
-  webServer: runs('editor')
-    ? [
-        {
-          command: 'npm start',
-          url: EDITOR_URL,
-          reuseExistingServer: !isCi,
-          timeout: EDITOR_START_TIMEOUT_MS,
-        },
-      ]
-    : [],
+  webServer:
+    runs('editor') || runs('visual')
+      ? [
+          {
+            command: 'npm start',
+            url: EDITOR_URL,
+            reuseExistingServer: !isCi,
+            timeout: EDITOR_START_TIMEOUT_MS,
+          },
+        ]
+      : [],
 });

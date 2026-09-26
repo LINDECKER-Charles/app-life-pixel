@@ -14,6 +14,7 @@
     "test:engine": "node tools/prebuild.mjs && ng test app --configuration=engine --watch=false",
     "e2e": "playwright test --project=editor",
     "e2e:hosted": "playwright test --project=hosted",
+    "e2e:visual": "playwright test --project=visual",
     "test:tools": "node --test \"tools/**/*.test.mjs\"",
     "lint": "ng lint && prettier --check .",
     "format": "prettier --write .",
