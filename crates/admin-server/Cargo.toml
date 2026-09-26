@@ -1,0 +1,66 @@
+[package]
+name = "life-pixel-admin-server"
+description = "The Life Pixel admin server: admin accounts, the relay to the internal admin API, monitoring"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+repository.workspace = true
+license = "AGPL-3.0-only"
+
+[features]
+# Tests that need the local stack (H11): a Postgres test database owned by life_pixel_admin. It
+# compiles the `testing` module and the `test-database` subcommand.
+stack-tests = []
+
+[dependencies]
+# One line per dependency, sorted. It depends on no domain crate: the server's data only reaches
+# it through the internal admin API.
+anyhow.workspace = true
+argon2.workspace = true
+axum.workspace = true
+base64.workspace = true
+bytes.workspace = true
+chacha20poly1305 = { workspace = true, features = ["alloc"] }
+clap.workspace = true
+dotenvy.workspace = true
+futures-util.workspace = true
+governor.workspace = true
+hmac.workspace = true
+ipnet.workspace = true
+metrics.workspace = true
+metrics-exporter-prometheus.workspace = true
+opentelemetry = { workspace = true, features = ["trace"] }
+opentelemetry-otlp = { workspace = true, features = ["http-proto", "reqwest-blocking-client", "trace"] }
+opentelemetry_sdk = { workspace = true, features = ["trace"] }
+rand.workspace = true
+reqwest = { workspace = true, features = ["json", "query", "rustls", "stream"] }
+rpassword.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha1.workspace = true
+sha2.workspace = true
+sqlx = { workspace = true, features = ["macros", "migrate", "postgres", "runtime-tokio", "time", "tls-rustls-aws-lc-rs", "uuid"] }
+subtle.workspace = true
+thiserror.workspace = true
+time = { workspace = true, features = ["formatting", "parsing"] }
+tokio = { workspace = true, features = ["io-std", "io-util", "macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+tower-http = { workspace = true, features = ["catch-panic"] }
+tracing.workspace = true
+tracing-opentelemetry.workspace = true
+tracing-subscriber = { workspace = true, features = ["env-filter", "fmt", "json", "std"] }
+utoipa = { workspace = true, features = ["uuid"] }
+utoipa-axum.workspace = true
+uuid = { workspace = true, features = ["serde", "v7"] }
+
+[dev-dependencies]
+# One line per dependency, sorted.
+tower = { workspace = true, features = ["util"] }
+
+# Admin accounts, sessions and CSRF over a test database of the local stack, and create-admin.
+[[test]]
+name = "stack"
+required-features = ["stack-tests"]
+
+[lints]
+workspace = true

@@ -1,7 +1,9 @@
 // Regenerates the API descriptions and their types (docs/v1/server.md, H3): each server prints
 // its OpenAPI description, committed beside its crate, then openapi-typescript turns it into the
-// schema its typed client reads. The internal admin API's description (H10) has no types here:
-// the admin server (H11) relays it. CI's `api` job runs it and fails on any difference.
+// schema its typed client reads. The internal admin API's description (H10) has no types of its
+// own: the admin server (H11) relays it, and its description — its own routes and the relayed
+// ones, under /api/admin/v1 — has the console's types. It reads the server's at build time, so
+// it comes after it. CI's `api` job runs it and fails on any difference.
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -15,8 +17,8 @@ const PRETTIER = fileURLToPath(
   new URL('../node_modules/prettier/bin/prettier.cjs', import.meta.url),
 );
 
-// One entry per description, H11 adds the admin server's: the binary and the command that print
-// it, the committed JSON, and its types if any, from the root of the repository.
+// One entry per description: the binary and the command that print it, the committed JSON, and
+// its types if any, from the root of the repository.
 const DESCRIPTIONS = [
   {
     binary: 'life-pixel-server',
@@ -28,6 +30,12 @@ const DESCRIPTIONS = [
     binary: 'life-pixel-server',
     command: 'admin-openapi',
     json: 'crates/server/admin-openapi.json',
+  },
+  {
+    binary: 'life-pixel-admin-server',
+    command: 'openapi',
+    json: 'crates/admin-server/openapi.json',
+    types: 'frontend/projects/shared/src/lib/admin-api/schema.d.ts',
   },
 ];
 
