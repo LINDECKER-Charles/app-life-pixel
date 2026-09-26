@@ -1,0 +1,207 @@
+// The admin console's global styles: the shared tokens and accessibility rules (not Ionic's,
+// which the console does not use), plain elements, and the colours of the charts' lines.
+@use '../../shared/src/styles/tokens';
+@use '../../shared/src/styles/accessibility';
+
+// The charts' lines, at least 3:1 against the background (WCAG 1.4.11), and their faint grid.
+@mixin light-chart {
+  --lpa-chart-1: #4338ca;
+  --lpa-chart-2: #b45309;
+  --lpa-chart-3: #047857;
+  --lpa-chart-4: #be185d;
+  --lpa-chart-grid: rgb(28 27 34 / 12%);
+}
+
+@mixin dark-chart {
+  --lpa-chart-1: #a5b4fc;
+  --lpa-chart-2: #fbbf24;
+  --lpa-chart-3: #34d399;
+  --lpa-chart-4: #f9a8d4;
+  --lpa-chart-grid: rgb(236 236 241 / 14%);
+}
+
+:root {
+  @include light-chart;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    @include dark-chart;
+  }
+}
+
+:root[data-theme='dark'] {
+  @include dark-chart;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--lp-font-family);
+  font-size: var(--lp-font-size-body);
+  line-height: var(--lp-font-line-height);
+  color: var(--lp-color-text);
+  background: var(--lp-color-background);
+}
+
+h1 {
+  font-size: var(--lp-font-size-title);
+}
+
+h2 {
+  font-size: var(--lp-font-size-large);
+}
+
+a {
+  color: var(--lp-color-accent);
+}
+
+code,
+pre {
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+}
+
+pre {
+  max-width: 40rem;
+  padding: var(--lp-space-2);
+  overflow: auto;
+  background: var(--lp-color-surface);
+  border-radius: var(--lp-radius-small);
+}
+
+button {
+  padding: var(--lp-space-2) var(--lp-space-3);
+  font: inherit;
+  color: var(--lp-color-on-accent);
+  cursor: pointer;
+  background: var(--lp-color-accent);
+  border: 1px solid var(--lp-color-accent);
+  border-radius: var(--lp-radius-small);
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &.danger {
+    color: var(--lp-color-on-danger);
+    background: var(--lp-color-danger);
+    border-color: var(--lp-color-danger);
+  }
+}
+
+input,
+select,
+textarea {
+  padding: var(--lp-space-2);
+  font: inherit;
+  color: var(--lp-color-text);
+  background: var(--lp-color-background);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-small);
+}
+
+textarea {
+  width: 100%;
+  min-height: 8rem;
+  resize: vertical;
+}
+
+label {
+  display: grid;
+  gap: var(--lp-space-1);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: var(--lp-space-2);
+  text-align: start;
+  vertical-align: top;
+  border-bottom: 1px solid var(--lp-color-border);
+}
+
+th {
+  font-weight: var(--lp-font-weight-bold);
+  white-space: nowrap;
+}
+
+tbody tr:hover {
+  background: var(--lp-color-surface);
+}
+
+.table-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin-block: var(--lp-space-3);
+  }
+}
+
+.crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  li + li::before {
+    margin-inline-end: var(--lp-space-2);
+    color: var(--lp-color-text-muted);
+    content: '/';
+  }
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3);
+  align-items: end;
+  margin-block: var(--lp-space-4);
+}
+
+.field {
+  display: grid;
+  gap: var(--lp-space-1);
+}
+
+.hint,
+.lead {
+  color: var(--lp-color-text-muted);
+}
+
+.hint {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+}
+
+.error {
+  color: var(--lp-color-danger);
+}
+
+.notice {
+  padding: var(--lp-space-2) var(--lp-space-3);
+  background: var(--lp-color-surface);
+  border-left: 4px solid var(--lp-color-accent);
+}
+
+.plain {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}

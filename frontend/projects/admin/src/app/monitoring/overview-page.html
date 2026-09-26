@@ -1,0 +1,40 @@
+<h1>{{ 'admin.overview.title' | transloco }}</h1>
+<p class="lead">{{ 'admin.overview.lead' | transloco }}</p>
+@if (loading() && tiles().length === 0) {
+  <p role="status">{{ 'admin.loading' | transloco }}</p>
+}
+@for (section of tiles(); track section.readings.env) {
+  <section class="environment" [attr.aria-labelledby]="'overview-' + section.readings.env">
+    <h2 [id]="'overview-' + section.readings.env">
+      <lp-environment-name [environment]="section.readings.env" />
+    </h2>
+    @if (section.overviewProblem; as problem) {
+      <lp-empty-state nothing="admin.overview.empty" [problem]="problem" />
+    }
+    @if (section.alertsProblem; as problem) {
+      <lp-empty-state nothing="admin.alerts.empty" [problem]="problem" />
+    }
+    <ul class="tiles">
+      @for (tile of section.tiles; track tile.id) {
+        <li>
+          <a
+            class="tile"
+            [routerLink]="tile.link"
+            [queryParams]="{ env: tile.env, from: params().from, to: params().to }"
+          >
+            <span class="name">{{ tile.nameKey | transloco }}</span>
+            <span class="value">{{ tile.value.key | transloco: tile.value.params }}</span>
+            @if (tile.previous; as previous) {
+              <span class="previous">
+                {{
+                  'admin.overview.previous'
+                    | transloco: { value: (previous.key | transloco: previous.params) }
+                }}
+              </span>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  </section>
+}

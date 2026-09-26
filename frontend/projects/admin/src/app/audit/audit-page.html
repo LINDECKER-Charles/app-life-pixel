@@ -1,0 +1,95 @@
+<h1>{{ 'admin.audit.title' | transloco }}</h1>
+<p class="lead">{{ 'admin.audit.lead' | transloco }}</p>
+
+<form class="filters" role="search" (submit)="submit($event)">
+  <label>
+    <span>{{ 'admin.audit.action' | transloco }}</span>
+    <select name="action">
+      <option value="" [selected]="!search().action">
+        {{ 'admin.audit.any_action' | transloco }}
+      </option>
+      @for (action of actions; track action) {
+        <option [value]="action" [selected]="action === search().action">{{ action }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    <span>{{ 'admin.audit.target' | transloco }}</span>
+    <input name="targetId" type="search" [value]="search().targetId ?? ''" />
+  </label>
+  <label>
+    <span>{{ 'admin.audit.admin_id' | transloco }}</span>
+    <input name="adminId" type="search" [value]="search().adminId ?? ''" />
+  </label>
+  <button type="submit">{{ 'admin.audit.search' | transloco }}</button>
+</form>
+
+<section aria-labelledby="audit-list">
+  <div class="table-header">
+    <h2 id="audit-list">{{ 'admin.audit.found' | transloco: { count: table.rows().length } }}</h2>
+    @if (table.rows().length > 0) {
+      <button type="button" (click)="exportCsv()">
+        {{ 'admin.table.export_csv' | transloco }}
+      </button>
+    }
+  </div>
+  @if (list.problem(); as problem) {
+    <lp-empty-state nothing="admin.audit.empty" [problem]="problem" />
+  } @else if (list.loading() && table.rows().length === 0) {
+    <p role="status">{{ 'admin.loading' | transloco }}</p>
+  } @else if (table.rows().length === 0) {
+    <lp-empty-state nothing="admin.audit.empty" />
+  }
+  @if (table.rows().length > 0) {
+    <table>
+      <thead>
+        <tr>
+          @for (column of columns; track column.key) {
+            <th scope="col" [attr.aria-sort]="table.ariaSort(column.key)">
+              <lp-sort-button
+                [direction]="table.ariaSort(column.key)"
+                (toggled)="table.toggle(column.key)"
+                >{{ column.labelKey | transloco }}</lp-sort-button
+              >
+            </th>
+          }
+          <th scope="col">{{ 'admin.audit.change' | transloco }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entry of table.rows(); track entry.id) {
+          <tr>
+            <td>
+              <time [attr.datetime]="entry.at">{{ date(entry.at) }}</time>
+            </td>
+            <td>{{ entry.adminEmail }}</td>
+            <td>
+              <code>{{ entry.action }}</code>
+            </td>
+            <td>{{ entry.targetType }}</td>
+            <td>
+              <code>{{ entry.targetId }}</code>
+            </td>
+            <td>{{ entry.reason ?? '' }}</td>
+            <td>
+              @if (entry.before || entry.after) {
+                <details>
+                  <summary>{{ 'admin.audit.show_change' | transloco }}</summary>
+                  <p>{{ 'admin.audit.before' | transloco }}</p>
+                  <pre>{{ json(entry.before) }}</pre>
+                  <p>{{ 'admin.audit.after' | transloco }}</p>
+                  <pre>{{ json(entry.after) }}</pre>
+                </details>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (list.hasMore()) {
+      <button type="button" [disabled]="list.loading()" (click)="list.more()">
+        {{ 'admin.table.more' | transloco }}
+      </button>
+    }
+  }
+</section>

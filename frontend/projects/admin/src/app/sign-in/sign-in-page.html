@@ -1,0 +1,41 @@
+<div class="sign-in">
+  <h1>{{ 'admin.sign_in.title' | transloco }}</h1>
+  <p class="lead">{{ 'admin.sign_in.lead' | transloco }}</p>
+  <form novalidate (submit)="submit($event)">
+    @if (error(); as error) {
+      <p class="error" role="alert">{{ error.key | transloco: error.params }}</p>
+    } @else if (invalid()) {
+      <p class="error" role="alert">{{ 'admin.sign_in.incomplete' | transloco }}</p>
+    }
+    <div class="field">
+      <label for="sign-in-email">{{ 'admin.sign_in.email' | transloco }}</label>
+      <input id="sign-in-email" name="email" type="email" autocomplete="username" required />
+    </div>
+    <div class="field">
+      <label for="sign-in-password">{{ 'admin.sign_in.password' | transloco }}</label>
+      <input
+        id="sign-in-password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      />
+    </div>
+    <div class="field">
+      <label for="sign-in-code">{{ 'admin.sign_in.code' | transloco }}</label>
+      <input
+        id="sign-in-code"
+        name="code"
+        type="text"
+        inputmode="numeric"
+        autocomplete="one-time-code"
+        pattern="[0-9]{6}"
+        maxlength="6"
+        required
+        aria-describedby="sign-in-code-hint"
+      />
+      <p id="sign-in-code-hint" class="hint">{{ 'admin.sign_in.code_hint' | transloco }}</p>
+    </div>
+    <button type="submit" [disabled]="pending()">{{ 'admin.sign_in.submit' | transloco }}</button>
+  </form>
+</div>
