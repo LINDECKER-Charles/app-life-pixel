@@ -300,6 +300,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/exports/{link}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The file the link names, compiled from the version it names; a link lives 15 minutes. */
+    get: operations['downloadExport'];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/api/v1/projects': {
     parameters: {
       query?: never;
@@ -436,6 +453,41 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  '/api/v1/tokens': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** The account's active tokens, the most recently created first; never their secret. */
+    get: operations['listTokens'];
+    put?: never;
+    /** Creates a token: its secret is in this answer only, with the MCP server to register it on. */
+    post: operations['createToken'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/api/v1/tokens/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Revokes the token `id`: it stops working at once. */
+    delete: operations['revokeToken'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   '/healthz': {
     parameters: {
       query?: never;
@@ -457,6 +509,40 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * @description What a token grants.
+     * @enum {string}
+     */
+    AccessTokenScope: 'read' | 'write' | 'export';
+    /** @description A token of the account, without its secret. */
+    AccessTokenSummary: {
+      /**
+       * Format: date-time
+       * @description When it was created.
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description When it stops working.
+       */
+      expiresAt: string;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /**
+       * Format: date-time
+       * @description When it was last used, to the minute; never used when absent.
+       */
+      lastUsedAt?: string | null;
+      /** @description The name its owner gave it. */
+      name: string;
+      /** @description The start of its secret, `lp_pat_` and 4 characters, to recognize it. */
+      prefix: string;
+      /** @description What it grants. */
+      scopes: components['schemas']['AccessTokenScope'][];
+    };
     /** @description An account as its owner sees it. */
     Account: {
       /**
@@ -567,6 +653,39 @@ export interface components {
     };
     /** @description A document, as the model serializes it: the format of the local library's files. */
     AnimationDocument: Record<string, never>;
+    /** @description A token just created: its secret is in this answer only. */
+    CreatedAccessToken: {
+      /**
+       * Format: date-time
+       * @description When it was created.
+       */
+      createdAt: string;
+      /**
+       * Format: date-time
+       * @description When it stops working.
+       */
+      expiresAt: string;
+      /**
+       * Format: uuid
+       * @description Its id.
+       */
+      id: string;
+      /**
+       * Format: date-time
+       * @description When it was last used: never, yet.
+       */
+      lastUsedAt?: string | null;
+      /** @description The MCP server to register it on. */
+      mcp: components['schemas']['McpServer'];
+      /** @description The name its owner gave it. */
+      name: string;
+      /** @description The start of its secret, `lp_pat_` and 4 characters, to recognize it. */
+      prefix: string;
+      /** @description What it grants. */
+      scopes: components['schemas']['AccessTokenScope'][];
+      /** @description The secret, `lp_pat_` and 43 characters: never shown again. */
+      token: string;
+    };
     /**
      * @description The one name the app's allow-list accepts today (`docs/v1/server.md`, H13); any other value
      *     fails to deserialize, and answers `request.malformed`.
@@ -588,6 +707,11 @@ export interface components {
       format: components['schemas']['ExportFormat'];
     };
     /**
+     * Format: binary
+     * @description An export file.
+     */
+    ExportFileBody: string;
+    /**
      * @description The format a completed export used, as `docs/v1/service.md` fixes the list.
      * @enum {string}
      */
@@ -602,6 +726,25 @@ export interface components {
      * @enum {string}
      */
     HealthStatus: 'ok';
+    /** @description The MCP server a token is for: what `claude mcp add` registers. */
+    McpServer: {
+      /** @description The name to register it under: `LP_MCP_SERVER_NAME`, distinct per environment. */
+      serverName: string;
+      /** @description The endpoint's URL. */
+      url: string;
+    };
+    /** @description A token to create. */
+    NewAccessToken: {
+      /**
+       * Format: int32
+       * @description Its lifetime in days: 30, 90 or 365.
+       */
+      expiresInDays: number;
+      /** @description Its name: 1 to 60 characters once trimmed. */
+      name: string;
+      /** @description What it grants: at least one scope. */
+      scopes: components['schemas']['AccessTokenScope'][];
+    };
     /** @description A page of a list, from the most recently updated item. */
     Page_Animation: {
       /** @description The items. */
@@ -2240,6 +2383,49 @@ export interface operations {
       };
     };
   };
+  downloadExport: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The signed link the `export` tool answered */
+        link: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The file, as an attachment under its name */
+      200: {
+        headers: {
+          /** @description The file's name */
+          'Content-Disposition'?: string;
+          [name: string]: unknown;
+        };
+        content: {
+          'application/octet-stream': components['schemas']['ExportFileBody'];
+        };
+      };
+      /** @description `export.link_invalid` */
+      410: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
   listProjects: {
     parameters: {
       query?: {
@@ -3073,6 +3259,197 @@ export interface operations {
       };
       /** @description `support.message_length`, with `min` and `max` */
       422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  listTokens: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The active tokens */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['AccessTokenSummary'][];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  createToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['NewAccessToken'];
+      };
+    };
+    responses: {
+      /** @description The token, its secret shown this once */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['CreatedAccessToken'];
+        };
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `token.limit`, with `max` */
+      409: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `token.name` with `max`; `token.expiry` with `allowed` */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `rate_limit.exceeded`: 600 a minute per account */
+      429: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+    };
+  };
+  revokeToken: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description The token's id */
+        id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description The token is revoked */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description `request.malformed`: a cursor, an id, a query or a body that does not parse */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.unauthenticated`: no session, or one that ended */
+      401: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `auth.account_suspended`, `auth.csrf` */
+      403: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/problem+json': components['schemas']['Problem'];
+        };
+      };
+      /** @description `token.not_found` */
+      404: {
         headers: {
           [name: string]: unknown;
         };
