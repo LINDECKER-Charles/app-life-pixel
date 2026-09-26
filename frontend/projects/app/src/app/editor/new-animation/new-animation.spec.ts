@@ -111,7 +111,8 @@ describe('the new-animation dialog', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
-  it('makes the new animation unsaved work, leaving a saved animation’s route', async () => {
+  /** Puts a saved animation at `/editor/a1`, as H8's `CurrentAnimation` would after a save. */
+  async function openSavedRoute(): Promise<{ router: Router; current: CurrentAnimation }> {
     await configure();
     const router = TestBed.inject(Router);
     await router.navigateByUrl('/editor/a1');
@@ -128,10 +129,49 @@ describe('the new-animation dialog', () => {
       createdAt: '2024-01-01T00:00:00Z',
       updatedAt: '2024-01-01T00:00:00Z',
     });
+    return { router, current };
+  }
 
-    await TestBed.inject(NewAnimationFlow).create({ title: 'Fresh', width: 8, height: 8 });
+  it('makes the new animation unsaved work, leaving a saved animation’s route', async () => {
+    const { router, current } = await openSavedRoute();
+    const fixture = TestBed.createComponent(NewAnimationDialog);
+    const flow = TestBed.inject(NewAnimationFlow);
+    await flow.start();
+    await fixture.whenStable();
+
+    await flow.create({ title: 'Fresh', width: 8, height: 8 });
 
     expect(current.state()).toEqual({ kind: 'unsaved' });
     expect(router.url).toBe('/editor');
+  });
+
+  it('does not leave the saved route until the dialog’s own close is acknowledged (wave-15, Group D)', async () => {
+    const { router, current } = await openSavedRoute();
+    const flow = TestBed.inject(NewAnimationFlow);
+    const engine = TestBed.inject(EngineStore);
+
+    const created = flow.create({ title: 'One too many', width: 8, height: 8 });
+    // The engine only finishes creating once `create()` is past the point where it sets the
+    // dialog closing and starts waiting for its close to be acknowledged.
+    await vi.waitFor(() => expect(engine.document()?.title).toBe('One too many'));
+    // No `NewAnimationDialog` is mounted here, so nothing has told the flow that the dialog
+    // (which `isOpen` alone does not close) is actually gone: leaving already would risk tearing
+    // it down mid-dismissal, the very way it was found stuck open.
+    expect(router.url).toBe('/editor/a1');
+    expect(current.state()).not.toEqual({ kind: 'unsaved' });
+
+    // Left to itself, `create()` stays there: it does not move on without being told the dialog
+    // is actually gone.
+    const settledOnItsOwn = await Promise.race([
+      created.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 100)),
+    ]);
+    expect(settledOnItsOwn).toBe(false);
+
+    flow.close(); // what the dialog's own `didDismiss` calls, once it is really closed
+    await created;
+
+    expect(router.url).toBe('/editor');
+    expect(current.state()).toEqual({ kind: 'unsaved' });
   });
 });
