@@ -31,6 +31,7 @@ commands! {
     build_desktop: BuildDesktop,
     build_editor: BuildEditor,
     build_player: BuildPlayer,
+    build_sidecar: BuildSidecar,
     check_boundaries: CheckBoundaries,
     measure_sizes: MeasureSizes,
 }
