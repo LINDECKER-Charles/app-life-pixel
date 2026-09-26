@@ -4,7 +4,7 @@ use life_pixel_core::limits::{MAX_ACTIVE_TOKENS, TOKEN_EXPIRY_DAYS, TOKEN_NAME_M
 use time::{Duration, OffsetDateTime};
 use uuid::Uuid;
 
-use super::ports::{AccessTokenRecord, FoundToken};
+use super::ports::{AccessTokenRecord, FoundToken, TokenStoreError};
 use super::values::{AccessTokenSecret, TokenScope};
 use super::{LAST_USE_PRECISION, Tokens, TokensError};
 use crate::accounts::ports::AccountStatus;
@@ -162,9 +162,14 @@ impl Tokens {
             return;
         }
         if let Err(error) = self.store().touch(record.id, now).await {
-            tracing::warn!(%error, "the token's last use was not recorded");
+            log_untouched(&error);
         }
     }
+}
+
+/// Logs that a token's last use was not recorded: the call goes on.
+fn log_untouched(error: &TokenStoreError) {
+    tracing::warn!(%error, "the token's last use was not recorded");
 }
 
 /// `name` trimmed, when it holds 1 to `TOKEN_NAME_MAX_CHARS` characters.
