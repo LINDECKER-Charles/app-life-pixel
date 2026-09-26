@@ -1,0 +1,69 @@
+# Self-hosting Life Pixel: the server and the app, with Postgres, the documents on a local volume.
+# Copy this folder, then `.env.example` to `.env`, fill it in, and run `docker compose up -d`.
+# README.md covers HTTPS, mail, the optional admin console and backups. A self-hosted server
+# never calls Life Pixel's infrastructure.
+services:
+  postgres:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    environment:
+      POSTGRES_USER: life_pixel
+      POSTGRES_PASSWORD: ${LP_DB_PASSWORD:?}
+      POSTGRES_DB: life_pixel
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U life_pixel -d life_pixel"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    deploy:
+      resources:
+        limits: { memory: 512M }
+    restart: unless-stopped
+
+  server:
+    # A released version: change the tag to upgrade, after reading its release notes.
+    image: ghcr.io/lindecker-charles/life-pixel/app:1.0.0
+    environment:
+      LP_ENVIRONMENT: production
+      LP_PUBLIC_URL: ${LP_PUBLIC_URL:?}
+      LP_ALLOWED_ORIGINS: ${LP_ALLOWED_ORIGINS:-}
+      LP_DATABASE_URL: postgres://life_pixel:${LP_DB_PASSWORD:?}@postgres:5432/life_pixel
+      LP_DATABASE_MAX_CONNECTIONS: ${LP_DATABASE_MAX_CONNECTIONS:-10}
+      LP_STORAGE_URL: file:///var/lib/life-pixel
+      LP_SMTP_URL: ${LP_SMTP_URL:?}
+      LP_MAIL_FROM: ${LP_MAIL_FROM:?}
+      LP_SESSION_SECRET: ${LP_SESSION_SECRET:?}
+      LP_EVENTS_SECRET: ${LP_EVENTS_SECRET:?}
+      LP_EXPORT_LINK_SECRET: ${LP_EXPORT_LINK_SECRET:?}
+      LP_ADMIN_API_SECRET: ${LP_ADMIN_API_SECRET:?}
+      LP_PLAN_FREE_STORAGE_BYTES: ${LP_PLAN_FREE_STORAGE_BYTES:-100000000}
+      LP_PLAN_FREE_MCP_CALLS_PER_DAY: ${LP_PLAN_FREE_MCP_CALLS_PER_DAY:-1000}
+      LP_MIN_CLIENT_VERSIONS: ${LP_MIN_CLIENT_VERSIONS:-web=0.0.0,desktop=0.0.0}
+      LP_TRUSTED_PROXIES: ${LP_TRUSTED_PROXIES:-}
+      LP_MCP_SERVER_NAME: ${LP_MCP_SERVER_NAME:-life-pixel}
+      LP_LEGAL_PUBLISHER: ${LP_LEGAL_PUBLISHER:?}
+      LP_LEGAL_ADDRESS: ${LP_LEGAL_ADDRESS:?}
+      LP_LEGAL_CONTACT: ${LP_LEGAL_CONTACT:?}
+      LP_LEGAL_DIRECTOR: ${LP_LEGAL_DIRECTOR:?}
+      LP_LEGAL_HOST: ${LP_LEGAL_HOST:?}
+      RUST_LOG: ${RUST_LOG:-info}
+    volumes:
+      - documents:/var/lib/life-pixel
+    ports: ["${LP_PUBLISH_ADDRESS:-127.0.0.1}:8080:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/life-pixel-server", "healthcheck"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits: { memory: 512M }
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  documents:
