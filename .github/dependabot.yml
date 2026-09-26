@@ -28,3 +28,12 @@ updates:
   - package-ecosystem: docker-compose
     directory: /
     schedule: { interval: weekly }
+  # H14: the base images of docker/*.Dockerfile, pinned by digest, and the self-hosting example's.
+  - package-ecosystem: docker
+    directory: /docker
+    schedule: { interval: weekly }
+    groups:
+      docker: { patterns: ["*"] }
+  - package-ecosystem: docker-compose
+    directory: /docker/selfhost
+    schedule: { interval: weekly }

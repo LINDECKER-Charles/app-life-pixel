@@ -426,3 +426,77 @@ jobs:
             frontend/playwright-report/
             frontend/e2e/editor/test-results/
           if-no-files-found: ignore
+
+  # H14: hadolint on the Dockerfiles; `docker compose config` for the local, deployment and
+  # self-hosting files with the example environments; shellcheck and the dry run of deploy.sh;
+  # both images built without push, then the app's started with the local stack
+  # (`--profile app`), answering /healthz as a non-root user.
+  docker:
+    name: Docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Lint the Dockerfiles with hadolint
+        run: |
+          docker run --rm -v "$PWD":/repo -w /repo \
+            hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d \
+            hadolint docker/app.Dockerfile docker/admin.Dockerfile
+      - name: Check the Compose files
+        run: |
+          docker compose --env-file .env.example config --quiet
+          docker compose --env-file .env.example --profile app config --quiet
+          for environment in staging prod; do
+            docker compose -f compose.yaml -f compose.deploy.yaml \
+              --env-file ".env.$environment.example" config --quiet
+          done
+          docker compose -f docker/selfhost/compose.yaml \
+            --env-file docker/selfhost/.env.example config --quiet
+      - name: Lint deploy.sh with shellcheck
+        run: |
+          docker run --rm -v "$PWD":/repo -w /repo \
+            koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d \
+            scripts/deploy/deploy.sh
+      - name: Dry-run deploy.sh
+        env:
+          DEPLOY_DRY_RUN: "1"
+          DEPLOY_SHA: ${{ github.sha }}
+          DEPLOY_PATH: /opt/life-pixel-staging
+          DEPLOY_ENV_FILE: .env.staging.example
+          DEPLOY_REGISTRY_USER: ${{ github.actor }}
+          DEPLOY_REGISTRY_TOKEN_FILE: /dev/null
+        run: scripts/deploy/deploy.sh
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the app image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/app.Dockerfile
+          load: true
+          tags: ghcr.io/lindecker-charles/life-pixel/app:local
+          cache-from: type=gha,scope=app
+      - name: Build the admin image
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: .
+          file: docker/admin.Dockerfile
+          load: true
+          tags: ghcr.io/lindecker-charles/life-pixel/admin:local
+          cache-from: type=gha,scope=admin
+      - name: Configure the local stack
+        run: cp .env.example .env
+      - name: Start the app with the local stack
+        run: docker compose --profile app up -d --wait --no-build --pull never
+      - name: Check /healthz and the user
+        run: |
+          curl --fail --silent --show-error http://127.0.0.1:8460/healthz
+          user="$(docker inspect --format '{{.Config.User}}' "$(docker compose ps -q server)")"
+          echo "the server runs as $user"
+          test "${user%%:*}" = 65532
+          docker compose top server | awk 'NR > 1 && $1 != "65532" { exit 1 }'
+      - name: Show the stack's logs
+        if: failure()
+        run: docker compose --profile app logs --no-color
