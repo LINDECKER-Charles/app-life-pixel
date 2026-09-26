@@ -101,7 +101,7 @@ cleanup() {
   fi
   if ((BUCKET_CREATED)); then
     log "purging bucket $BUCKET"
-    rclone_run "$RCLONE_IMAGE" rclone purge "backups3:$BUCKET" || true
+    rclone_run "$RCLONE_IMAGE" purge "backups3:$BUCKET" || true
   fi
   rm -rf "$DUMP_DIR" "$DOWNLOAD_DIR"
   exit "$status"
@@ -115,7 +115,7 @@ main() {
   CRYPT_PASSWORD2="$(obscure "$(openssl rand -hex 32)")"
 
   log "creating bucket $BUCKET on S3Mock"
-  rclone_run "$RCLONE_IMAGE" rclone mkdir "backups3:$BUCKET"
+  rclone_run "$RCLONE_IMAGE" mkdir "backups3:$BUCKET"
   BUCKET_CREATED=1
 
   log "dumping $SOURCE_DATABASE (dump-loop.sh --once)"
@@ -138,7 +138,7 @@ main() {
 
   log "fetching and decrypting $dump_name"
   rclone_run -v "$DOWNLOAD_DIR:/download" "$RCLONE_IMAGE" \
-    rclone copy "backupcrypt:$dump_name" /download
+    copy "backupcrypt:$dump_name" /download
 
   log "counting rows of $SOURCE_DATABASE"
   local source_counts
