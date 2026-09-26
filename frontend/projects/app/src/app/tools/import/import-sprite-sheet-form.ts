@@ -8,13 +8,17 @@ import {
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { Limits } from '../../engine/engine-types';
+import { Icon } from '../../ui/icon/icon';
 import { ImportSpriteSheetFlow } from './import-sprite-sheet-flow';
 import { cellSideBounds, durationBounds, isValidSide } from './import-sprite-sheet-values';
 
-/** The sprite-sheet dialog's form: the cell size and the frames' duration, within the limits. */
+/**
+ * The sprite-sheet dialog's form: the cell size and the frames' duration, within the limits, each
+ * value out of them marked and explained beside its field; then the actions of the dialog.
+ */
 @Component({
   selector: 'lp-import-sprite-sheet-form',
-  imports: [TranslocoPipe],
+  imports: [Icon, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './import-sprite-sheet-form.html',
   styleUrl: './import-sprite-sheet-form.scss',

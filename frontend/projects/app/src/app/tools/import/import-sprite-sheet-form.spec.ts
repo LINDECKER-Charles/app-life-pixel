@@ -1,6 +1,7 @@
 import { ComponentRef, importProvidersFrom } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
+import { provideTranslocoMessageformat } from '@jsverse/transloco-messageformat';
 import { firstValueFrom } from 'rxjs';
 import en from '../../../../../../../i18n/en.json';
 import { EngineStore } from '../../engine/engine-store';
@@ -16,7 +17,10 @@ describe('ImportSpriteSheetForm', () => {
 
   async function setup(): Promise<void> {
     TestBed.configureTestingModule({
-      providers: [importProvidersFrom(TranslocoTestingModule.forRoot(I18N_TESTING))],
+      providers: [
+        importProvidersFrom(TranslocoTestingModule.forRoot(I18N_TESTING)),
+        provideTranslocoMessageformat(),
+      ],
     });
     await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
     engine = TestBed.inject(EngineStore);
@@ -51,6 +55,20 @@ describe('ImportSpriteSheetForm', () => {
 
     expect(duration.getAttribute('aria-invalid')).toBe('true');
     expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+  });
+
+  it('explains an out-of-bounds cell width beside the field', async () => {
+    await setup();
+    const width = field('#sprite-sheet-cell-width');
+
+    width.value = '0';
+    width.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    const errorId = 'sprite-sheet-cell-width-error';
+    expect(width.getAttribute('aria-describedby')?.split(' ')).toContain(errorId);
+    const error = fixture.nativeElement.querySelector(`#${errorId}`) as HTMLElement | null;
+    expect(error?.textContent).toMatch(/1.*4,?096/);
   });
 
   it('submits the cell size and the duration through ImportSpriteSheetFlow', async () => {

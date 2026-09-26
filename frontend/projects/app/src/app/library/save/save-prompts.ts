@@ -7,7 +7,10 @@ export type SignInChoice = 'sign-in' | 'sign-up';
 export type ProjectChoice = { readonly projectId: string } | { readonly newProjectName: string };
 /** What to do when the saved animation changed elsewhere since the editor read it. */
 export type ConflictChoice = 'reload' | 'overwrite' | 'copy';
-/** The account's storage, when a save would exceed it. */
+/**
+ * The account's storage, when a save would exceed it. Without a limit — none known, or no usage
+ * read at all — the dialog says the usage is unavailable rather than showing a number.
+ */
 export interface StorageUsage {
   readonly usedBytes: number;
   readonly limitBytes: number | null;

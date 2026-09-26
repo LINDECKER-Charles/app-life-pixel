@@ -1,40 +1,77 @@
-<table class="table">
-  <caption class="lp-visually-hidden">
-    {{
-      'export.table.caption' | transloco
-    }}
-  </caption>
-  <thead>
-    <tr>
-      <th scope="col">{{ 'export.table.format' | transloco }}</th>
-      <th scope="col">{{ 'export.table.raw' | transloco }}</th>
-      <th scope="col">{{ 'export.table.gzip' | transloco }}</th>
-      <th scope="col">
-        <span class="lp-visually-hidden">{{ 'export.table.download' | transloco }}</span>
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (row of rows(); track row.format) {
-      <tr [class.lightest]="row.format === lightest()">
-        <th scope="row">
-          {{ 'export.format.' + row.format | transloco }}
-          @if (row.format === lightest()) {
-            <span class="badge">{{ 'export.table.lightest' | transloco }}</span>
-          }
+<div class="scroller" role="region" aria-labelledby="export-table-caption">
+  <table class="table" [attr.aria-busy]="isPreparing()">
+    <caption id="export-table-caption" class="lp-visually-hidden">
+      {{
+        'export.table.caption' | transloco
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">{{ 'export.table.format' | transloco }}</th>
+        <th scope="col" class="size">{{ 'export.table.raw' | transloco }}</th>
+        <th scope="col" class="size">{{ 'export.table.gzip' | transloco }}</th>
+        <th scope="col">
+          <span class="lp-visually-hidden">{{ 'export.table.download' | transloco }}</span>
         </th>
-        <td>{{ rawSize(row) ?? ('export.table.' + row.status | transloco) }}</td>
-        <td>{{ gzipSize(row) ?? ('export.table.' + row.status | transloco) }}</td>
-        <td>
-          <button
-            type="button"
-            [disabled]="row.status !== 'ready'"
-            (click)="download.emit(row.format)"
-          >
-            {{ 'export.table.download' | transloco }}
-          </button>
-        </td>
       </tr>
-    }
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.format) {
+        <tr [class.smallest]="row.format === smallest()">
+          <th scope="row">
+            <span class="name">{{ 'export.format.' + row.format | transloco }}</span>
+            @if (row.format === smallest()) {
+              <span class="lp-pill lp-pill--success">
+                <lp-icon name="check" size="small" />
+                {{ 'export.table.lightest' | transloco }}
+              </span>
+            }
+            <span class="use">{{ 'export.format_use.' + row.format | transloco }}</span>
+          </th>
+          <td class="size">
+            @switch (row.status) {
+              @case ('ready') {
+                {{ rawSize(row) }}
+              }
+              @case ('loading') {
+                <span class="state">{{ 'export.table.loading' | transloco }}</span>
+              }
+              @case ('failed') {
+                <span class="state failed">
+                  <lp-icon name="error" size="small" />
+                  {{ 'export.table.failed' | transloco }}
+                </span>
+              }
+            }
+          </td>
+          <td class="size">
+            @if (row.status === 'ready') {
+              {{ gzipSize(row) }}
+            } @else {
+              <span class="state">{{ 'export.table.' + row.status | transloco }}</span>
+            }
+          </td>
+          <td class="action">
+            <button
+              type="button"
+              class="lp-button lp-button--secondary lp-button--compact"
+              [disabled]="row.status !== 'ready' || (downloading() !== null && !isDownloading(row))"
+              [attr.aria-busy]="isDownloading(row) || null"
+              [title]="'export.table.download' | transloco"
+              (click)="download.emit(row.format)"
+            >
+              <lp-icon name="download" size="small" />
+              <span class="label">
+                @if (isDownloading(row)) {
+                  {{ 'export.table.downloading' | transloco }}
+                } @else {
+                  {{ 'export.table.download' | transloco }}
+                }
+              </span>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

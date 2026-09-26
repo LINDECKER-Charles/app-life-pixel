@@ -1,27 +1,7 @@
+// The tag and the scale side by side where they fit, one above the other on a narrow screen.
 .options {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
   gap: var(--lp-space-4);
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-1);
-}
-
-select,
-input {
-  padding: var(--lp-space-2);
-  font: inherit;
-  color: var(--lp-color-text);
-  background: var(--lp-color-background);
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
-}
-
-.hint {
-  margin: 0;
-  font-size: var(--lp-font-size-small);
-  color: var(--lp-color-text-muted);
+  align-items: start;
 }

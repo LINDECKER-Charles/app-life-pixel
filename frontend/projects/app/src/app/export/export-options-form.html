@@ -1,28 +1,42 @@
 <div class="options">
-  <div class="field">
-    <label for="export-tag">{{ 'export.options.tag' | transloco }}</label>
-    <select id="export-tag" #tagField [value]="tag() ?? ''" (change)="onTagChange(tagField.value)">
+  <div class="lp-field">
+    <label class="lp-field__label" for="export-tag">{{ 'export.options.tag' | transloco }}</label>
+    <select
+      id="export-tag"
+      class="lp-input"
+      #tagField
+      [value]="tag() ?? ''"
+      (change)="onTagChange(tagField.value)"
+    >
       <option value="">{{ 'export.options.tag_all' | transloco }}</option>
       @for (item of tags(); track item.name) {
         <option [value]="item.name">{{ item.name }}</option>
       }
     </select>
   </div>
-  <div class="field">
-    <label for="export-scale">{{ 'export.options.scale' | transloco }}</label>
-    <input
-      #scaleField
-      id="export-scale"
-      type="number"
-      inputmode="numeric"
-      step="1"
-      [min]="bounds().min"
-      [max]="bounds().max"
-      [value]="scale()"
-      [attr.aria-describedby]="'export-scale-hint'"
-      (change)="onScaleChange(scaleField)"
-    />
-    <p id="export-scale-hint" class="hint">
+  <div class="lp-field">
+    <label class="lp-field__label" for="export-scale">{{
+      'export.options.scale' | transloco
+    }}</label>
+    <div class="lp-field__control">
+      <input
+        #scaleField
+        id="export-scale"
+        class="lp-input"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        [min]="bounds().min"
+        [max]="bounds().max"
+        [value]="scale()"
+        aria-describedby="export-scale-hint"
+        (change)="onScaleChange(scaleField)"
+      />
+      <span class="lp-field__unit" aria-hidden="true">{{
+        'export.options.scale_unit' | transloco
+      }}</span>
+    </div>
+    <p id="export-scale-hint" class="lp-field__hint">
       {{ 'export.options.scale_hint' | transloco: bounds() }}
     </p>
   </div>
