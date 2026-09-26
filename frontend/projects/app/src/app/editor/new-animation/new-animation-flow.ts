@@ -20,6 +20,7 @@ export class NewAnimationFlow {
   private readonly current = inject(CurrentAnimation);
   private readonly router = inject(Router);
   private readonly open = signal(false);
+  private dismissed: (() => void) | null = null;
 
   readonly isOpen = this.open.asReadonly();
 
@@ -29,20 +30,36 @@ export class NewAnimationFlow {
     this.open.set(true);
   }
 
-  /** Creates the animation, then closes the dialog once a document is open. */
+  /**
+   * Creates the animation, then closes the dialog once a document is open, and waits for that
+   * close to reach the dialog (`didDismiss`) before navigating away: leaving beforehand can tear
+   * the dialog's view down mid-dismissal and strand it open (H8, wave-15's Group D).
+   */
   async create(values: NewAnimationValues): Promise<void> {
     const layerName = this.transloco.translate('editor.new.layer_name');
     const before = this.engine.document();
     await this.engine.create({ ...values, layerName });
     const created = this.engine.document();
     if (created === null) return;
-    this.open.set(false);
+    await this.dismiss();
     if (created === before) return;
     this.current.setUnsaved();
     if (this.router.url.startsWith(`${EDITOR_PATH}/`)) await this.router.navigateByUrl(EDITOR_PATH);
   }
 
+  /** Closes the dialog; called directly (Cancel) or by the modal's own `didDismiss`. */
   close(): void {
     this.open.set(false);
+    const dismissed = this.dismissed;
+    this.dismissed = null;
+    dismissed?.();
+  }
+
+  /** Sets the dialog closing, resolved once `close()` runs for it, so the dialog is truly gone. */
+  private dismiss(): Promise<void> {
+    this.open.set(false);
+    return new Promise((resolve) => {
+      this.dismissed = resolve;
+    });
   }
 }
