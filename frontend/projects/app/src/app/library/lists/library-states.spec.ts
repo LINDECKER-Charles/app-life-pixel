@@ -65,6 +65,9 @@ describe('the library states', () => {
       ),
     );
     expect(list.querySelector('lp-empty-state img')?.getAttribute('alt')).toBe('');
+    expect(list.querySelector('lp-empty-state img')?.getAttribute('src')).toBe(
+      '/design-system/illustrations/pip-library.svg',
+    );
     expect(list.querySelector('[role="alert"]')).toBeNull();
     expect(buttonNamed(list, CLEAR)).toBeUndefined();
   });

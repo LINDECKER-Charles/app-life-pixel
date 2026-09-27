@@ -13,6 +13,7 @@ const SERIOUS_IMPACTS = ['serious', 'critical'];
       heading="No saved projects yet"
       description="Create an animation, then save it here."
       [hasPip]="hasPip()"
+      [pipVariant]="pipVariant()"
       [headingLevel]="level()"
     >
       <button type="button" class="lp-button lp-button--primary" (click)="created = true">
@@ -23,6 +24,7 @@ const SERIOUS_IMPACTS = ['serious', 'critical'];
 })
 class Host {
   readonly hasPip = signal(false);
+  readonly pipVariant = signal<'default' | 'library'>('default');
   readonly level = signal<2 | 3>(2);
   created = false;
 }
@@ -68,6 +70,17 @@ describe('EmptyState', () => {
     const pip = render(true).querySelector('img');
     expect(pip?.getAttribute('alt')).toBe('');
     expect(pip?.getAttribute('src')).toBe('/design-system/pip.svg');
+  });
+
+  it('uses the library pose without giving decoration an accessible name', () => {
+    const fixture = TestBed.createComponent(Host);
+    fixture.componentInstance.hasPip.set(true);
+    fixture.componentInstance.pipVariant.set('library');
+    fixture.detectChanges();
+
+    const pip = fixture.nativeElement.querySelector('img');
+    expect(pip?.getAttribute('src')).toBe('/design-system/illustrations/pip-library.svg');
+    expect(pip?.getAttribute('alt')).toBe('');
   });
 
   it('has no serious accessibility violation', async () => {

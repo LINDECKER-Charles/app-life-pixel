@@ -41,12 +41,14 @@
       [description]="'library.animations.empty_text' | transloco"
       [headingLevel]="3"
       hasPip
+      pipVariant="library"
     />
   } @else {
     <lp-empty-state
       [heading]="'library.project.empty_title' | transloco"
       [description]="'library.project.empty_text' | transloco"
       hasPip
+      pipVariant="library"
     >
       <lp-create-animation-button />
     </lp-empty-state>
@@ -55,6 +57,9 @@
 <ul class="items" [attr.aria-busy]="list.loading()">
   @for (animation of list.items(); track animation.id) {
     <li class="item">
+      <span class="item-symbol item-symbol--animation" aria-hidden="true">
+        <lp-icon name="frame" size="large" />
+      </span>
       <div class="text">
         <a class="name" [routerLink]="['/editor', animation.id]">{{ animation.title }}</a>
         <span class="meta">

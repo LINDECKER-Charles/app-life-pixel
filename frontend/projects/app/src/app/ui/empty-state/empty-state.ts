@@ -1,7 +1,16 @@
-import { booleanAttribute, ChangeDetectionStrategy, Component, input } from '@angular/core';
+import {
+  booleanAttribute,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  input,
+} from '@angular/core';
 
 /** Pip's drawing, copied from design-system/assets/ by tools/copy-design-assets.mjs. */
-const PIP_SOURCE = '/design-system/pip.svg';
+const PIP_SOURCES = {
+  default: '/design-system/pip.svg',
+  library: '/design-system/illustrations/pip-library.svg',
+} as const;
 
 /**
  * An empty region's explanation (design-system/docs/patterns.md, "Empty states"): why it is
@@ -18,7 +27,7 @@ const PIP_SOURCE = '/design-system/pip.svg';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (hasPip()) {
-      <img class="pip" [src]="pipSource" alt="" width="96" height="96" />
+      <img class="pip" [src]="pipSource()" alt="" width="96" height="96" />
     }
     @if (headingLevel() === 3) {
       <h3 class="heading">{{ heading() }}</h3>
@@ -72,6 +81,8 @@ export class EmptyState {
   /** The title's level in the page's outline. */
   readonly headingLevel = input<2 | 3>(2);
   readonly hasPip = input(false, { transform: booleanAttribute });
+  /** The library's folder-holding pose, or the original welcome pose. */
+  readonly pipVariant = input<keyof typeof PIP_SOURCES>('default');
 
-  protected readonly pipSource = PIP_SOURCE;
+  protected readonly pipSource = computed(() => PIP_SOURCES[this.pipVariant()]);
 }

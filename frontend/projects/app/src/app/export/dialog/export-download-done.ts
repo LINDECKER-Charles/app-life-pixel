@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import type { ExportFormat } from '../../engine/engine-types';
 
-const PIP_SOURCE = '/design-system/pip.svg';
+const PIP_SOURCE = '/design-system/illustrations/pip-export.svg';
 
 /**
  * The quiet success of a download, beside the dialog's actions: Pip, decorative, and the format
@@ -14,7 +14,7 @@ const PIP_SOURCE = '/design-system/pip.svg';
   imports: [TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <img class="pip" [src]="pipSource" alt="" width="40" height="40" />
+    <img class="pip" [src]="pipSource" alt="" width="48" height="48" />
     <p class="text">
       {{
         'export.download.done' | transloco: { format: ('export.format.' + format() | transloco) }
@@ -30,6 +30,7 @@ const PIP_SOURCE = '/design-system/pip.svg';
     }
     .pip {
       flex-shrink: 0;
+      image-rendering: pixelated;
     }
     .text {
       margin: 0;

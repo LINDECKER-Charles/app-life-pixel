@@ -150,6 +150,9 @@ describe('the export dialog', () => {
     });
     expect(status.textContent).toContain('WASM export done');
     expect(status.querySelector('img')?.getAttribute('alt')).toBe('');
+    expect(status.querySelector('img')?.getAttribute('src')).toBe(
+      '/design-system/illustrations/pip-export.svg',
+    );
     expect(status.closest('[role="status"]')).not.toBeNull();
   });
 

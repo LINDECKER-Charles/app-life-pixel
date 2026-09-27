@@ -1,5 +1,5 @@
-// Copies the design system's assets that the app serves — the pixel heart, Pip, the sprout, and
-// the bundled Nunito font with its licence — into the app's public folder, so that `ng serve`, a
+// Copies the design system's production illustrations, pixel identity and bundled Nunito font
+// with its licence into the app's public folder, so that `ng serve`, a
 // static build and the desktop app serve them at /design-system/. Angular refuses asset inputs
 // outside the workspace, and the assets stay in one place, in design-system/assets/.
 import { cpSync, existsSync, mkdirSync, rmSync } from 'node:fs';
@@ -14,6 +14,13 @@ export const DESIGN_ASSETS = [
   'mark.svg',
   'pip.svg',
   'sprout.svg',
+  'illustrations/pip-atelier.webp',
+  'illustrations/pip-library.svg',
+  'illustrations/pip-export.svg',
+  'illustrations/missing-frame.svg',
+  'illustrations/appearance/light.svg',
+  'illustrations/appearance/dark.svg',
+  'illustrations/appearance/system.svg',
   'fonts/nunito-variable.ttf',
   'fonts/OFL.txt',
 ];

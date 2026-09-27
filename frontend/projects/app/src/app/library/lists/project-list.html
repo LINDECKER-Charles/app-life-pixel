@@ -31,6 +31,9 @@
 <ul class="items" [attr.aria-busy]="list.loading()">
   @for (project of list.items(); track project.id) {
     <li class="item">
+      <span class="item-symbol" aria-hidden="true">
+        <lp-icon name="library" size="large" />
+      </span>
       <div class="text">
         <a class="name" [routerLink]="['/library/projects', project.id]">{{ project.name }}</a>
         <span class="meta">
