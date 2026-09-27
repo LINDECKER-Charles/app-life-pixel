@@ -1,16 +1,21 @@
 import { expect, type Page } from '@playwright/test';
 import { relative, resolve } from 'node:path';
+import { finiteAnimationsEnded } from '../editor/animations';
 import { OUTPUT_DIR, VIEWPORTS, type Viewport } from './visual-matrix';
 
 /** The page a route shows: Ionic keeps the previous ones in the outlet, hidden. */
 export const ROUTED_PAGE = 'ion-router-outlet > .ion-page:not(.ion-page-hidden)';
 
-/** Waits until layout, fonts and two frames have settled after a change of size or screen. */
+/** Waits for fonts, images, Ionic transitions and layout after a change of size or screen. */
 export async function settle(page: Page): Promise<void> {
   await page.evaluate(async () => {
     await document.fonts.ready;
+    await Promise.all(
+      Array.from(document.images, (image) => image.decode().catch(() => undefined)),
+    );
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
   });
+  await page.waitForFunction(finiteAnimationsEnded);
 }
 
 /** Opens a routed page and waits for its level-1 heading, when it has one. */

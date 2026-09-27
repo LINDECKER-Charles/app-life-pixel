@@ -6,3 +6,4 @@ playwright-report/
 test-results/
 package-lock.json
 projects/app/src/app/engine/wasm/generated/
+/e2e/visual/output/
