@@ -8,12 +8,29 @@ pub trait Clock: Send + Sync {
     fn now(&self) -> OffsetDateTime;
 }
 
-/// The system's clock.
+/// The system's clock, to the microsecond: the precision every store keeps (Postgres's
+/// `timestamptz`), so that what a use case returns equals what a later read finds.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SystemClock;
 
 impl Clock for SystemClock {
     fn now(&self) -> OffsetDateTime {
-        OffsetDateTime::now_utc()
+        let now = OffsetDateTime::now_utc();
+        now.replace_microsecond(now.microsecond()).unwrap_or(now)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const NANOSECONDS_PER_MICROSECOND: u32 = 1_000;
+
+    #[test]
+    fn the_system_clock_keeps_whole_microseconds() {
+        assert_eq!(
+            SystemClock.now().nanosecond() % NANOSECONDS_PER_MICROSECOND,
+            0
+        );
     }
 }
