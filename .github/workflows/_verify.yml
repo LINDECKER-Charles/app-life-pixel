@@ -575,7 +575,9 @@ jobs:
           user="$(docker inspect --format '{{.Config.User}}' "$(docker compose ps -q server)")"
           echo "the server runs as $user"
           test "${user%%:*}" = 65532
-          docker compose top server | awk 'NR > 1 && $1 != "65532" { exit 1 }'
+          # Every process of the container, by numeric UID; `docker top` needs the pid column.
+          docker top "$(docker compose ps -q server)" -o pid,uid \
+            | awk 'NR > 1 { seen = 1; if ($2 != 65532) bad = 1 } END { exit !seen || bad }'
       - name: Show the stack's logs
         if: failure()
         run: docker compose --profile app logs --no-color
