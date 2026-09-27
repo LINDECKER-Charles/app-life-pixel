@@ -33,14 +33,61 @@ jobs:
       - name: Show the plan
         run: echo "dry run = ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}"
 
-  # The desktop matrix: macOS (universal binary), Windows and Ubuntu 22.04. Each leg builds its
-  # own editor engine and sidecar, then `tauri-apps/tauri-action` builds and signs the app with
+  # The front end and the editor's engine, built once with no secret and no environment:
+  # npm ci's install scripts and the build's tools never share a runner with the signing material.
+  frontend:
+    name: Front end
+    needs: plan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the pinned toolchain
+        run: |
+          rustup toolchain install
+          rustup show
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: release-frontend
+      - name: Install the wasm-bindgen of Cargo.lock
+        run: |
+          version="$(cargo pkgid --locked wasm-bindgen)"
+          cargo install wasm-bindgen-cli --version "${version##*@}" --locked
+      - name: Build the editor's engine
+        run: cargo xtask build-editor
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install the front-end
+        run: npm ci --prefix frontend
+      - name: Build the front-end
+        env:
+          LP_ENGINE_PREBUILT: "1"
+        run: npm run build:app --prefix frontend
+      - name: Keep the front end
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: frontend
+          path: frontend/dist/app/browser
+          if-no-files-found: error
+
+  # The desktop matrix: macOS (universal binary), Windows and Ubuntu 22.04. Each leg takes the
+  # `frontend` job's build and builds its own sidecar, then `tauri-apps/tauri-action` builds and
+  # signs the app with
   # both config overlays (`bundle.conf.json` for the sidecar, `release.conf.json` for the
   # updater artifacts), publishing a draft release with `latest.json` unless this run is a dry
   # run, in which case the installers are kept as a workflow artifact instead.
   desktop:
     name: Desktop (${{ matrix.os }})
-    needs: plan
+    needs: [plan, frontend]
     runs-on: ${{ matrix.os }}
     environment: release
     permissions:
@@ -58,10 +105,9 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             args: ""
-    # The signing secrets are the tauri-action step's alone, below: never the job's, which would
-    # hand them to every install and build script that npm ci and cargo install run before it. The
-    # front end is built before that step, without them. The step itself still compiles the app,
-    # so the build scripts of its Rust dependencies run with them (devops.md, "Release").
+    # The signing secrets are the tauri-action step's alone, below, and no npm package runs in this
+    # job. Its Rust build scripts still do — cargo install's, the sidecar's, the app's own inside
+    # that step — on a runner the steps share: devops.md, "Release", says what remains exposed.
     env:
       DRY_RUN: ${{ needs.plan.outputs.dry_run }}
       # Not secret: where every build checks for updates, computed so a fork's release checks its
@@ -89,27 +135,13 @@ jobs:
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
           key: release-${{ matrix.target }}
-      - name: Install the wasm-bindgen of Cargo.lock
-        shell: bash
-        run: |
-          version="$(cargo pkgid --locked wasm-bindgen)"
-          cargo install wasm-bindgen-cli --version "${version##*@}" --locked
-      - name: Build the editor's engine
-        run: cargo xtask build-editor
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      # Built by the `frontend` job: no npm package runs on this runner. release.conf.json turns
+      # off the beforeBuildCommand that would build it again inside the signing step.
+      - name: Fetch the front end
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          node-version-file: .nvmrc
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install the front-end
-        run: npm ci --prefix frontend
-      # Built here, with no secret: release.conf.json turns off the beforeBuildCommand that would
-      # otherwise build it again inside the signing step. The engine was built above.
-      - name: Build the front-end
-        env:
-          LP_ENGINE_PREBUILT: "1"
-        run: npm run build:app --prefix frontend
+          name: frontend
+          path: frontend/dist/app/browser
       - name: Install the Tauri CLI
         run: cargo install tauri-cli --version ^2 --locked
       - name: Build the sidecar
@@ -166,8 +198,8 @@ jobs:
             target/release/bundle/**
           if-no-files-found: ignore
 
-  # Checks that player-js's committed build is current and packs it, with no publishing right:
-  # npm ci's install scripts and the build's tools run here, never where the OIDC identity is.
+  # Checks that player-js's committed build is current, with no publishing right: npm ci's
+  # install scripts and the build's tools run here, never where the OIDC identity is.
   npm-build:
     name: npm build
     if: needs.plan.outputs.dry_run != 'true'
@@ -195,17 +227,10 @@ jobs:
         run: npm run build
       - name: Check that the committed build is current
         run: git diff --exit-code -- life-pixel.js
-      - name: Pack
-        run: npm pack --pack-destination "$RUNNER_TEMP/player"
-      - name: Keep the package
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: player-package
-          path: ${{ runner.temp }}/player/*.tgz
-          if-no-files-found: error
 
-  # Publishes the package npm-build packed, through trusted publishing: no token, and no
-  # dependency code runs in this job, so only npm itself holds the identity `id-token: write` proves.
+  # Publishes @life-pixel/player from a clean checkout — every file of its `files` is committed,
+  # and npm-build proved the build current —, through trusted publishing: nothing is installed
+  # and no script runs here, so only npm itself holds the identity `id-token: write` proves.
   npm:
     name: npm
     if: needs.plan.outputs.dry_run != 'true'
@@ -215,6 +240,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    defaults:
+      run:
+        working-directory: player-js
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -225,13 +253,8 @@ jobs:
         with:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org
-      - name: Fetch the package
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: player-package
-          path: ${{ runner.temp }}/player
       - name: Publish
-        run: npm publish "$RUNNER_TEMP"/player/*.tgz --provenance --access public
+        run: npm publish --ignore-scripts --provenance --access public
 
   # Tags the `app` and `admin` images already built for this commit (H14's _build.yml) as
   # :vX.Y.Z and :latest, without rebuilding them.
