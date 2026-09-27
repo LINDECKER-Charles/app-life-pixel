@@ -195,6 +195,20 @@ describe('Canvas', () => {
     ]);
   });
 
+  it('renders the active frame again when an operation outside the canvas changes it', async () => {
+    await open();
+    const layer = store.activeLayer() ?? 0;
+    const frame = store.activeFrame() ?? 0;
+    renders.length = 0;
+
+    // As "Import image" does: the engine applies it, no gesture and no frame switch involved.
+    const edit: EditOperation = { kind: 'fill', layer, frame, at: { x: 0, y: 0 }, index: 1 };
+    await TestBed.inject(EDITOR_ENGINE).apply(edit);
+    await fixture.whenStable();
+
+    expect(renders).toContainEqual({ frame });
+  });
+
   it('the "+" and "-" shortcuts zoom in and out', async () => {
     await open();
 

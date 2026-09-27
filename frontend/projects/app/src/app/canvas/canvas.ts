@@ -182,6 +182,10 @@ export class Canvas implements AfterViewInit, OnDestroy {
 
   private watchActiveFrame(): void {
     effect(() => {
+      // Every applied operation, undo or redo publishes a new state, while the document summary
+      // stays the same when only pixels change: an import or a history step changes the frame
+      // with no gesture and no frame switch, as the timeline's thumbnails already follow.
+      this.engineStore.state();
       const frame = this.store.activeFrame();
       const preview = this.interaction.preview(this.context());
       const generation = ++this.renderGeneration;
@@ -197,7 +201,8 @@ export class Canvas implements AfterViewInit, OnDestroy {
     effect(() => {
       const onionSkin = this.store.onionSkin();
       const activeFrame = this.store.activeFrame();
-      const frames: FrameList = this.engineStore.document()?.frames ?? [];
+      // The state, not the summary: an undo can change a neighbour's pixels alone.
+      const frames: FrameList = this.engineStore.state().document?.frames ?? [];
       const generation = ++this.onionGeneration;
       untracked(() => {
         void loadOnionSkin(this.engine, { frames, activeFrame, onionSkin }).then((images) => {
