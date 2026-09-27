@@ -71,8 +71,9 @@ impl Config {
     /// The first variable that is missing or invalid.
     pub fn from_lookup(lookup: &dyn Fn(&str) -> Option<String>) -> Result<Self, ConfigError> {
         let env = Env::new(lookup);
+        let environment = env.parse("LPA_ENVIRONMENT")?;
         Ok(Self {
-            environment: env.parse("LPA_ENVIRONMENT")?,
+            environment,
             http_addr: env.parse("LPA_HTTP_ADDR")?,
             metrics_addr: env.parse("LPA_METRICS_ADDR")?,
             public_url: env.parse("LPA_PUBLIC_URL")?,
@@ -80,8 +81,8 @@ impl Config {
             app_dir: env.parse("LPA_APP_DIR")?,
             i18n_dir: env.parse("LPA_I18N_DIR")?,
             database_url: env.parse("LPA_DATABASE_URL")?,
-            session_secret: env.parse("LPA_SESSION_SECRET")?,
-            totp_key: env.parse("LPA_TOTP_KEY")?,
+            session_secret: read_key(&env, "LPA_SESSION_SECRET", environment)?,
+            totp_key: read_key(&env, "LPA_TOTP_KEY", environment)?,
             server_admin_api: ServerAdminApi::read(&env)?,
             monitoring: MonitoringConfig::read(&env)?,
             trusted_proxies: env.parse_or_default("LPA_TRUSTED_PROXIES")?,
@@ -89,6 +90,19 @@ impl Config {
             log_filter: env.parse_or_default("RUST_LOG")?,
         })
     }
+}
+
+/// `variable`, a key refused when weak outside `local`: a host never runs on development keys.
+fn read_key(
+    env: &Env<'_>,
+    variable: &'static str,
+    environment: Environment,
+) -> Result<Key, ConfigError> {
+    let key: Key = env.parse(variable)?;
+    if environment != Environment::Local && key.is_weak() {
+        return Err(ConfigError::WeakKey { variable });
+    }
+    Ok(key)
 }
 
 /// What `create-admin` and `disable-admin` need, and nothing else: `LPA_DATABASE_URL` and

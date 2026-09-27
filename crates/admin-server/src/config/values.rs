@@ -120,6 +120,11 @@ impl FromVariable for SecretString {
 /// The length of a key, in bytes.
 pub const KEY_BYTES: usize = 32;
 
+/// The fewest distinct bytes a key holds outside `local`. A random key has about 30; the public
+/// development keys of `.env.example`, one repeated byte, or a hand-made pattern have far fewer,
+/// while a random key falls below it with a probability under 10⁻³⁰.
+pub const MIN_DISTINCT_KEY_BYTES: usize = 8;
+
 /// A 256-bit key, written as 64 hexadecimal characters: `LPA_SESSION_SECRET`, `LPA_TOTP_KEY`.
 /// Its `Debug` hides it.
 #[derive(Clone, PartialEq, Eq)]
@@ -130,6 +135,17 @@ impl Key {
     #[must_use]
     pub fn as_bytes(&self) -> &[u8; KEY_BYTES] {
         &self.0
+    }
+
+    /// Whether the key is too regular to be random: fewer than [`MIN_DISTINCT_KEY_BYTES`]
+    /// distinct bytes.
+    #[must_use]
+    pub fn is_weak(&self) -> bool {
+        let mut seen = [false; 256];
+        for byte in self.0 {
+            seen[usize::from(byte)] = true;
+        }
+        seen.into_iter().filter(|&is_seen| is_seen).count() < MIN_DISTINCT_KEY_BYTES
     }
 }
 
