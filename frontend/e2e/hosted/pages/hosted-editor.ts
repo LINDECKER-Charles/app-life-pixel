@@ -7,6 +7,8 @@ import { expectSettled } from './outlet';
 const SIDE = 16;
 /** A saved animation's route: `/editor/<its id>`. */
 const SAVED_ROUTE = /\/editor\/[0-9a-f-]{36}$/;
+/** A new animation's route: creating one leaves a saved animation's route for `/editor`. */
+const NEW_ROUTE = /\/editor$/;
 
 /** The strokes drawn in this worker, by every page: two pages may draw on one document. */
 let strokes = 0;
@@ -48,8 +50,12 @@ export class HostedEditor extends EditorPage {
     await this.spinbutton('Width').fill(String(SIDE));
     await this.spinbutton('Height').fill(String(SIDE));
     await this.button('Create').click();
-    await this.expectReady();
+    // The flow navigates only once the dialog is gone, and the first editor stays until the
+    // transition ends: the new one alone is checked, never the two at once.
+    await expect(this.newDialog).toBeHidden();
+    await expect(this.page).toHaveURL(NEW_ROUTE);
     await this.settled();
+    await this.expectReady();
   }
 
   /** Waits for the page transition: a new route opens a second editor over the first. */
