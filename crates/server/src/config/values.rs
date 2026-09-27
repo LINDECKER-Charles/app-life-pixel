@@ -119,10 +119,10 @@ impl FromVariable for SecretString {
 /// The length of an HMAC key, in bytes.
 pub const HMAC_KEY_BYTES: usize = 32;
 
-/// The fewest distinct bytes a key holds outside `local`. A random key has about 30; the public
-/// development keys of `.env.example`, one repeated byte, or a hand-made pattern have far fewer,
-/// while a random key falls below it with a probability under 10⁻³⁰.
-pub const MIN_DISTINCT_KEY_BYTES: usize = 8;
+/// The fewest distinct bytes a key holds outside `local`. A random key has about 30, and 16 or
+/// fewer with a probability under 10⁻¹³; the public development keys of `.env.example`, one
+/// repeated byte, and hand-made patterns such as `0123456789abcdef` repeated have at most 16.
+pub const MIN_DISTINCT_KEY_BYTES: usize = 17;
 
 /// A 256-bit HMAC key, written as 64 hexadecimal characters. Its `Debug` hides it.
 #[derive(Clone, PartialEq, Eq)]

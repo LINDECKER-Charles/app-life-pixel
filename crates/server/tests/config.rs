@@ -1,5 +1,7 @@
 //! The configuration: every variable read, and a missing or invalid one named, never quoted.
 
+#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+
 mod common;
 
 use std::collections::HashMap;
@@ -7,6 +9,7 @@ use std::path::Path;
 
 use common::{SECRET, local_env, read_config};
 use life_pixel_server::config::{ConfigError, Environment, StorageConfig};
+use sha2::{Digest, Sha256};
 
 /// The variables a configuration cannot do without.
 const REQUIRED: [&str; 30] = [
@@ -60,13 +63,51 @@ const INVALID: [(&str, &str); 14] = [
     ("RUST_LOG", "info,[unclosed"),
 ];
 
+/// The server's keys, each refused when weak outside `local`.
+const KEYS: [&str; 4] = [
+    "LP_SESSION_SECRET",
+    "LP_EVENTS_SECRET",
+    "LP_EXPORT_LINK_SECRET",
+    "LP_ADMIN_API_SECRET",
+];
 /// `.env.example`'s public development key for LP_SESSION_SECRET: one repeated byte.
 const DEVELOPMENT_KEY: &str = "0101010101010101010101010101010101010101010101010101010101010101";
-/// A key of zeros, as a careless host might set.
-const ZERO_KEY: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+/// Keys a host refuses: the development one, zeros, and a hand-made pattern of 8 distinct bytes.
+const WEAK_KEYS: [&str; 3] = [
+    DEVELOPMENT_KEY,
+    "0000000000000000000000000000000000000000000000000000000000000000",
+    "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+];
 
 fn local() -> HashMap<String, String> {
     local_env(Path::new("frontend/dist/app/browser"))
+}
+
+/// `.env.example`, whose keys are the public development ones.
+fn example() -> HashMap<String, String> {
+    let path = format!("{}/../../.env.example", env!("CARGO_MANIFEST_DIR"));
+    dotenvy::from_path_iter(&path)
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap()
+}
+
+/// A key as random as a generated one, derived from `label`, so that none is written here.
+fn strong_key(label: &str) -> String {
+    Sha256::digest(label.as_bytes())
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+/// The local values on a host of `environment`, with strong keys.
+fn host(environment: &str) -> HashMap<String, String> {
+    let mut env = local();
+    env.insert("LP_ENVIRONMENT".to_owned(), environment.to_owned());
+    for variable in KEYS {
+        env.insert(variable.to_owned(), strong_key(variable));
+    }
+    env
 }
 
 #[test]
@@ -96,12 +137,7 @@ fn the_database_and_the_store_come_from_their_urls() {
 
 #[test]
 fn the_example_environment_makes_a_configuration() {
-    let path = format!("{}/../../.env.example", env!("CARGO_MANIFEST_DIR"));
-    let example: HashMap<String, String> = dotenvy::from_path_iter(&path)
-        .unwrap()
-        .collect::<Result<_, _>>()
-        .unwrap();
-    let config = read_config(&example).unwrap();
+    let config = read_config(&example()).unwrap();
     assert_eq!(config.environment, Environment::Local);
     assert_eq!(config.mail.from, "Life Pixel <no-reply@localhost>");
     assert_eq!(config.legal.publisher, "Life Pixel (local)");
@@ -135,26 +171,45 @@ fn an_invalid_variable_is_named_without_its_value() {
 #[test]
 fn a_host_refuses_a_weak_key_and_names_it_without_its_value() {
     for environment in ["staging", "production"] {
-        for weak in [DEVELOPMENT_KEY, ZERO_KEY] {
-            let mut env = local();
-            env.insert("LP_ENVIRONMENT".to_owned(), environment.to_owned());
-            env.insert("LP_EXPORT_LINK_SECRET".to_owned(), weak.to_owned());
+        for (variable, weak) in KEYS
+            .into_iter()
+            .flat_map(|key| WEAK_KEYS.map(|weak| (key, weak)))
+        {
+            let mut env = host(environment);
+            env.insert(variable.to_owned(), weak.to_owned());
             let error = read_config(&env).unwrap_err();
-            let variable = "LP_EXPORT_LINK_SECRET";
-            assert_eq!(error, ConfigError::WeakKey { variable }, "{environment}");
+            assert_eq!(
+                error,
+                ConfigError::WeakKey { variable },
+                "{environment} {weak}"
+            );
             assert!(!error.to_string().contains(weak));
         }
     }
 }
 
 #[test]
-fn a_host_takes_a_random_key_and_local_takes_the_development_keys() {
-    let mut production = local();
-    production.insert("LP_ENVIRONMENT".to_owned(), "production".to_owned());
-    let config = read_config(&production).unwrap();
+fn a_host_refuses_every_development_key_of_the_example() {
+    let mut env = example();
+    env.insert("LP_ENVIRONMENT".to_owned(), "staging".to_owned());
+    for variable in KEYS {
+        assert_eq!(
+            read_config(&env).unwrap_err(),
+            ConfigError::WeakKey { variable }
+        );
+        env.insert(variable.to_owned(), strong_key(variable));
+    }
+    assert!(read_config(&env).is_ok());
+}
+
+#[test]
+fn a_host_takes_strong_keys_and_local_takes_the_development_ones() {
+    let config = read_config(&host("production")).unwrap();
     assert_eq!(config.environment, Environment::Production);
     let mut development = local();
-    development.insert("LP_SESSION_SECRET".to_owned(), DEVELOPMENT_KEY.to_owned());
+    for variable in KEYS {
+        development.insert(variable.to_owned(), DEVELOPMENT_KEY.to_owned());
+    }
     assert!(read_config(&development).is_ok());
 }
 
