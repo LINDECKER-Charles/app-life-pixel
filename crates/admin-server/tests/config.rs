@@ -11,11 +11,16 @@ use sha2::{Digest, Sha256};
 
 /// The admin server's own keys, each refused when weak outside `local`.
 const KEYS: [&str; 2] = ["LPA_SESSION_SECRET", "LPA_TOTP_KEY"];
-/// Keys a host refuses: zeros, and a hand-made pattern of 8 distinct bytes.
-const WEAK_KEYS: [&str; 2] = [
+/// Keys a host refuses: zeros, and hand-made patterns of 8 and 16 distinct bytes.
+const WEAK_KEYS: [&str; 3] = [
     "0000000000000000000000000000000000000000000000000000000000000000",
     "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "000102030405060708090a0b0c0d0e0f000102030405060708090a0b0c0d0e0f",
 ];
+/// The least regular key a host still refuses has 16 distinct bytes: this one, 00 to 10 then
+/// zeros, has 17.
+const SEVENTEEN_DISTINCT_BYTES: &str =
+    "000102030405060708090a0b0c0d0e0f10000000000000000000000000000000";
 
 /// The `LPA_` variables of `.env.example`.
 fn example() -> HashMap<String, String> {
@@ -94,6 +99,16 @@ fn a_host_refuses_any_weak_key() {
             ConfigError::WeakKey { variable }
         );
     }
+}
+
+#[test]
+fn a_host_takes_a_key_of_17_distinct_bytes() {
+    let mut variables = host("production");
+    variables.insert(
+        "LPA_TOTP_KEY".to_owned(),
+        SEVENTEEN_DISTINCT_BYTES.to_owned(),
+    );
+    assert!(read(&variables).is_ok());
 }
 
 #[test]
