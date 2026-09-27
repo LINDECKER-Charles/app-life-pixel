@@ -54,7 +54,7 @@ jobs:
       ssh_key: ${{ secrets.STAGING_SSH_KEY }}
       host: ${{ secrets.STAGING_HOST }}
       ssh_user: ${{ secrets.STAGING_SSH_USER }}
-      path: ${{ secrets.STAGING_PATH }}
+      deploy_path: ${{ secrets.STAGING_PATH }}
       env_file: ${{ secrets.ENV_STAGING }}
       known_hosts: ${{ secrets.STAGING_KNOWN_HOSTS }}
     permissions:
@@ -79,7 +79,7 @@ jobs:
       ssh_key: ${{ secrets.PROD_SSH_KEY }}
       host: ${{ secrets.PROD_HOST }}
       ssh_user: ${{ secrets.PROD_SSH_USER }}
-      path: ${{ secrets.PROD_PATH }}
+      deploy_path: ${{ secrets.PROD_PATH }}
       env_file: ${{ secrets.ENV_PROD }}
       known_hosts: ${{ secrets.PROD_KNOWN_HOSTS }}
     permissions:

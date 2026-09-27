@@ -1,8 +1,10 @@
 name: Deploy
 # H14: deploys a commit's images to staging or production on the shared VPS: scripts/deploy/
 # deploy.sh runs on the host over SSH, in the six steps of devops.md. Called by ci.yml after the
-# build or the promotion, which passes the target's own secrets and nothing else: the runner never
-# receives the other environment's, nor any other secret of the repository.
+# build or the promotion, which passes the target's own repository secrets and nothing else: the
+# runner never receives the other environment's, nor any other secret of the repository. A secret
+# of the same name in the job's GitHub environment (SSH_KEY, HOST, SSH_USER, DEPLOY_PATH,
+# ENV_FILE, KNOWN_HOSTS) takes precedence over the one passed, as GitHub resolves them.
 on:
   workflow_call:
     inputs:
@@ -24,14 +26,16 @@ on:
       ssh_user:
         description: The account on the VPS, root when empty
         required: false
-      path:
+      deploy_path:
         description: The environment's folder on the VPS
         required: true
       env_file:
         description: The environment's whole .env
         required: true
       known_hosts:
-        description: The VPS's host keys as known_hosts lines; trusted on first use when empty
+        description: >-
+          The VPS's ed25519 host key as a known_hosts line; required for production, while staging
+          trusts whatever key the host presents when it is empty
         required: false
 permissions: {}
 jobs:
@@ -47,19 +51,22 @@ jobs:
       cancel-in-progress: false
     steps:
       # A caller may pass an empty secret: nothing is sent before every required one is set.
+      # Production never trusts an unpinned host key.
       - name: Check the environment and its secrets
         env:
           ENVIRONMENT: ${{ inputs.environment }}
           SSH_KEY: ${{ secrets.ssh_key }}
           SSH_HOST: ${{ secrets.host }}
-          DEPLOY_PATH: ${{ secrets.path }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
           ENV_FILE: ${{ secrets.env_file }}
+          KNOWN_HOSTS: ${{ secrets.known_hosts }}
         run: |
           case "$ENVIRONMENT" in
-            staging | production) ;;
+            staging) required=(SSH_KEY SSH_HOST DEPLOY_PATH ENV_FILE) ;;
+            production) required=(SSH_KEY SSH_HOST DEPLOY_PATH ENV_FILE KNOWN_HOSTS) ;;
             *) echo "::error::unknown environment '$ENVIRONMENT'"; exit 1 ;;
           esac
-          for name in SSH_KEY SSH_HOST DEPLOY_PATH ENV_FILE; do
+          for name in "${required[@]}"; do
             if [ -z "${!name}" ]; then
               echo "::error::the secret behind $name is not set for $ENVIRONMENT"
               exit 1
@@ -82,8 +89,8 @@ jobs:
           if [ -n "$KNOWN_HOSTS" ]; then
             printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           else
-            echo "::warning::no known_hosts secret for $ENVIRONMENT: the host key is trusted on first use"
-            ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+            echo "::warning::no known_hosts secret for $ENVIRONMENT: this run trusts whatever key the host presents"
+            ssh-keyscan -t ed25519 -H "$SSH_HOST" >> ~/.ssh/known_hosts
           fi
       # The .env and the registry token travel in a tar on SSH's standard input, each in a file of
       # mode 600 in a folder the host removes afterwards: never on a command line.
@@ -91,7 +98,7 @@ jobs:
         env:
           SSH_HOST: ${{ secrets.host }}
           SSH_USER: ${{ secrets.ssh_user || 'root' }}
-          DEPLOY_PATH: ${{ secrets.path }}
+          DEPLOY_PATH: ${{ secrets.deploy_path }}
           ENV_FILE: ${{ secrets.env_file }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REGISTRY_USER: ${{ github.actor }}
