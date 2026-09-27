@@ -16,7 +16,9 @@ function keyLabel(key: string): string {
 }
 
 /** Renders a shortcut's key combination, e.g. `Ctrl/⌘+Shift+Z`, `[`, `?`. */
-export function describeShortcut(shortcut: Shortcut): string {
+export function describeShortcut(
+  shortcut: Pick<Shortcut, 'key' | 'primary' | 'shift' | 'alt'>,
+): string {
   const parts: string[] = [];
   if (shortcut.primary) parts.push('Ctrl/⌘');
   if (shortcut.shift) parts.push('Shift');

@@ -45,7 +45,7 @@ function miscShortcuts(editor: EditorStore, help: ShortcutsHelpState): Shortcut[
       key: 'g',
       shift: true,
       label: 'tools.shortcut.grid',
-      action: () => editor.showGrid.update((visible) => !visible),
+      action: () => editor.toggleGrid(),
     },
     { key: '?', label: 'tools.shortcuts_button', action: () => help.open() },
   ];

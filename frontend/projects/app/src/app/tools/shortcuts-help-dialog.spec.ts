@@ -38,7 +38,8 @@ describe('ShortcutsHelpDialog', () => {
       return rows;
     });
     expect(dialog.length).toBeGreaterThanOrEqual(1);
-    expect(document.body.textContent).toContain('B');
+    expect(dialog[0].textContent).toContain('Pencil');
+    expect(dialog[0].querySelector('kbd')?.textContent).toBe('B');
   });
 
   it('closes on the close button', async () => {
@@ -48,7 +49,9 @@ describe('ShortcutsHelpDialog', () => {
     state.open();
 
     const button = await vi.waitFor(() => {
-      const candidate = document.querySelector<HTMLButtonElement>('.secondary');
+      const candidate = [...document.querySelectorAll<HTMLButtonElement>('button')].find(
+        (element) => element.textContent?.trim() === 'Close',
+      );
       if (!candidate) throw new Error('the dialog is not open');
       return candidate;
     });

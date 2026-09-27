@@ -1,0 +1,66 @@
+// A quiet row of UI chrome under the neutral stage: compact controls, then the readouts, wrapping
+// onto a second line in a narrow stage rather than squeezing the canvas sideways.
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2) var(--lp-space-4);
+  align-items: center;
+  padding: var(--lp-space-1) var(--lp-space-3);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface);
+  border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+}
+
+.group {
+  display: flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+}
+
+.zoom {
+  min-width: 4.5ch;
+  font-family: var(--lp-font-family-mono);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.count {
+  display: flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  margin-inline-start: var(--lp-space-1);
+  color: var(--lp-color-text-muted);
+
+  > select {
+    width: auto;
+    min-width: 3.5rem;
+    font-size: var(--lp-font-size-small);
+    color: var(--lp-color-text);
+  }
+}
+
+.status {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: var(--lp-space-1) var(--lp-space-3);
+  justify-content: flex-end;
+  margin: 0;
+  color: var(--lp-color-text-muted);
+
+  > span + span {
+    padding-inline-start: var(--lp-space-3);
+    border-inline-start: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  }
+}
+
+.position {
+  font-family: var(--lp-font-family-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+// A layer's name is the person's own text: it wraps, never cut short.
+.layer {
+  overflow-wrap: anywhere;
+}

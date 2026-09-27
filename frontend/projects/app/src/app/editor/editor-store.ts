@@ -22,6 +22,11 @@ export interface OnionSkin {
 const FIRST_COLOR_INDEX = 1;
 const DEFAULT_ZOOM = 8;
 const DEFAULT_ONION_SKIN: OnionSkin = { enabled: false, before: 1, after: 1 };
+/**
+ * The most frames the onion skin reaches on either side: from the nearest one's alpha of 0.3,
+ * halved at each step, a fourth would all but vanish.
+ */
+export const MAX_ONION_SKIN_FRAMES = 3;
 const ORIGIN: Point = { x: 0, y: 0 };
 
 function sameIds(a: readonly number[], b: readonly number[]): boolean {
@@ -31,6 +36,11 @@ function sameIds(a: readonly number[], b: readonly number[]): boolean {
 /** Keeps the index within the palette; with no document, keeps it as it is. */
 function clampColorIndex(index: number, paletteSize: number): number {
   return paletteSize === 0 ? index : Math.max(0, Math.min(index, paletteSize - 1));
+}
+
+function clampOnionSkinFrames(count: number): number {
+  if (!Number.isFinite(count)) return 0;
+  return Math.max(0, Math.min(MAX_ONION_SKIN_FRAMES, Math.round(count)));
 }
 
 function clampRange(range: FrameRange | null, frameCount: number): FrameRange | null {
@@ -105,4 +115,23 @@ export class EditorStore {
     computation: (size, previous) => (previous?.source === size ? previous.value : null),
   });
   readonly playing = signal(false);
+
+  /** Shift `G` and the view bar's grid switch. */
+  toggleGrid(): void {
+    this.showGrid.update((visible) => !visible);
+  }
+
+  /** `O` and the view bar's onion-skin switch; the frame counts stay as they are. */
+  toggleOnionSkin(): void {
+    this.onionSkin.update((onionSkin) => ({ ...onionSkin, enabled: !onionSkin.enabled }));
+  }
+
+  /** How many frames before and after the active one, each within 0 and the maximum. */
+  setOnionSkinRange(range: { readonly before: number; readonly after: number }): void {
+    this.onionSkin.update((onionSkin) => ({
+      ...onionSkin,
+      before: clampOnionSkinFrames(range.before),
+      after: clampOnionSkinFrames(range.after),
+    }));
+  }
 }

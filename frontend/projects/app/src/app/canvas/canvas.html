@@ -16,6 +16,7 @@
     (pointermove)="onPointerMove($event)"
     (pointerup)="onPointerUp($event)"
     (pointercancel)="onPointerCancel($event)"
+    (pointerleave)="onPointerLeave()"
     (wheel)="onWheel($event)"
     (contextmenu)="$event.preventDefault()"
   ></canvas>
@@ -30,3 +31,4 @@
   }
   <div class="lp-visually-hidden" aria-live="polite">{{ liveMessage() }}</div>
 </div>
+<lp-view-bar [viewport]="viewport" [position]="position()" />

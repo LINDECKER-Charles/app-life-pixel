@@ -1,33 +1,72 @@
+// The tool rail (design-system/preview/sections/studio.html): icon buttons two abreast, so that the
+// whole rail fits the stage's height at 1024 × 768; groups apart by a quiet divider. The buttons
+// are the shared `lp-icon-button`; only the selected marker and the rectangle's pair are drawn here.
+$narrow-max-width: 47.99rem;
+
 :host {
   display: flex;
   flex-direction: column;
-  gap: var(--lp-space-3);
+  gap: var(--lp-space-2);
 }
 
 .group {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, var(--lp-control-height));
   gap: var(--lp-space-1);
-}
 
-button {
-  padding: var(--lp-space-2) var(--lp-space-3);
-  font: inherit;
-  font-size: var(--lp-font-size-small);
-  color: var(--lp-color-text);
-  background: transparent;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-medium);
-  cursor: pointer;
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
+  & + & {
+    padding-top: var(--lp-space-2);
+    border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
   }
 }
 
-.tool[aria-pressed='true'] {
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
-  border-color: var(--lp-color-accent);
+// Beyond the colours of `aria-pressed`, a bar under the icon: selection is a shape as well.
+.tool {
+  position: relative;
+
+  &[aria-pressed='true']::after {
+    position: absolute;
+    inset: auto var(--lp-space-3) var(--lp-space-1);
+    height: 3px;
+    content: '';
+    background: currentColor;
+    border-radius: var(--lp-radius-round);
+  }
+}
+
+// The filled switch joins the rectangle it belongs to: one shape, split in two.
+.tool:has(+ .filled) {
+  border-start-end-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.filled {
+  margin-inline-start: calc(-1 * var(--lp-space-1));
+  border-inline-start-color: var(--lp-color-border-subtle);
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+}
+
+.tool:has(+ .filled):not([aria-pressed='true']),
+.filled:not([aria-pressed='true']) {
+  background: var(--lp-color-surface-soft);
+}
+
+// Stacked above the stage (lot 6 adapts it further), the rail runs as a row that wraps.
+@media (max-width: $narrow-max-width) {
+  :host {
+    flex-flow: row wrap;
+  }
+
+  .group {
+    display: flex;
+    flex-wrap: wrap;
+
+    & + & {
+      padding-top: 0;
+      padding-left: var(--lp-space-2);
+      border-top: 0;
+      border-left: var(--lp-border-width) solid var(--lp-color-border-subtle);
+    }
+  }
 }
