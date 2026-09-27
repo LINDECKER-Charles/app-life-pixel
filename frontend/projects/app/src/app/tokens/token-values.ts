@@ -43,12 +43,29 @@ export function isValidName(name: string): boolean {
 }
 
 /** The command that registers the endpoint in Claude Code with the secret of `created`. */
-export function mcpCommand(created: CreatedAccessToken): string {
+export function claudeHttpCommand(created: CreatedAccessToken): string {
   const { serverName, url } = created.mcp;
   return (
     `claude mcp add --transport http ${serverName} ${url} ` +
     `--header "Authorization: Bearer ${created.token}"`
   );
+}
+
+/**
+ * The command that registers the endpoint in Codex. Codex takes no secret on its command line: it
+ * reads the token, at each start, from the environment variable `tokenVariable` names.
+ */
+export function codexHttpCommand({ mcp }: CreatedAccessToken): string {
+  const variable = tokenVariable(mcp.serverName);
+  return `codex mcp add ${mcp.serverName} --url ${mcp.url} --bearer-token-env-var ${variable}`;
+}
+
+/**
+ * The environment variable holding the token of the server `serverName`: one per server, so that
+ * staging and production sit side by side — `life-pixel-staging` gives `LIFE_PIXEL_STAGING_TOKEN`.
+ */
+export function tokenVariable(serverName: string): string {
+  return `${serverName.toUpperCase().replace(/[^A-Z0-9]/g, '_')}_TOKEN`;
 }
 
 /** `iso` as a date of `language`. */

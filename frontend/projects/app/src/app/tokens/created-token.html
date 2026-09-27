@@ -2,58 +2,38 @@
   <lp-status-banner variant="warning">
     <p>{{ 'tokens.created.once' | transloco }}</p>
   </lp-status-banner>
-  <div class="lp-field">
-    <span class="lp-field__label" id="created-token-label">
-      {{ 'tokens.created.token_label' | transloco }}
-    </span>
-    <pre
-      #tokenText
-      class="secret"
-      aria-labelledby="created-token-label"
-    ><code>{{ token().token }}</code></pre>
-    <p class="lp-cluster">
-      <button
-        type="button"
-        class="lp-button lp-button--secondary lp-button--compact"
-        (click)="copy('token', tokenText)"
-      >
-        <lp-icon name="copy" size="small" />{{ 'tokens.created.copy_token' | transloco }}
-      </button>
-      <span class="copy-state" role="status">
-        @if (copied()?.what === 'token') {
-          <ng-container *ngTemplateOutlet="copyState" />
-        }
+  @for (field of fields(); track field.what) {
+    <div class="lp-field">
+      <span class="lp-field__label" [id]="'created-' + field.what + '-label'">
+        {{ field.label | transloco }}
       </span>
-    </p>
-  </div>
-  <div class="lp-field">
-    <span class="lp-field__label" id="created-command-label">
-      {{ 'tokens.created.command_label' | transloco }}
-    </span>
-    <p class="lp-field__hint" id="created-command-hint">
-      {{ 'tokens.created.command_hint' | transloco }}
-    </p>
-    <pre
-      #commandText
-      class="secret"
-      aria-labelledby="created-command-label"
-      aria-describedby="created-command-hint"
-    ><code>{{ command() }}</code></pre>
-    <p class="lp-cluster">
-      <button
-        type="button"
-        class="lp-button lp-button--secondary lp-button--compact"
-        (click)="copy('command', commandText)"
-      >
-        <lp-icon name="copy" size="small" />{{ 'tokens.created.copy_command' | transloco }}
-      </button>
-      <span class="copy-state" role="status">
-        @if (copied()?.what === 'command') {
-          <ng-container *ngTemplateOutlet="copyState" />
-        }
-      </span>
-    </p>
-  </div>
+      @if (field.hint; as hint) {
+        <p class="lp-field__hint" [id]="'created-' + field.what + '-hint'">
+          {{ hint.key | transloco: hint.params }}
+        </p>
+      }
+      <pre
+        #shown
+        class="secret"
+        [attr.aria-labelledby]="'created-' + field.what + '-label'"
+        [attr.aria-describedby]="field.hint ? 'created-' + field.what + '-hint' : null"
+      ><code>{{ field.text }}</code></pre>
+      <p class="lp-cluster">
+        <button
+          type="button"
+          class="lp-button lp-button--secondary lp-button--compact"
+          (click)="copy(field, shown)"
+        >
+          <lp-icon name="copy" size="small" />{{ field.copyLabel | transloco }}
+        </button>
+        <span class="copy-state" role="status">
+          @if (copied()?.what === field.what) {
+            <ng-container *ngTemplateOutlet="copyState" />
+          }
+        </span>
+      </p>
+    </div>
+  }
 </div>
 <div class="lp-dialog__actions">
   <button type="button" class="lp-button lp-button--primary" (click)="done.emit()">

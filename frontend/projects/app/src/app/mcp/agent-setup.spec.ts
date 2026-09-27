@@ -1,4 +1,4 @@
-import { claudeCommand, mcpServersEntry } from './agent-setup';
+import { claudeCommand, codexCommand, mcpServersEntry } from './agent-setup';
 
 const PATHS = {
   cliPath: '/Applications/Life Pixel.app/Contents/MacOS/life-pixel',
@@ -9,6 +9,13 @@ describe('the agent setup', () => {
   it('adds the bundled CLI to Claude Code by its absolute path, on the library in use', () => {
     expect(claudeCommand(PATHS)).toBe(
       'claude mcp add life-pixel -- "/Applications/Life Pixel.app/Contents/MacOS/life-pixel" ' +
+        'mcp --library "/Users/pixel/Documents/Life Pixel"',
+    );
+  });
+
+  it('adds the same server to Codex, with the same launch arguments', () => {
+    expect(codexCommand(PATHS)).toBe(
+      'codex mcp add life-pixel -- "/Applications/Life Pixel.app/Contents/MacOS/life-pixel" ' +
         'mcp --library "/Users/pixel/Documents/Life Pixel"',
     );
   });

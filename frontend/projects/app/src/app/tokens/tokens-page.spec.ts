@@ -173,7 +173,7 @@ describe('TokensPage', () => {
     expect(api.create).not.toHaveBeenCalled();
   });
 
-  it('shows the secret once, with the command to copy, and lists the token first', async () => {
+  it('shows the secret once, with the commands to copy, and lists the token first', async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
     mockTokens();
@@ -187,8 +187,16 @@ describe('TokensPage', () => {
       'claude mcp add --transport http life-pixel https://life-pixel.app/mcp ' +
       `--header "Authorization: Bearer ${CREATED.token}"`;
     expect(code.textContent).toContain(command);
-    buttonNamed(code, 'Copy the command').click();
+    buttonNamed(code, 'Copy the Claude Code command').click();
     await vi.waitFor(() => expect(writeText).toHaveBeenCalledWith(command));
+    expect(code.textContent).toContain('the LIFE_PIXEL_TOKEN environment variable');
+    buttonNamed(code, 'Copy the Codex command').click();
+    await vi.waitFor(() =>
+      expect(writeText).toHaveBeenLastCalledWith(
+        'codex mcp add life-pixel --url https://life-pixel.app/mcp ' +
+          '--bearer-token-env-var LIFE_PIXEL_TOKEN',
+      ),
+    );
     buttonNamed(code, 'Copy the token').click();
     await vi.waitFor(() => expect(writeText).toHaveBeenLastCalledWith(CREATED.token));
     const names = [...document.querySelectorAll('.tokens .name')].map((name) => name.textContent);

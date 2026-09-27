@@ -1,12 +1,27 @@
 import { CREATED } from './testing/tokens-test-support';
-import { isValidName, mcpCommand, TOKEN_LIMITS } from './token-values';
+import {
+  claudeHttpCommand,
+  codexHttpCommand,
+  isValidName,
+  TOKEN_LIMITS,
+  tokenVariable,
+} from './token-values';
 
 describe('token values', () => {
-  it('builds the command that registers the endpoint with the secret', () => {
-    expect(mcpCommand(CREATED)).toBe(
+  it('builds the Claude Code command that registers the endpoint with the secret', () => {
+    expect(claudeHttpCommand(CREATED)).toBe(
       'claude mcp add --transport http life-pixel https://life-pixel.app/mcp ' +
         `--header "Authorization: Bearer ${CREATED.token}"`,
     );
+  });
+
+  it('builds the Codex command, which reads the secret from a variable named after the server', () => {
+    expect(codexHttpCommand(CREATED)).toBe(
+      'codex mcp add life-pixel --url https://life-pixel.app/mcp ' +
+        '--bearer-token-env-var LIFE_PIXEL_TOKEN',
+    );
+    expect(codexHttpCommand(CREATED)).not.toContain(CREATED.token);
+    expect(tokenVariable('life-pixel-staging')).toBe('LIFE_PIXEL_STAGING_TOKEN');
   });
 
   it('accepts a name of 1 to the maximum of characters once trimmed', () => {

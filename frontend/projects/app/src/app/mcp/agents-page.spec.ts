@@ -20,9 +20,10 @@ const INFO: PlatformInfo = {
   libraryPath: '/Users/pixel/Documents/Life Pixel',
   cliPath: '/Applications/Life Pixel.app/Contents/MacOS/life-pixel',
 };
-const COMMAND =
-  'claude mcp add life-pixel -- "/Applications/Life Pixel.app/Contents/MacOS/life-pixel" ' +
+const LAUNCH =
+  '-- "/Applications/Life Pixel.app/Contents/MacOS/life-pixel" ' +
   'mcp --library "/Users/pixel/Documents/Life Pixel"';
+const COMMAND = `claude mcp add life-pixel ${LAUNCH}`;
 
 async function render(info: Promise<PlatformInfo>, copy = vi.fn().mockResolvedValue(undefined)) {
   TestBed.configureTestingModule({
@@ -61,12 +62,13 @@ describe('the agents page', () => {
     expect(route?.canActivate).toContain(desktopOnly);
   });
 
-  it('shows the claude mcp add command and the mcpServers entry with absolute paths', async () => {
+  it('shows the Claude Code and Codex commands and the mcpServers entry, paths absolute', async () => {
     const { root } = await render(Promise.resolve(INFO));
 
     const blocks = Array.from(root.querySelectorAll('pre')).map((pre) => pre.textContent ?? '');
     expect(blocks[0]).toBe(COMMAND);
-    expect(JSON.parse(blocks[1])).toEqual({
+    expect(blocks[1]).toBe(`codex mcp add life-pixel ${LAUNCH}`);
+    expect(JSON.parse(blocks[2])).toEqual({
       mcpServers: {
         'life-pixel': { command: INFO.cliPath, args: ['mcp', '--library', INFO.libraryPath] },
       },
@@ -77,7 +79,7 @@ describe('the agents page', () => {
   it('copies the command, and says so', async () => {
     const { root, fixture, copy } = await render(Promise.resolve(INFO));
 
-    button(root, 'Copy the command').click();
+    button(root, 'Copy the Claude Code command').click();
     await fixture.whenStable();
 
     expect(copy).toHaveBeenCalledWith(COMMAND);
@@ -92,7 +94,7 @@ describe('the agents page', () => {
     await fixture.whenStable();
 
     const statuses = Array.from(root.querySelectorAll('lp-copy-block [role="status"]'));
-    expect(statuses[1]?.textContent).toContain('Could not copy');
+    expect(statuses[2]?.textContent).toContain('Could not copy');
   });
 
   it('warns when this build ships no CLI', async () => {

@@ -21,24 +21,17 @@
       }
       @default {
         @if (paths(); as agentPaths) {
-          <section class="lp-card" aria-labelledby="mcp-claude-heading">
-            <h2 id="mcp-claude-heading" class="lp-card__title">
-              {{ 'mcp.agents.claude.heading' | transloco }}
-            </h2>
-            <div class="lp-stack">
-              <p>{{ 'mcp.agents.claude.hint' | transloco }}</p>
-              <lp-copy-block [text]="command()" copyLabel="mcp.agents.claude.copy" />
-            </div>
-          </section>
-          <section class="lp-card" aria-labelledby="mcp-json-heading">
-            <h2 id="mcp-json-heading" class="lp-card__title">
-              {{ 'mcp.agents.json.heading' | transloco }}
-            </h2>
-            <div class="lp-stack">
-              <p>{{ 'mcp.agents.json.hint' | transloco }}</p>
-              <lp-copy-block [text]="configuration()" copyLabel="mcp.agents.json.copy" />
-            </div>
-          </section>
+          @for (setup of setups(); track setup.id) {
+            <section class="lp-card" [attr.aria-labelledby]="'mcp-' + setup.id + '-heading'">
+              <h2 [id]="'mcp-' + setup.id + '-heading'" class="lp-card__title">
+                {{ setup.heading | transloco }}
+              </h2>
+              <div class="lp-stack">
+                <p>{{ setup.hint | transloco }}</p>
+                <lp-copy-block [text]="setup.text" [copyLabel]="setup.copyLabel" />
+              </div>
+            </section>
+          }
           <lp-status-banner variant="info">
             <p class="library">
               {{ 'mcp.agents.library' | transloco: { path: agentPaths.libraryPath } }}
