@@ -1,4 +1,4 @@
-import { ComponentRef } from '@angular/core';
+import { ComponentRef, type Provider, signal, type WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EngineStore } from '../engine/engine-store';
 import { MockEditorEngine } from '../engine/testing/mock-editor-engine';
@@ -6,6 +6,8 @@ import { CurrentAnimation } from '../library/current-animation';
 import type { FakeLibraryStore } from '../library/testing/fake-library-store';
 import { configureLibrary } from '../library/testing/library-test-support';
 import { EditorPage } from './editor-page';
+import { EditorStore } from './editor-store';
+import { InspectorLayout } from './inspector-tabs/inspector-layout';
 import { DiscardConfirmation } from './new-animation/discard-confirmation';
 import { NewAnimationFlow } from './new-animation/new-animation-flow';
 import { Shortcuts } from './shortcuts';
@@ -26,6 +28,31 @@ async function documentTitled(title: string): Promise<Uint8Array> {
   return engine.serialize();
 }
 
+/** The inspector's panels shown, each by the component it holds. */
+function visiblePanels(root: HTMLElement): string[] {
+  return Array.from(root.querySelectorAll<HTMLElement>('.inspector .panel'))
+    .filter((panel) => !panel.hidden)
+    .map((panel) => panel.lastElementChild?.localName ?? '');
+}
+
+/** The inspector's tabs, when it has them. */
+function inspectorTabs(root: HTMLElement): HTMLButtonElement[] {
+  return Array.from(root.querySelectorAll<HTMLButtonElement>('.inspector [role="tab"]'));
+}
+
+/** What must outlive a change of layout: the view, the active layer and frame, the history. */
+function editingState() {
+  const editor = TestBed.inject(EditorStore);
+  return {
+    zoom: editor.zoom(),
+    pan: editor.pan(),
+    selection: editor.selection(),
+    activeLayer: editor.activeLayer(),
+    activeFrame: editor.activeFrame(),
+    canUndo: TestBed.inject(EngineStore).state().canUndo,
+  };
+}
+
 /** The button whose text is `name`, within `root`. */
 function buttonNamed(root: HTMLElement, name: string): HTMLButtonElement {
   const button = Array.from(root.querySelectorAll('button')).find(
@@ -39,9 +66,17 @@ describe('EditorPage', () => {
   let confirm: ReturnType<typeof vi.fn<() => Promise<boolean>>>;
   let store: FakeLibraryStore;
 
-  async function configure(): Promise<void> {
+  /** Whether the window is narrower than 75 rem: the tests narrow and widen it at will. */
+  let tabbed: WritableSignal<boolean>;
+
+  async function configure(...providers: Provider[]): Promise<void> {
     confirm = vi.fn<() => Promise<boolean>>();
-    ({ store } = await configureLibrary({ provide: DiscardConfirmation, useValue: { confirm } }));
+    tabbed = signal(false);
+    ({ store } = await configureLibrary(
+      { provide: DiscardConfirmation, useValue: { confirm } },
+      { provide: InspectorLayout, useValue: { tabbed } },
+      ...providers,
+    ));
   }
 
   async function open(animationId?: string): Promise<ComponentFixture<EditorPage>> {
@@ -156,5 +191,90 @@ describe('EditorPage', () => {
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'b' }));
 
     expect(calls).toEqual(['pencil']);
+  });
+
+  it('keeps every inspector panel open from 75 rem, each named by its heading', async () => {
+    await configure();
+    const root = (await open()).nativeElement as HTMLElement;
+
+    expect(inspectorTabs(root)).toEqual([]);
+    expect(visiblePanels(root)).toEqual([
+      'lp-palette-panel',
+      'lp-layer-list',
+      'lp-playback-preview',
+    ]);
+    for (const panel of Array.from(root.querySelectorAll('.inspector .panel'))) {
+      expect(panel.getAttribute('role')).toBeNull();
+      expect(root.querySelector(`#${panel.getAttribute('aria-labelledby')}`)?.localName).toBe('h2');
+    }
+  });
+
+  it('shows one inspector panel at a time behind tabs below 75 rem', async () => {
+    await configure();
+    tabbed.set(true);
+    const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
+    const tabs = inspectorTabs(root);
+
+    expect(tabs.map((tab) => tab.textContent?.trim())).toEqual(['Palette', 'Layers', 'Preview']);
+    expect(visiblePanels(root)).toEqual(['lp-palette-panel']);
+
+    tabs[1].click();
+    await fixture.whenStable();
+
+    expect(visiblePanels(root)).toEqual(['lp-layer-list']);
+    const panel = root.querySelector(`#${tabs[1].getAttribute('aria-controls')}`);
+    expect(panel?.getAttribute('role')).toBe('tabpanel');
+    expect(panel?.getAttribute('aria-labelledby')).toBe(tabs[1].id);
+  });
+
+  it('keeps the canvas, the view, the active layer and frame and the history across widths', async () => {
+    await configure();
+    const engine = TestBed.inject(EngineStore);
+    await engine.create({ title: 'Wide', width: 8, height: 8, layerName: 'Base' });
+    await engine.apply({ kind: 'addLayer', position: 1, name: 'Top' });
+    await engine.apply({ kind: 'addFrame', position: 1, durationMs: 100 });
+    const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
+    const editor = TestBed.inject(EditorStore);
+    const animation = engine.document();
+    editor.activeLayer.set(animation?.layers[0].id ?? null);
+    editor.activeFrame.set(animation?.frames[1].id ?? null);
+    editor.zoom.set(12);
+    editor.pan.set({ x: 3, y: -2 });
+    editor.selection.set({ x: 1, y: 1, width: 2, height: 3 });
+    await fixture.whenStable();
+    const canvas = root.querySelector('lp-canvas');
+    const before = editingState();
+
+    tabbed.set(true);
+    await fixture.whenStable();
+    inspectorTabs(root)[2].click();
+    tabbed.set(false);
+    await fixture.whenStable();
+    tabbed.set(true);
+    await fixture.whenStable();
+
+    expect(root.querySelector('lp-canvas')).toBe(canvas);
+    expect(editingState()).toEqual(before);
+    expect(before.canUndo).toBe(true);
+    expect(visiblePanels(root)).toEqual(['lp-playback-preview']);
+  });
+
+  it('folds the inspector away with a button that tells whether it is open', async () => {
+    await configure();
+    tabbed.set(true);
+    const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
+    const toggle = buttonNamed(root, 'Panels');
+
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(toggle.getAttribute('aria-controls')).toBe(root.querySelector('.inspector')?.id);
+
+    toggle.click();
+    await fixture.whenStable();
+
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(root.querySelector('.editor')?.classList).toContain('inspector-closed');
   });
 });

@@ -31,6 +31,10 @@ $thumbnail-size: 2.5rem;
   min-width: 0;
   // The focus and the reveal leave the frame clear of the sticky commands.
   scroll-margin-inline-start: calc(strip.$head-width + var(--lp-space-2));
+
+  @media (max-width: strip.$narrow-max-width) {
+    scroll-margin-inline-start: var(--lp-space-2);
+  }
 }
 
 .thumbnail-button {

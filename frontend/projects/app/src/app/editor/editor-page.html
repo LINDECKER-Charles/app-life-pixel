@@ -1,4 +1,4 @@
-<div class="editor">
+<div class="editor" [class.inspector-closed]="!inspectorOpen()">
   <header class="docbar">
     <h1 class="lp-visually-hidden">{{ 'editor.heading' | transloco }}</h1>
     <div class="document">
@@ -7,6 +7,17 @@
       <lp-open-status />
     </div>
     <div class="actions">
+      <!-- Between 48 and 75 rem only (editor-page.scss): folds the inspector away. -->
+      <button
+        type="button"
+        class="lp-button lp-button--quiet inspector-toggle"
+        aria-controls="editor-inspector"
+        [attr.aria-expanded]="inspectorOpen()"
+        (click)="inspectorOpen.set(!inspectorOpen())"
+      >
+        <lp-icon [name]="inspectorOpen() ? 'chevron-right' : 'chevron-left'" />
+        {{ 'editor.inspector.label' | transloco }}
+      </button>
       <button
         type="button"
         class="lp-button lp-button--secondary new"
@@ -28,24 +39,55 @@
       <lp-editor-welcome class="welcome" />
     }
   </section>
-  <div class="inspector">
-    <section class="panel" aria-labelledby="inspector-palette">
-      <h2 id="inspector-palette" class="panel-title">{{ 'editor.region.palette' | transloco }}</h2>
+  <section class="region timeline" [attr.aria-label]="'editor.region.timeline' | transloco">
+    <lp-timeline />
+  </section>
+  <div id="editor-inspector" class="inspector">
+    @if (tabbed()) {
+      <lp-inspector-tabs
+        class="tabs"
+        [tabs]="inspectorTabs"
+        [label]="'editor.inspector.label' | transloco"
+        [(selected)]="inspectorPanel"
+      />
+    }
+    <!-- Sections with a heading each; tabbed, panels of which one shows at a time. -->
+    <section
+      id="inspector-palette-panel"
+      class="panel"
+      [attr.role]="tabbed() ? 'tabpanel' : null"
+      [attr.aria-labelledby]="panelLabel('inspector-palette-panel', 'inspector-palette')"
+      [hidden]="isPanelHidden('inspector-palette-panel')"
+    >
+      <h2 id="inspector-palette" class="panel-title" [class.lp-visually-hidden]="tabbed()">
+        {{ 'editor.region.palette' | transloco }}
+      </h2>
       <lp-palette-panel />
     </section>
-    <section class="panel" aria-labelledby="inspector-layers">
-      <h2 id="inspector-layers" class="panel-title">{{ 'timeline.layers.heading' | transloco }}</h2>
+    <section
+      id="inspector-layers-panel"
+      class="panel"
+      [attr.role]="tabbed() ? 'tabpanel' : null"
+      [attr.aria-labelledby]="panelLabel('inspector-layers-panel', 'inspector-layers')"
+      [hidden]="isPanelHidden('inspector-layers-panel')"
+    >
+      <h2 id="inspector-layers" class="panel-title" [class.lp-visually-hidden]="tabbed()">
+        {{ 'timeline.layers.heading' | transloco }}
+      </h2>
       <lp-layer-list />
     </section>
-    <section class="panel" aria-labelledby="inspector-playback">
-      <h2 id="inspector-playback" class="panel-title">
+    <section
+      id="inspector-playback-panel"
+      class="panel"
+      [attr.role]="tabbed() ? 'tabpanel' : null"
+      [attr.aria-labelledby]="panelLabel('inspector-playback-panel', 'inspector-playback')"
+      [hidden]="isPanelHidden('inspector-playback-panel')"
+    >
+      <h2 id="inspector-playback" class="panel-title" [class.lp-visually-hidden]="tabbed()">
         {{ 'timeline.playback.heading' | transloco }}
       </h2>
       <lp-playback-preview />
     </section>
   </div>
-  <section class="region timeline" [attr.aria-label]="'editor.region.timeline' | transloco">
-    <lp-timeline />
-  </section>
 </div>
 <lp-new-animation-dialog />

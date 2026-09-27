@@ -4,6 +4,8 @@
 $head-width: 12.5rem;
 $cell-width: 5.5rem;
 $cell-gap: var(--lp-space-2);
+// Below 48 rem (plan C11), the head no longer fits beside the frames: it becomes a row above them.
+$narrow-max-width: 47.99rem;
 
 // Both rows scroll together in the timeline region: each is as wide as its content, at least the
 // region's width, and its head stays at the start edge.
@@ -14,6 +16,10 @@ $cell-gap: var(--lp-space-2);
   align-items: start;
   width: max-content;
   min-width: 100%;
+
+  @media (max-width: $narrow-max-width) {
+    grid-template-columns: auto;
+  }
 }
 
 @mixin head {
@@ -34,5 +40,14 @@ $cell-gap: var(--lp-space-2);
   .lp-button {
     justify-content: flex-start;
     white-space: nowrap;
+  }
+
+  // As wide as the timeline region shows (its container), the commands stay in view and wrap
+  // while the frames pan beneath them.
+  @media (max-width: $narrow-max-width) {
+    flex-flow: row wrap;
+    width: 100cqi;
+    padding-inline-end: 0;
+    border-inline-end: 0;
   }
 }

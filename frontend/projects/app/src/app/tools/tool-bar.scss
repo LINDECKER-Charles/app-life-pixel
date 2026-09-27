@@ -52,10 +52,12 @@ $narrow-max-width: 47.99rem;
   background: var(--lp-color-surface-soft);
 }
 
-// Stacked above the stage (lot 6 adapts it further), the rail runs as a row that wraps.
+// Below 48 rem, under the stage (plan C11), the rail runs as a row: its groups, then their
+// buttons, wrap rather than widen the page.
 @media (max-width: $narrow-max-width) {
   :host {
     flex-flow: row wrap;
+    row-gap: var(--lp-space-1);
   }
 
   .group {
