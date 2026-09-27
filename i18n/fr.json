@@ -508,6 +508,8 @@
   "design_system.type.label": "Libellé",
   "editor.empty.hint": "Aucune animation n’est ouverte.",
   "editor.heading": "Éditeur",
+  "editor.inspector.label": "Panneaux",
+  "editor.inspector.preview": "Aperçu",
   "editor.new.action": "Nouvelle",
   "editor.new.context": "Nommez votre animation et choisissez sa taille. Vous pourrez la renommer plus tard.",
   "editor.new.create": "Créer",

@@ -508,6 +508,8 @@
   "design_system.type.label": "Control label",
   "editor.empty.hint": "No animation is open.",
   "editor.heading": "Editor",
+  "editor.inspector.label": "Panels",
+  "editor.inspector.preview": "Preview",
   "editor.new.action": "New",
   "editor.new.context": "Name your animation and choose its size. You can rename it later.",
   "editor.new.create": "Create",
