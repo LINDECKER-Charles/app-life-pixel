@@ -96,8 +96,9 @@ environment of its target (`staging` or `production`), sends it over SSH with th
 job's registry token in files of mode 600, never on a command line. `ci.yml` hands it the
 target's secrets alone, by name — never `secrets: inherit`, nor a secret read by a computed name,
 either of which gives the runner every secret of the repository —, and it checks each is set
-before anything is sent. The host's key is pinned by `<ENV>_KNOWN_HOSTS` when set; without it,
-`ssh-keyscan` trusts the key on first use and the job warns. `DEPLOY_DRY_RUN=1` prints the
+before anything is sent. Production requires `PROD_KNOWN_HOSTS`, which pins the host's ed25519
+key; staging pins it when `STAGING_KNOWN_HOSTS` is set, and otherwise trusts whatever key the host
+presents on each run, with a warning. `DEPLOY_DRY_RUN=1` prints the
 commands instead, and CI's `docker`
 job runs it so. The environment files are documented by `.env.staging.example` and
 `.env.prod.example`, which never set the images' listeners nor folders.
@@ -157,12 +158,14 @@ The chain runs in two services of `compose.deploy.yaml`, profile `backup`, produ
   them to read or overwrite —, so a compromised host can still never erase a backup already sent.
   Retention: the bucket's lifecycle rule deletes backups after 180 days; versioning keeps replaced
   or deleted objects 30 days (D35) — both set by the maintainer, outside this repository.
-- **Restore** — `scripts/backup/restore.sh <file> <database-url>`, run by the maintainer, needs the
+- **Restore** — `scripts/backup/restore.sh <file> <database>`, run by the maintainer, needs the
   read-only rclone credentials and the crypt passwords (never the write-only upload ones, which
   cannot read) configured as the `backupcrypt` remote, and libpq's client tools on `PATH`: it
   fetches and decrypts `<file>` through the crypt remote with `rclone copy`, then replays it into
-  `<database-url>` with `pg_restore --clean --if-exists --no-owner`, dropping what that database
-  already holds first.
+  `<database>` with `pg_restore --clean --if-exists --no-owner`, dropping what that database
+  already holds first. The server comes from libpq's environment — `PGHOST`, `PGPORT`, `PGUSER`,
+  and the password in `PGPASSWORD` or a `PGPASSFILE` —, never from a URL on the command line,
+  where a process list would show the password; the script refuses one.
 - **Rehearsal** — `scripts/backup/rehearse-local.sh` rehearses the whole chain against the local
   stack, with throwaway crypt passwords: `dump-loop.sh` dumps one database, `upload-loop.sh` moves
   it, encrypted, to a throwaway bucket on the local S3Mock — the same `rclone` image as production
@@ -178,7 +181,11 @@ The chain runs in two services of `compose.deploy.yaml`, profile `backup`, produ
 
 ## Secrets
 
-GitHub secrets, following the shared deployment kit:
+GitHub secrets, following the shared deployment kit. The deployment's are repository secrets:
+`ci.yml` reads them outside any environment. A secret of the name `_deploy.yml` gives it —
+`SSH_KEY`, `HOST`, `SSH_USER`, `DEPLOY_PATH`, `ENV_FILE`, `KNOWN_HOSTS` — set on the `staging` or
+`production` environment takes precedence over the repository one, which puts it behind that
+environment's protection rules: the setup production should use.
 
 | Secret | Content |
 |---|---|
@@ -186,7 +193,7 @@ GitHub secrets, following the shared deployment kit:
 | `STAGING_HOST`, `PROD_HOST` | the VPS |
 | `STAGING_PATH`, `PROD_PATH` | `/opt/life-pixel-staging`, `/opt/life-pixel-prod` |
 | `STAGING_SSH_USER`, `PROD_SSH_USER` | optional, `root` by default |
-| `STAGING_KNOWN_HOSTS`, `PROD_KNOWN_HOSTS` | optional, the VPS's host keys as `known_hosts` lines — `ssh-keyscan -H <host>`, checked against `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` run on the VPS itself; without them the key is trusted on first use |
+| `STAGING_KNOWN_HOSTS`, `PROD_KNOWN_HOSTS` | the VPS's ed25519 host key as a `known_hosts` line, `ssh-keyscan -t ed25519 -H <host>`, whose `ssh-keygen -lf` fingerprint matches `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` run on the VPS itself; required for production, optional for staging, which otherwise trusts whatever key the host presents on each run |
 | `ENV_STAGING`, `ENV_PROD` | the full `.env` of the environment, as one multi-line secret |
 | `ENV_TEST` | optional, for CI |
 | `PROMOTION_DEPLOY_KEY` | private half of a deploy key with write access, which the `test` ruleset lets push: `promote-test` fast-forwards `test` with it |
@@ -195,8 +202,11 @@ The `.env` of an environment carries the database URL, the object storage endpoi
 keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`),
 the OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents
 each variable; the real files are never committed. Every host generates its own keys
-(`openssl rand -hex 32`): outside `local`, both servers refuse to start on a key of fewer than 8
-distinct bytes, such as the public development keys of `.env.example`, one repeated byte each.
+(`openssl rand -hex 32`): outside `local`, both servers refuse to start on a key of fewer than 17
+distinct bytes, such as the public development keys of `.env.example`, one repeated byte each —
+the server its four keys, the admin server `LPA_SESSION_SECRET` and `LPA_TOTP_KEY`, its
+`create-admin` and `disable-admin` commands included. The admin API secret the two share is
+checked once, by the server, as `LP_ADMIN_API_SECRET`.
 
 Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
 Android upload key and Play Console service account join them at M6. The updater key and the
@@ -218,7 +228,8 @@ which requires the maintainer's approval and holds the signing secrets below.
 | Job | Does |
 |---|---|
 | `desktop` | builds the sidecar and the app for macOS (universal), Windows and Ubuntu 22.04 with `tauri-apps/tauri-action`, using `bundle.conf.json` and `release.conf.json` together; signs and notarises macOS, signs Windows when `WINDOWS_SIGN_COMMAND` is set; publishes a draft release with `latest.json`, or keeps the installers as workflow artifacts on a dry run |
-| `npm` | checks that `player-js`'s committed build is current, then publishes `@life-pixel/player` by trusted publishing (`id-token: write`, `--provenance`, no token) |
+| `npm-build` | checks that `player-js`'s committed build is current and packs it, with no publishing right |
+| `npm` | publishes that package by trusted publishing (`id-token: write`, `--provenance`, no token), running no dependency code |
 | `docker` | retags the `app` and `admin` images already built for this commit (`_build.yml`) as `:vX.Y.Z` and `:latest`, without rebuilding |
 | `attest` | attaches a provenance attestation to every installer of the draft release |
 | `publish` | once every job above passes, turns the draft release into the release |
@@ -238,9 +249,13 @@ a fork's release checks its own releases, not this one's.
 | `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | the Developer ID certificate and notarisation credentials for macOS |
 | `WINDOWS_SIGN_COMMAND` | optional until the Windows signing service is chosen (M5, D32); when set, patches `bundle.windows.signCommand` into `release.conf.json` before the build |
 
-The signing secrets reach the build step alone, never the whole job: `npm ci` and `cargo install`
-run the install and build scripts of every dependency before it, and none of them may read the
-key that signs every installed app's updates.
+The signing secrets reach the `tauri-action` step alone, never the whole job: `npm ci` and
+`cargo install` run the install and build scripts of every dependency before it, and the front end
+is built before it too, `release.conf.json` turning off the `beforeBuildCommand` that would build
+it again there. That step still compiles the app, so the build scripts and procedural macros of
+its Rust dependencies run with the updater key; `cargo deny` and the pinned lock file are what
+guard them. Isolating the key completely means signing in a job of its own that builds nothing —
+building with `createUpdaterArtifacts` off, then `cargo tauri signer sign` and `latest.json` there.
 
 Android is left out of `release.yml` until M6.
 

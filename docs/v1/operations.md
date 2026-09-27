@@ -136,9 +136,9 @@ networks:
   Permissions: `contents: read`, `packages: write`, `id-token: write`, `attestations: write`.
 - `_promote.yml`: `docker buildx imagetools create` tags `:<sha>` as `:prod`, without rebuilding.
 - `_deploy.yml`, in the GitHub environment of its target, runs `scripts/deploy/deploy.sh` on the
-  host over SSH (`<ENV>_SSH_KEY`, `<ENV>_HOST`, `<ENV>_PATH`, `<ENV>_SSH_USER`, and the optional
-  `<ENV>_KNOWN_HOSTS` that pins the host's key), with only the target's secrets, which `ci.yml`
-  passes by name, in six steps:
+  host over SSH (`<ENV>_SSH_KEY`, `<ENV>_HOST`, `<ENV>_PATH`, `<ENV>_SSH_USER`, and
+  `<ENV>_KNOWN_HOSTS`, which pins the host's ed25519 key — required for production), with only the
+  target's secrets, which `ci.yml` passes by name, in six steps:
   1. write `.env` from `ENV_STAGING` or `ENV_PROD`, mode 600;
   2. clone the repository into the path if needed, then fetch and check out `<sha>`;
   3. fail with "deploy infra-vps first" unless the `edge` and `observability` networks exist —
@@ -192,9 +192,10 @@ D22's two images stay the only ones built here.
 
 ### Restore
 
-- `scripts/backup/restore.sh <file> <database-url>`, run by the maintainer with read credentials and
+- `scripts/backup/restore.sh <file> <database>`, run by the maintainer with read credentials and
   the crypt passwords: `rclone copy` through the crypt remote, which decrypts, then
-  `pg_restore --clean --if-exists --no-owner` into the target database.
+  `pg_restore --clean --if-exists --no-owner` into the target database, on the server of libpq's
+  environment (`PGHOST`, `PGUSER`, `PGPASSWORD` or a `PGPASSFILE`): no password on a command line.
 - `scripts/backup/rehearse-local.sh` rehearses the chain on the local stack: throwaway crypt
   passwords, one dump and one upload into an S3Mock bucket with the same `rclone` image, a restore
   into a new database, and a comparison of every table's row count with the source.
