@@ -89,7 +89,7 @@ in the privacy policy.
 
 ## Access
 
-- A dedicated host — `admin.lifepixel.tech`, `admin.staging.lifepixel.tech` (D28) —, not
+- A dedicated host — `admin.lifepixel.tech`, `admin.test.lifepixel.tech` (D28) —, not
   indexed, admin accounts only, a second factor mandatory, short sessions. An IP allow-list at
   the edge is possible.
 - Least privilege: the console acts through the internal admin API of `server` over the private

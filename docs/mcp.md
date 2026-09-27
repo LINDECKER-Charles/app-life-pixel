@@ -22,7 +22,7 @@ desktop:
 | Codex | `codex mcp add life-pixel --url https://lifepixel.tech/mcp --bearer-token-env-var LIFE_PIXEL_TOKEN` | `codex mcp add life-pixel -- life-pixel mcp` |
 | other clients | their own configuration, with the same URL and header | an `mcpServers` entry launching `life-pixel mcp` |
 
-- The staging endpoint, `https://staging.lifepixel.tech/mcp`, announces itself as
+- The staging endpoint, `https://test.lifepixel.tech/mcp`, announces itself as
   `life-pixel-staging`, so that both environments can sit side by side in a client configuration.
 - Codex takes no secret on its command line: at each start, it reads the token from the
   environment variable named at registration. The app names it after the server —

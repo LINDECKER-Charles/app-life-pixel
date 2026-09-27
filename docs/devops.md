@@ -21,7 +21,7 @@ into a running staging and production — see [docs/v1/README.md](v1/README.md#r
 | Path on the host | — | `/opt/life-pixel-staging` | `/opt/life-pixel-prod` |
 | Image tag | local build | `:<sha>`, `:staging` | `:<sha>`, `:prod` |
 | MCP server name | `life-pixel-dev` | `life-pixel-staging` | `life-pixel` |
-| Domains (D28) | `localhost` | `staging.lifepixel.tech`, `admin.staging.lifepixel.tech` | `lifepixel.tech`, `admin.lifepixel.tech` |
+| Domains (D28) | `localhost` | `test.lifepixel.tech`, `admin.test.lifepixel.tech` | `lifepixel.tech`, `admin.lifepixel.tech` |
 | Object storage (D35) | local, in Docker | a bucket in `fr-par` | a versioned bucket in `fr-par` |
 
 `COMPOSE_PROJECT_NAME` isolates containers, volumes and networks, which is what lets staging and
