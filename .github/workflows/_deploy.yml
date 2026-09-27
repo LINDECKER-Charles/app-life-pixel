@@ -1,8 +1,8 @@
 name: Deploy
 # H14: deploys a commit's images to staging or production on the shared VPS: scripts/deploy/
 # deploy.sh runs on the host over SSH, in the six steps of devops.md. Called by ci.yml after the
-# build or the promotion, with `secrets: inherit`; the secrets of the target are read by its
-# prefix, STAGING_ or PROD_, in its GitHub environment.
+# build or the promotion, which passes the target's own secrets and nothing else: the runner never
+# receives the other environment's, nor any other secret of the repository.
 on:
   workflow_call:
     inputs:
@@ -14,6 +14,25 @@ on:
         description: The commit to deploy, whose images are tagged :<sha>
         type: string
         required: true
+    secrets:
+      ssh_key:
+        description: The private key dedicated to CI deployments
+        required: true
+      host:
+        description: The VPS
+        required: true
+      ssh_user:
+        description: The account on the VPS, root when empty
+        required: false
+      path:
+        description: The environment's folder on the VPS
+        required: true
+      env_file:
+        description: The environment's whole .env
+        required: true
+      known_hosts:
+        description: The VPS's host keys as known_hosts lines; trusted on first use when empty
+        required: false
 permissions: {}
 jobs:
   deploy:
@@ -26,17 +45,26 @@ jobs:
     concurrency:
       group: deploy-${{ inputs.environment }}
       cancel-in-progress: false
-    env:
-      PREFIX: ${{ inputs.environment == 'production' && 'PROD' || 'STAGING' }}
     steps:
-      - name: Check the environment
+      # A caller may pass an empty secret: nothing is sent before every required one is set.
+      - name: Check the environment and its secrets
         env:
           ENVIRONMENT: ${{ inputs.environment }}
+          SSH_KEY: ${{ secrets.ssh_key }}
+          SSH_HOST: ${{ secrets.host }}
+          DEPLOY_PATH: ${{ secrets.path }}
+          ENV_FILE: ${{ secrets.env_file }}
         run: |
           case "$ENVIRONMENT" in
             staging | production) ;;
             *) echo "::error::unknown environment '$ENVIRONMENT'"; exit 1 ;;
           esac
+          for name in SSH_KEY SSH_HOST DEPLOY_PATH ENV_FILE; do
+            if [ -z "${!name}" ]; then
+              echo "::error::the secret behind $name is not set for $ENVIRONMENT"
+              exit 1
+            fi
+          done
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -44,21 +72,27 @@ jobs:
           persist-credentials: false
       - name: Set up SSH
         env:
-          SSH_KEY: ${{ secrets[format('{0}_SSH_KEY', env.PREFIX)] }}
-          SSH_HOST: ${{ secrets[format('{0}_HOST', env.PREFIX)] }}
+          ENVIRONMENT: ${{ inputs.environment }}
+          SSH_KEY: ${{ secrets.ssh_key }}
+          SSH_HOST: ${{ secrets.host }}
+          KNOWN_HOSTS: ${{ secrets.known_hosts }}
         run: |
           install -d -m 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          (umask 077 && printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key)
+          if [ -n "$KNOWN_HOSTS" ]; then
+            printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::no known_hosts secret for $ENVIRONMENT: the host key is trusted on first use"
+            ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          fi
       # The .env and the registry token travel in a tar on SSH's standard input, each in a file of
       # mode 600 in a folder the host removes afterwards: never on a command line.
       - name: Run deploy.sh on the host
         env:
-          SSH_HOST: ${{ secrets[format('{0}_HOST', env.PREFIX)] }}
-          SSH_USER: ${{ secrets[format('{0}_SSH_USER', env.PREFIX)] || 'root' }}
-          DEPLOY_PATH: ${{ secrets[format('{0}_PATH', env.PREFIX)] }}
-          ENV_FILE: ${{ secrets[format('ENV_{0}', env.PREFIX)] }}
+          SSH_HOST: ${{ secrets.host }}
+          SSH_USER: ${{ secrets.ssh_user || 'root' }}
+          DEPLOY_PATH: ${{ secrets.path }}
+          ENV_FILE: ${{ secrets.env_file }}
           REGISTRY_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REGISTRY_USER: ${{ github.actor }}
           SHA: ${{ inputs.sha }}
@@ -68,6 +102,7 @@ jobs:
           (umask 077 && printf '%s\n' "$ENV_FILE" > "$bundle/env" && printf '%s' "$REGISTRY_TOKEN" > "$bundle/token")
           cp scripts/deploy/deploy.sh "$bundle/deploy.sh"
           remote="$(printf 'DEPLOY_SHA=%q DEPLOY_PATH=%q DEPLOY_REGISTRY_USER=%q' "$SHA" "$DEPLOY_PATH" "$REGISTRY_USER")"
-          tar -C "$bundle" -cf - env token deploy.sh | ssh -i ~/.ssh/deploy_key "$SSH_USER@$SSH_HOST" \
+          tar -C "$bundle" -cf - env token deploy.sh \
+            | ssh -i ~/.ssh/deploy_key -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" \
             "set -eu; dir=\$(mktemp -d); trap 'rm -rf \"\$dir\"' EXIT; tar -xpf - -C \"\$dir\";
             $remote DEPLOY_ENV_FILE=\"\$dir/env\" DEPLOY_REGISTRY_TOKEN_FILE=\"\$dir/token\" bash \"\$dir/deploy.sh\""

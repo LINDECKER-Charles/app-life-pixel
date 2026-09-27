@@ -49,7 +49,14 @@ jobs:
     with:
       environment: staging
       sha: ${{ github.sha }}
-    secrets: inherit
+    # Staging's secrets alone: never `inherit`, which hands every secret to the runner.
+    secrets:
+      ssh_key: ${{ secrets.STAGING_SSH_KEY }}
+      host: ${{ secrets.STAGING_HOST }}
+      ssh_user: ${{ secrets.STAGING_SSH_USER }}
+      path: ${{ secrets.STAGING_PATH }}
+      env_file: ${{ secrets.ENV_STAGING }}
+      known_hosts: ${{ secrets.STAGING_KNOWN_HOSTS }}
     permissions:
       contents: read
       packages: read
@@ -67,7 +74,14 @@ jobs:
     with:
       environment: production
       sha: ${{ github.sha }}
-    secrets: inherit
+    # Production's secrets alone, as staging's above.
+    secrets:
+      ssh_key: ${{ secrets.PROD_SSH_KEY }}
+      host: ${{ secrets.PROD_HOST }}
+      ssh_user: ${{ secrets.PROD_SSH_USER }}
+      path: ${{ secrets.PROD_PATH }}
+      env_file: ${{ secrets.ENV_PROD }}
+      known_hosts: ${{ secrets.PROD_KNOWN_HOSTS }}
     permissions:
       contents: read
       packages: read
