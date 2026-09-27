@@ -15,6 +15,10 @@ import { ShortcutsHelpState } from './shortcuts-help-state';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './shortcuts-help-dialog.html',
   styles: `
+    /* The dialog clips the body's edges, which would crop the shared outset focus ring. */
+    .lp-dialog__body:focus-visible {
+      outline-offset: calc(-1 * var(--lp-focus-width));
+    }
     .list {
       display: flex;
       flex-direction: column;

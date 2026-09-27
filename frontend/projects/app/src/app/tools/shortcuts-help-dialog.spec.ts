@@ -42,6 +42,24 @@ describe('ShortcutsHelpDialog', () => {
     expect(dialog[0].querySelector('kbd')?.textContent).toBe('B');
   });
 
+  it('lets the keyboard reach the scrolling list, named after the dialog title', async () => {
+    await configure();
+    TestBed.createComponent(ShortcutsHelpDialog);
+    TestBed.inject(ShortcutsHelpState).open();
+
+    const region = await vi.waitFor(() => {
+      const candidate = document.querySelector<HTMLElement>('[role="region"]');
+      if (!candidate) throw new Error('the dialog is not open');
+      return candidate;
+    });
+    region.focus();
+
+    expect(document.activeElement).toBe(region);
+    expect(region.querySelector('ul')).not.toBeNull();
+    const labelId = region.getAttribute('aria-labelledby') ?? '';
+    expect(document.getElementById(labelId)?.textContent?.trim()).toBe('Keyboard shortcuts');
+  });
+
   it('closes on the close button', async () => {
     await configure();
     TestBed.createComponent(ShortcutsHelpDialog);

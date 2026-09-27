@@ -7,9 +7,17 @@
   <ng-template>
     <div class="lp-dialog">
       <header class="lp-dialog__header">
-        <h2 class="lp-dialog__title">{{ 'shortcuts.title' | transloco }}</h2>
+        <h2 id="shortcuts-help-title" class="lp-dialog__title">
+          {{ 'shortcuts.title' | transloco }}
+        </h2>
       </header>
-      <div class="lp-dialog__body">
+      <!-- The list overflows: a focusable, named region lets the keyboard scroll it (WCAG 2.1.1). -->
+      <div
+        class="lp-dialog__body"
+        role="region"
+        tabindex="0"
+        aria-labelledby="shortcuts-help-title"
+      >
         <ul class="list">
           @for (shortcut of shortcuts.all(); track $index) {
             <li class="row">
