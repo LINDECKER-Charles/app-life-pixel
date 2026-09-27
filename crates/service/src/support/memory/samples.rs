@@ -24,7 +24,7 @@ const JPEG_QUALITY: u8 = 90;
 ///
 /// When the encoder fails, which a valid size never makes it.
 #[must_use]
-#[allow(clippy::expect_used)] // A test helper: a failure is the test's.
+#[allow(clippy::expect_used, reason = "a test helper: a failure is the test's")]
 pub fn png_screenshot_with_text(
     (width, height): (u32, u32),
     (key, value): (&str, &str),
@@ -50,7 +50,7 @@ pub fn png_screenshot_with_text(
 ///
 /// When the encoder fails, which a valid size never makes it.
 #[must_use]
-#[allow(clippy::expect_used)] // A test helper: a failure is the test's.
+#[allow(clippy::expect_used, reason = "a test helper: a failure is the test's")]
 pub fn jpeg_screenshot((width, height): (u32, u32)) -> Vec<u8> {
     let mut bytes = Cursor::new(Vec::new());
     let rgb = pixels(width, height, &PIXEL[..3]);

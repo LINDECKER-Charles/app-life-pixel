@@ -78,6 +78,7 @@ it lands; this is the loop so far.
 
 ```shell
 cmp CLAUDE.md AGENTS.md
+node --test "scripts/ci/*.test.mjs"
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
@@ -289,10 +290,12 @@ cargo run -p life-pixel-admin-server -- healthcheck   # exit 0 when /healthz ans
 cargo run -p life-pixel-admin-server -- openapi       # the console API's description, on stdout
 ```
 
-Admins exist only through the command line of the admin server's host. `create-admin` asks for
+Admins are made on the admin server's host, never through the console. `create-admin` asks for
 the password twice without echo — or reads one line of standard input with `--password-stdin` —
 and prints the `otpauth://` URI to scan with an authenticator app; nothing shows the secret
-again. `disable-admin` ends the admin's sessions and refuses its sign-ins.
+again. `disable-admin` ends the admin's sessions and refuses its sign-ins. On a new host, the
+first admin can instead come from `LPA_ROOT_ADMIN_EMAIL`, `LPA_ROOT_ADMIN_PASSWORD` and
+`LPA_ROOT_ADMIN_TOTP_SECRET`: `serve` creates it at start while there is no admin at all.
 
 ```shell
 cargo run -p life-pixel-admin-server -- create-admin ops@example.org

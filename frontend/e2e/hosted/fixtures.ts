@@ -25,7 +25,8 @@ async function asPerson(context: BrowserContext, person: Person): Promise<void> 
 
 /** The hosted journeys' test: each gets its person, and the admin console when it asks. */
 export const test = base.extend<HostedFixtures>({
-  // eslint-disable-next-line no-empty-pattern
+  // Playwright reads a fixture's dependencies from its destructured first argument: none here.
+  // eslint-disable-next-line no-empty-pattern -- Playwright requires the destructuring.
   person: async ({}, use) => {
     await use(newPerson('user'));
   },

@@ -1,6 +1,9 @@
 //! The token use cases over the in-memory adapter.
 
-#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+#![allow(
+    clippy::unwrap_used,
+    reason = "a helper fails its test by panicking, as the test would"
+)]
 
 use std::sync::Arc;
 

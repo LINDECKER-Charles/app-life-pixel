@@ -61,16 +61,30 @@ type/topic ──PR──► dev ──CI green──► test (fast-forward) ─
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `ci.yml` | pull request, push to `dev` or `main` | orchestrates the stages below |
-| `_verify.yml` | called | Rust: `fmt`, `clippy -D warnings`, tests, `cargo deny`, WebAssembly build and size budgets. Front-end: lint, format, type check, unit tests, build, catalogue parity. End-to-end tests of the critical path. Dockerfile and compose checks. `CLAUDE.md` identical to `AGENTS.md` |
+| `ci.yml` | pull request, push to `dev` or `main` | orchestrates the stages below; a push to `main` skips `_verify.yml` |
+| `_verify.yml` | called | Rust: `fmt`, `clippy -D warnings`, tests, `cargo deny`, WebAssembly build and size budgets. Front-end: lint, format, type check, unit tests, build, catalogue parity. End-to-end tests of the critical path. Dockerfile and compose checks. `CLAUDE.md` identical to `AGENTS.md`, and the tests of `scripts/ci/`. A pull request that changes documentation alone runs only the last two |
+| `pull-request.yml` | pull request to `dev`, and each edit of its title | the title follows the commit convention, the branch is named `type/short-description`; a warning beyond 600 changed lines. Dependabot's pull requests are left out |
 | `_build.yml` | push to `dev`, after promotion to `test` | builds `app` and `admin`, pushes `:<sha>` and `:staging` to GHCR |
-| `_promote.yml` | push to `main` | retags `:<sha>` as `:prod`, without rebuilding |
+| `_promote.yml` | push to `main` | checks that the commit's CI run on a push to `dev` succeeded, then retags `:<sha>` as `:prod`, without rebuilding |
 | `_deploy.yml` | after build or promotion | deploys to the VPS over SSH (below) |
-| `security.yml` | pull request, push, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`), dependency review, `cargo deny`, `npm audit` |
+| `security.yml` | pull request, push to `dev`, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`) — on a pull request, only the languages whose sources changed —, dependency review, `cargo deny`, `npm audit` |
 | `release.yml` | tag `vX.Y.Z`, or by hand as a dry run | desktop installers (Windows, macOS universal, Ubuntu 22.04) with the signed updater, `@life-pixel/player` to npm, Docker version tags, a draft GitHub Release with provenance attestations, published once every job passes — see "Release" below. Android joins at M6 |
 
 The same checks run on the pull request and on the push that follows the merge: the second run
 validates the real merge commit before it is promoted.
+
+A check runs only where it can find something:
+
+- **Documentation.** A pull request that changes documentation alone — `docs/`, and Markdown
+  anywhere but `i18n/`, whose legal pages the server serves — skips the verification jobs, the
+  repository's checks aside.
+- **CodeQL.** On a pull request, CodeQL analyses only the languages whose sources changed.
+- **`main`.** A push to `main` verifies nothing again: it fast-forwards to a commit `dev`'s CI
+  already verified, and `_promote.yml` refuses one without that green run.
+
+`scripts/ci/verification-scope.mjs` holds both rules for pull requests. A job skipped by its own
+`if` reports a success, so the checks the `dev` ruleset requires still pass. A push to `dev` and
+the weekly run always check everything.
 
 ## Deploying on the shared VPS
 
@@ -208,7 +222,10 @@ each variable; the real files are never committed. Every host generates its own 
 distinct bytes, such as the public development keys of `.env.example`, one repeated byte each —
 the server its four keys, the admin server `LPA_SESSION_SECRET` and `LPA_TOTP_KEY`, its
 `create-admin` and `disable-admin` commands included. The admin API secret the two share is
-checked once, by the server, as `LP_ADMIN_API_SECRET`.
+checked once, by the server, as `LP_ADMIN_API_SECRET`. The optional `LPA_ROOT_ADMIN_*` variables
+give a new environment its first admin, created at start while the admin database has none (see
+[support-admin.md](v1/support-admin.md)); they grant the console, so they are as secret as the
+keys, and can be emptied once that admin has signed in.
 
 Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
 Android upload key and Play Console service account join them at M6. The updater key and the

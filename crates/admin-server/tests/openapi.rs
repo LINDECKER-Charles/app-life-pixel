@@ -1,7 +1,7 @@
 //! The committed description is the one the code writes: regenerate it with
 //! `cargo run -p life-pixel-admin-server -- openapi > crates/admin-server/openapi.json`.
 
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, reason = "a panic is a failed test")]
 
 use life_pixel_admin_server::openapi;
 

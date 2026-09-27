@@ -9,6 +9,26 @@
 /crates/player/         @LINDECKER-Charles
 /player-js/             @LINDECKER-Charles
 
+# The rules every contribution is checked against: conventions, lints, boundaries, toolchains
+# and dependencies. They stay the maintainer's even once contributors own parts of the code —
+# loosening a rule to make a change pass is the maintainer's decision.
+/CLAUDE.md                          @LINDECKER-Charles
+/AGENTS.md                          @LINDECKER-Charles
+/.claude/settings.json              @LINDECKER-Charles
+/docs/decisions.md                  @LINDECKER-Charles
+/Cargo.toml                         @LINDECKER-Charles
+/clippy.toml                        @LINDECKER-Charles
+/deny.toml                          @LINDECKER-Charles
+/rustfmt.toml                       @LINDECKER-Charles
+/xtask/src/boundaries/              @LINDECKER-Charles
+/scripts/ci/                        @LINDECKER-Charles
+/frontend/eslint.config.js          @LINDECKER-Charles
+/frontend/stylelint.config.mjs      @LINDECKER-Charles
+/frontend/.prettierrc.json          @LINDECKER-Charles
+/frontend/tsconfig*.json            @LINDECKER-Charles
+/frontend/package.json              @LINDECKER-Charles
+/player-js/package.json             @LINDECKER-Charles
+
 # Supply chain, deployment and governance.
 /.github/               @LINDECKER-Charles
 /docker/                @LINDECKER-Charles

@@ -2,7 +2,11 @@
 //! the admin server writes, what it makes of the answers, and the problems of a source missing
 //! or failing.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "a panic is a failed test"
+)]
 
 mod common;
 

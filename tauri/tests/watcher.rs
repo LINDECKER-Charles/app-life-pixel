@@ -1,7 +1,10 @@
 //! The library watcher: a file written by hand in a temporary library reaches its listener as a
 //! change naming its ids, and the watcher follows the library to a new folder.
 
-#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+#![allow(
+    clippy::unwrap_used,
+    reason = "a helper fails its test by panicking, as the test would"
+)]
 
 use std::collections::BTreeSet;
 use std::path::Path;

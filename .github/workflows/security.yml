@@ -2,8 +2,10 @@ name: Security
 on:
   pull_request:
     branches: [dev]
+  # Not `main`: it only fast-forwards to a commit already analysed on its push to `dev`, and the
+  # weekly run analyses `dev` again with the advisories published since.
   push:
-    branches: [dev, main]
+    branches: [dev]
   schedule:
     - cron: "0 3 * * 1"
   workflow_dispatch:
@@ -12,8 +14,38 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  # The languages to analyse (scripts/ci/verification-scope.mjs): on a pull request, those whose
+  # sources changed; on a push or a scheduled run, all of them.
+  scope:
+    name: Scope
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      codeql: ${{ steps.scope.outputs.codeql }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Detect what the change calls for
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/ci/detect-scope.mjs
+
+  # F1. F2 adds `rust`, F3 adds `javascript-typescript`: the languages and their sources live in
+  # verification-scope.mjs.
   codeql:
     name: CodeQL (${{ matrix.language }})
+    needs: scope
+    if: needs.scope.outputs.codeql != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,11 +53,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language:
-          # F1. F2 adds `rust`, F3 adds `javascript-typescript`, one per line.
-          - actions
-          - rust
-          - javascript-typescript
+        language: ${{ fromJSON(needs.scope.outputs.codeql) }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

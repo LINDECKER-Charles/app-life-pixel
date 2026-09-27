@@ -9,13 +9,16 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  # Not on `main`: it only fast-forwards to a commit `dev`'s CI already verified, which
+  # `_promote.yml` checks instead of verifying the same tree again.
   verify:
+    if: github.ref != 'refs/heads/main'
     uses: ./.github/workflows/_verify.yml
     permissions:
       contents: read
 
-  # H14: delivery, on pushes only, once `verify` is green (devops.md, "Branches and promotion").
-  # A push to `dev` fast-forwards `test` to it, builds the images once and deploys them to
+  # H14: delivery, on pushes only (devops.md, "Branches and promotion"). A push to `dev`, once
+  # `verify` is green, fast-forwards `test` to it, builds the images once and deploys them to
   # staging; a push to `main` retags those images :prod and deploys them to production.
   promote-test:
     name: Promote to test
@@ -62,11 +65,11 @@ jobs:
       packages: read
   promote-images:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: verify
     uses: ./.github/workflows/_promote.yml
     with:
       sha: ${{ github.sha }}
     permissions:
+      actions: read
       packages: write
   deploy-production:
     needs: promote-images

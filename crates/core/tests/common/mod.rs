@@ -1,6 +1,6 @@
 //! Documents shared by the integration tests.
 
-#![allow(dead_code)] // Each test file uses its own share of the helpers.
+#![allow(dead_code, reason = "each test file uses its own share of the helpers")]
 
 use life_pixel_core::serialize::read_document;
 use life_pixel_core::{Animation, DocumentError};

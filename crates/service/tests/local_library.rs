@@ -2,7 +2,10 @@
 //! do — `library.json`, versions from the file's bytes, changes made behind the library's back,
 //! an interrupted write, and files it does not know or cannot read.
 
-#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+#![allow(
+    clippy::unwrap_used,
+    reason = "a helper fails its test by panicking, as the test would"
+)]
 
 use std::fs;
 use std::path::{Path, PathBuf};

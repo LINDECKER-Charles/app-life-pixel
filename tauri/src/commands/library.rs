@@ -72,7 +72,10 @@ pub async fn library_delete_project(
 /// A page of the animations — of a project, whose title holds `query`, or all —, from the most
 /// recently updated.
 #[tauri::command]
-#[allow(clippy::too_many_arguments)] // The arguments of the HTTP API's query, flat as it has them.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the arguments of the HTTP API's query, flat as it has them"
+)]
 pub async fn library_list_animations(
     state: State<'_, DesktopState>,
     project_id: Option<String>,
@@ -122,7 +125,10 @@ pub async fn library_open_document(
 
 /// Replaces a document when its version is still `version`.
 #[tauri::command]
-#[allow(clippy::too_many_arguments)] // The HTTP API's route, its `If-Match` and its body.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the HTTP API's route, its `If-Match` and its body"
+)]
 pub async fn library_save_document(
     state: State<'_, DesktopState>,
     id: String,
@@ -140,7 +146,10 @@ pub async fn library_save_document(
 
 /// Retitles an animation when its version is still `version`.
 #[tauri::command]
-#[allow(clippy::too_many_arguments)] // The HTTP API's route, its `If-Match` and its body.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the HTTP API's route, its `If-Match` and its body"
+)]
 pub async fn library_rename_animation(
     state: State<'_, DesktopState>,
     id: String,
@@ -170,7 +179,10 @@ pub async fn library_move_animation(
 
 /// Copies an animation under a new title, into `projectId` or beside the original.
 #[tauri::command]
-#[allow(clippy::too_many_arguments)] // The HTTP API's route and its body.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the HTTP API's route and its body"
+)]
 pub async fn library_duplicate_animation(
     state: State<'_, DesktopState>,
     id: String,

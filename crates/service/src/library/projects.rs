@@ -61,7 +61,10 @@ impl Library {
     /// # Errors
     ///
     /// `document.name` for an invalid name; `library.project_not_found`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn rename_project(
         &self,
         owner: &Owner,

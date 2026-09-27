@@ -1,11 +1,13 @@
 //! `.env.example`'s `LPA_` block is a configuration the admin server starts with locally, and
 //! its public development keys — like any weak key — are refused anywhere else, by `serve` and
-//! by the `create-admin` and `disable-admin` commands alike.
+//! by the `create-admin` and `disable-admin` commands alike. The root admin's variables go
+//! together, and are checked before anything starts.
 
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, reason = "a panic is a failed test")]
 
 use std::collections::HashMap;
 
+use life_pixel_admin_server::admins::totp::TotpSecret;
 use life_pixel_admin_server::config::{AccountsConfig, Config, ConfigError};
 use sha2::{Digest, Sha256};
 
@@ -21,6 +23,15 @@ const WEAK_KEYS: [&str; 3] = [
 /// zeros, has 17.
 const SEVENTEEN_DISTINCT_BYTES: &str =
     "000102030405060708090a0b0c0d0e0f10000000000000000000000000000000";
+
+/// The root admin's variables.
+const ROOT_ADMIN: [&str; 3] = [
+    "LPA_ROOT_ADMIN_EMAIL",
+    "LPA_ROOT_ADMIN_PASSWORD",
+    "LPA_ROOT_ADMIN_TOTP_SECRET",
+];
+/// The root admin's password: a test value.
+const ROOT_PASSWORD: &str = "correct horse battery staple";
 
 /// The `LPA_` variables of `.env.example`.
 fn example() -> HashMap<String, String> {
@@ -122,4 +133,64 @@ fn the_account_commands_refuse_a_weak_totp_key_on_a_host() {
     );
     variables.insert(variable.to_owned(), strong_key(variable));
     assert!(read_accounts(&variables).is_ok());
+}
+
+/// The example's variables with a root admin, its secret generated.
+fn with_root_admin() -> (HashMap<String, String>, TotpSecret) {
+    let secret = TotpSecret::generate();
+    let mut variables = example();
+    for (variable, value) in ROOT_ADMIN.into_iter().zip([
+        " Root@Example.org ".to_owned(),
+        ROOT_PASSWORD.to_owned(),
+        secret.to_base32().to_lowercase(),
+    ]) {
+        variables.insert(variable.to_owned(), value);
+    }
+    (variables, secret)
+}
+
+#[test]
+fn the_example_has_no_root_admin() {
+    assert!(read(&example()).unwrap().root_admin.is_none());
+}
+
+#[test]
+fn a_root_admin_is_read_from_its_three_variables() {
+    let (variables, secret) = with_root_admin();
+    let root = read(&variables).unwrap().root_admin.unwrap();
+    assert_eq!(root.email, "Root@Example.org");
+    assert_eq!(root.secret, secret);
+    let debug = format!("{root:?}");
+    assert!(!debug.contains(ROOT_PASSWORD) && !debug.contains(&secret.to_base32()));
+}
+
+#[test]
+fn a_root_admin_missing_a_variable_names_it() {
+    for missing in ROOT_ADMIN {
+        let (mut variables, _) = with_root_admin();
+        variables.insert(missing.to_owned(), "  ".to_owned());
+        let error = read(&variables).unwrap_err();
+        assert_eq!(error, ConfigError::Missing { variable: missing });
+    }
+}
+
+#[test]
+fn an_invalid_root_admin_is_refused_without_quoting_its_value() {
+    let secret = TotpSecret::generate().to_base32();
+    let too_short_secret = &secret[..secret.len() - 1];
+    // A failure names the case by its position, never by its value: one of them is a secret.
+    let cases = [
+        ("LPA_ROOT_ADMIN_EMAIL", "root"),
+        ("LPA_ROOT_ADMIN_PASSWORD", "short pass"),
+        ("LPA_ROOT_ADMIN_TOTP_SECRET", too_short_secret),
+        ("LPA_ROOT_ADMIN_TOTP_SECRET", "not base32 at all, 1890"),
+    ];
+    for (case, (variable, value)) in cases.into_iter().enumerate() {
+        let (mut variables, _) = with_root_admin();
+        variables.insert(variable.to_owned(), value.to_owned());
+        let error = read(&variables).unwrap_err();
+        assert_eq!(error.variable(), variable, "case {case}");
+        assert!(matches!(error, ConfigError::Invalid { .. }), "case {case}");
+        assert!(!error.to_string().contains(value), "case {case}");
+    }
 }

@@ -176,7 +176,8 @@ command:
 - `cargo xtask check-boundaries` reads `cargo metadata` and fails unless `life-pixel-format` has
   no dependency, `life-pixel-player` depends on `life-pixel-format` only, both declare `MIT`,
   every other member declares `AGPL-3.0-only`, and `player-js/package.json` declares `MIT` once
-  it exists.
+  it exists. It has since grown the dependency direction of AGENTS.md: each member uses only the
+  members its layer allows, and no runtime or transport crate its layer forbids.
 
 Later commands: `build-player` (P2), `build-editor` (W1), `measure-sizes` (S1), `build-desktop`
 (T1), `build-sidecar` (T3).

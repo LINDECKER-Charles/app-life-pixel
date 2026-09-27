@@ -1,6 +1,7 @@
 //! Admin accounts: a password (Argon2id), a mandatory TOTP second factor, and short sessions.
 //!
-//! [`Admins`] signs in, authenticates a session's token, signs out, creates and disables admins;
+//! [`Admins`] signs in, authenticates a session's token, signs out, creates and disables admins,
+//! and creates the root admin of a host that has none;
 //! [`routes`] are `/auth/sign-in`, `/auth/session` and `/auth/sign-out`; [`rate_limit`] allows 5
 //! sign-in attempts a minute per client address and per email.
 

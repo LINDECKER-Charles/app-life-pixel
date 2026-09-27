@@ -2,8 +2,12 @@
 //! signed-in admin for the routes behind the session, fake upstream servers, and one request at
 //! a time.
 
-#![allow(dead_code)] // Each test file uses its own share of the helpers.
-#![allow(clippy::unwrap_used, clippy::expect_used)] // A helper fails its test by panicking.
+#![allow(dead_code, reason = "each test file uses its own share of the helpers")]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "a helper fails its test by panicking"
+)]
 
 use std::collections::HashMap;
 use std::net::SocketAddr;

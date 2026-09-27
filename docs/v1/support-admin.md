@@ -165,6 +165,7 @@ audited in its transaction, a failure leaving neither the change nor the entry; 
 | `LPA_DATABASE_URL` | `postgres://life_pixel_admin:local@127.0.0.1:5460/life_pixel_admin` | |
 | `LPA_SESSION_SECRET`, `LPA_TOTP_KEY` | 64 hexadecimal characters each, public development keys of one repeated byte | CSRF key; key encrypting the TOTP secrets. Outside `local`, a key of fewer than 17 distinct bytes is refused (`WeakKey`) |
 | `LPA_SERVER_ADMIN_API_URL`, `LPA_SERVER_ADMIN_API_SECRET` | `http://127.0.0.1:8462/internal/admin/v1`, the server's secret | |
+| `LPA_ROOT_ADMIN_EMAIL`, `LPA_ROOT_ADMIN_PASSWORD`, `LPA_ROOT_ADMIN_TOTP_SECRET` | empty | optional, all three or none: the root admin `serve` creates when there is no admin at all; the secret is 20 bytes in base32 |
 | `LPA_ENVIRONMENTS` | `staging,production` | the environments its monitoring shows |
 | `LPA_VICTORIAMETRICS_URL`, `LPA_VICTORIALOGS_URL`, `LPA_ALERTMANAGER_URL`, `LPA_GRAFANA_URL` | empty | empty: the page says the source is not configured |
 | `LPA_METRICS_SELECTOR_<ENV>`, `LPA_CONTAINERS_SELECTOR_<ENV>`, `LPA_LOGS_SELECTOR_<ENV>`, `LPA_ALERTS_FILTER` | empty | label selectors that `infra-vps` gives |
@@ -198,10 +199,17 @@ create table admin_sessions (
   idle or 8 hours in all. CSRF as H5, with `LPA_SESSION_SECRET` and
   `LPA_ALLOWED_ORIGINS` (`admin.csrf`).
   `GET /api/admin/v1/auth/session` → `{ admin: { id, email }, csrfToken, environment }`.
-- `create-admin --email <address>` reads the password twice without echo — or once from
+- `create-admin <address>` reads the password twice without echo — or once from
   `--password-stdin`, for tests —, generates a 20-byte TOTP secret, and prints the
   `otpauth://totp/…?secret=…&issuer=Life%20Pixel` URI to add to an authenticator.
-  `disable-admin --email <address>` disables one.
+  `disable-admin <address>` disables one.
+- The root admin: when `LPA_ROOT_ADMIN_EMAIL`, `LPA_ROOT_ADMIN_PASSWORD` and
+  `LPA_ROOT_ADMIN_TOTP_SECRET` are set, `serve` creates that admin after the migrations if the
+  `admins` table is empty — a disabled admin counts, so that disabling the root admin sticks —,
+  under a table lock, so that two servers starting together create it once. Otherwise the
+  variables are ignored. The operator generates the secret (`openssl rand 20 | base32`) and types
+  it into an authenticator: nothing prints it, and the log records only the admin's id. A host
+  can then be signed in to without a shell on it; `create-admin` remains the way to add admins.
 
 ### Relay and monitoring
 

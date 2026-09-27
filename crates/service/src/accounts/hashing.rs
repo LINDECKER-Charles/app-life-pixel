@@ -68,7 +68,10 @@ impl PasswordHashing {
     ///
     /// Never: the parameters are valid constants.
     #[must_use]
-    #[allow(clippy::expect_used)] // Constants Argon2 accepts; a test checks them.
+    #[allow(
+        clippy::expect_used,
+        reason = "constants Argon2 accepts; a test checks them"
+    )]
     pub fn standard() -> Self {
         Self::with_costs(ARGON2_MEMORY_KIB, ARGON2_PASSES, ARGON2_LANES)
             .expect("the standard Argon2id parameters are valid")

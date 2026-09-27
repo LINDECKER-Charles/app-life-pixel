@@ -1,5 +1,6 @@
 //! Signing in: an address, a password and a TOTP code, all three right or
-//! `admin.invalid_credentials`, whichever is wrong; and creating an admin, for `create-admin`.
+//! `admin.invalid_credentials`, whichever is wrong; and creating an admin, for `create-admin`, or
+//! the root admin of `LPA_ROOT_ADMIN_*`, for `serve`.
 
 use thiserror::Error;
 use uuid::Uuid;
@@ -19,6 +20,18 @@ pub struct Credentials {
     pub password: Password,
     /// The TOTP code.
     pub code: String,
+}
+
+/// An admin to create: its address, its password and its TOTP secret. Its `Debug` hides the
+/// password and the secret.
+#[derive(Clone, Debug)]
+pub struct AdminAccount {
+    /// The address.
+    pub email: String,
+    /// The password, of 12 to 128 characters.
+    pub password: Password,
+    /// The TOTP secret.
+    pub secret: TotpSecret,
 }
 
 /// A session just opened.
@@ -138,20 +151,45 @@ impl Admins {
         email: &str,
         password: &Password,
     ) -> Result<(AdminIdentity, TotpSecret), CreateAdminError> {
-        let email = valid_email(email).ok_or(CreateAdminError::Email)?;
-        let id = Uuid::now_v7();
-        let secret = TotpSecret::generate();
-        let admin = NewAdmin {
-            id,
-            email: email.clone(),
-            password_hash: password::hash(password).await?,
-            totp_secret: self.secrets.seal(id, &secret),
-            created_at: self.clock.now(),
+        let account = AdminAccount {
+            email: email.to_owned(),
+            password: password.clone(),
+            secret: TotpSecret::generate(),
         };
+        let admin = self.new_admin(&account).await?;
         if !self.store.insert(&admin).await? {
             return Err(CreateAdminError::Taken);
         }
-        Ok((AdminIdentity { id, email }, secret))
+        Ok((admin.identity(), account.secret))
+    }
+
+    /// Creates the root admin `account` when there is no admin at all — a disabled one
+    /// included, so that disabling the root admin sticks: the admin created, or `None` when one
+    /// exists.
+    ///
+    /// # Errors
+    ///
+    /// When the address is invalid, the password cannot be hashed, or the database fails.
+    pub async fn create_root(
+        &self,
+        account: &AdminAccount,
+    ) -> Result<Option<AdminIdentity>, CreateAdminError> {
+        let admin = self.new_admin(account).await?;
+        let is_created = self.store.insert_first(&admin).await?;
+        Ok(is_created.then(|| admin.identity()))
+    }
+
+    /// The record of `account`: its address checked, its password hashed, its secret sealed.
+    async fn new_admin(&self, account: &AdminAccount) -> Result<NewAdmin, CreateAdminError> {
+        let email = valid_email(&account.email).ok_or(CreateAdminError::Email)?;
+        let id = Uuid::now_v7();
+        Ok(NewAdmin {
+            id,
+            email,
+            password_hash: password::hash(&account.password).await?,
+            totp_secret: self.secrets.seal(id, &account.secret),
+            created_at: self.clock.now(),
+        })
     }
 }
 

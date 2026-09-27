@@ -1,5 +1,6 @@
-//! `create-admin <email>` and `disable-admin <email>`, run on the admin server's host: the only
-//! ways an admin account comes and goes. `create-admin` reads the password twice without echo —
+//! `create-admin <email>` and `disable-admin <email>`, run on the admin server's host: the ways
+//! an admin account comes and goes, beside the root admin `serve` creates from `LPA_ROOT_ADMIN_*`
+//! on a host that has none. `create-admin` reads the password twice without echo —
 //! once from standard input with `--password-stdin` —, and prints the `otpauth://` URI to enrol
 //! the TOTP secret in an authenticator app; nothing else ever shows the secret.
 

@@ -16,15 +16,49 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Compare CLAUDE.md and AGENTS.md
         run: cmp CLAUDE.md AGENTS.md
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Test the pull request rules
+        run: node --test "scripts/ci/*.test.mjs"
       - name: Lint workflows with actionlint
         run: |
           docker run --rm -v "$PWD":/repo -w /repo \
             rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
             -color
+  # What the change calls for (scripts/ci/verification-scope.mjs): a pull request that changes
+  # documentation alone skips every job below, `repository` aside; a push checks everything. A job
+  # its `if` skips reports a success, so the checks `dev` requires still pass.
+  scope:
+    name: Scope
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      verify: ${{ steps.scope.outputs.verify }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+      - name: Detect what the change calls for
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/ci/detect-scope.mjs
   # F2: formatting, lints, tests and the licence boundary of the Cargo workspace. T1 adds Tauri's
   # Linux system packages.
   rust:
     name: Rust
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,6 +89,8 @@ jobs:
   # every week.
   fuzz-smoke:
     name: Fuzz smoke
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -93,6 +129,8 @@ jobs:
   # 16 KiB budget, and the v1 fixture played frame by frame in wasmi.
   player:
     name: Player
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -122,6 +160,8 @@ jobs:
   # serve the app.
   frontend:
     name: Front-end
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -189,6 +229,8 @@ jobs:
   # on the fake player, the size budget of the loader.
   player-js:
     name: Player loader
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -222,6 +264,8 @@ jobs:
   # and the console's types.
   api:
     name: API description
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -262,6 +306,8 @@ jobs:
   # compiled here.
   rust-stack:
     name: Rust on the local stack
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -291,6 +337,8 @@ jobs:
   # for the exports' signed links.
   mcp:
     name: MCP end to end
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -496,6 +544,8 @@ jobs:
   # (`--profile app`), answering /healthz as a non-root user.
   docker:
     name: Docker
+    needs: scope
+    if: needs.scope.outputs.verify == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -70,6 +70,11 @@ Dependency direction between crates:
 - `service` never knows about HTTP, Tauri or MCP; `mcp` never knows its transport.
 - `server`, `admin-server`, `cli` and `tauri` are leaves: nothing depends on them.
 
+`cargo xtask check-boundaries` enforces this direction from `xtask/src/boundaries/architecture.rs`,
+which gives every workspace member the members it may use and the external crates it must not —
+a runtime for the pure crates, a transport for `service` and `mcp`. A new crate is declared there
+before it builds.
+
 ## Architecture invariants
 
 Each rule protects something. Do not break one without an accepted decision in
@@ -137,6 +142,13 @@ mistake here can take other projects down.
 - A push to `dev` runs CI; when it is green, `test` advances to that commit and staging is
   deployed. Production is a fast-forward of `main` to a commit already validated on `test`.
   Details in [docs/devops.md](docs/devops.md).
+- A pull request's title follows the convention of `## commit`: it is the commit's subject when
+  the pull request is squashed. The `Pull request` workflow checks the title and the branch's name,
+  and warns beyond 600 changed lines (generated files aside) — split such a change so that it
+  can be reviewed closely.
+- `.claude/settings.json` is versioned: it refuses force pushes, direct pushes to `dev`, `test`
+  and `main`, and `--no-verify`, and asks before an agent edits the files that define the rules
+  (lints, boundaries, CI, this file). Those files are the maintainer's in `.github/CODEOWNERS`.
 
 ## commit
 
@@ -212,7 +224,7 @@ to depart from them.
 | Rule | Limit |
 |---|---|
 | File size | ≤ 300 lines (warning), 400 maximum |
-| Files per folder | ≤ 10 (beyond that, split into subfolders by domain) |
+| Modules per folder | ≤ 10 (beyond that, split into subfolders by domain) — a module is a source file with its companions (template, stylesheet, spec); tests and generated code aside |
 | Function / method size | ≤ 30 lines |
 | Number of parameters | ≤ 3 (beyond that, group them into a struct / an object) |
 | Nesting depth | ≤ 3 levels |
@@ -224,6 +236,11 @@ to depart from them.
 - **No magic numbers or strings** — extract them into named constants that explain their intent.
   Domain limits (canvas size, frame count, palette size) are constants of `core`; plan quotas are
   configuration. Neither is repeated as a literal in validation, MCP schemas or the interface.
+- **A silenced check says why** — the fix comes first; when a check must be silenced, the reason
+  is written where it is, and a reviewer judges it. Rust: `#[allow(lint, reason = "...")]`
+  (clippy's `allow_attributes_without_reason` refuses a bare one). TypeScript:
+  `// eslint-disable-next-line rule -- why`, and `// @ts-expect-error: why`, never `@ts-ignore`.
+  SCSS: `// stylelint-disable-next-line rule -- why`. A directive that silences nothing fails.
 
 ### Naming
 
@@ -291,8 +308,8 @@ to depart from them.
   a frame runs in a Web Worker, so the interface never freezes.
 - Ionic provides the application shell and the mobile experience; the canvas and the timeline
   are our own components.
-- ESLint (angular-eslint) and Prettier (`printWidth: 100`) pass; file layout follows the official
-  Angular style guide.
+- ESLint (angular-eslint), stylelint and Prettier (`printWidth: 100`) pass; file layout follows
+  the official Angular style guide.
 - No user-facing string in a template or in code: translation keys, added to every catalogue of
   `i18n/` in the same commit. Catalogues are fetched at runtime from the i18n endpoint, one
   language at a time — never compiled into the bundle.
@@ -304,8 +321,9 @@ to depart from them.
 - Read `design-system/docs/` before building or changing any interface — the README's reading
   order first. Rose Atelier is the accepted direction (D38); add no product feature on its behalf.
 - Style with the semantic tokens of `frontend/projects/shared/src/styles/_tokens.scss`: no
-  hard-coded colour in a stylesheet. The only literal colours are the named checkerboard and grid
-  constants of the canvas renderer.
+  hard-coded colour in a stylesheet — stylelint refuses hex, named and functional colours outside
+  `_tokens.scss`. The only literal colours are the named checkerboard and grid constants of the
+  canvas renderer.
 - Buttons, fields, banners, cards and dialog action bars use the shared classes of
   `frontend/projects/shared/src/styles/_components.scss`; a component never restyles `button {}`
   or `input {}` itself. Buttons are native `<button>`s; Ionic keeps `ion-app`, the router outlet,
@@ -363,6 +381,7 @@ npm run e2e:visual --prefix frontend  # any interface change: review the screens
 npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts crates/admin-server/openapi.json frontend/projects/shared/src/lib/admin-api/schema.d.ts
 npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
+node --test "scripts/ci/*.test.mjs"
 docker run --rm -v "$PWD":/repo -w /repo hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d hadolint docker/app.Dockerfile docker/admin.Dockerfile
 docker compose --env-file .env.example --profile app config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.staging.example config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.example config --quiet && docker compose -f docker/selfhost/compose.yaml --env-file docker/selfhost/.env.example config --quiet
 docker build -f docker/app.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/app:local . && docker build -f docker/admin.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/admin:local .

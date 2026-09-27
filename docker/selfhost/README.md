@@ -61,7 +61,10 @@ Compose network, never published. To run it:
    `LPA_SERVER_ADMIN_API_SECRET` equal to `LP_ADMIN_API_SECRET` —, its port 8080 published
    behind the reverse proxy on a domain of its own;
 3. create the first admin from the machine:
-   `docker compose exec admin life-pixel-admin-server create-admin you@example.org`.
+   `docker compose exec admin life-pixel-admin-server create-admin you@example.org` — or set
+   `LPA_ROOT_ADMIN_EMAIL`, `LPA_ROOT_ADMIN_PASSWORD` and `LPA_ROOT_ADMIN_TOTP_SECRET` (20 random
+   bytes in base32, `openssl rand 20 | base32`, typed into an authenticator app) before its first
+   start: the admin server creates that admin while it has none.
 
 ## Backups
 
