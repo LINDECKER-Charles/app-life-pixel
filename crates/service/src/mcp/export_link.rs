@@ -70,10 +70,12 @@ impl ExportLinks {
         }
     }
 
-    /// When a link signed now expires.
+    /// When a link signed now expires, to the whole second the link keeps: the expiry announced
+    /// is the one the link enforces.
     #[must_use]
     pub fn expiry(&self) -> OffsetDateTime {
-        self.clock.now() + EXPORT_LINK_LIFETIME
+        let expiry = self.clock.now() + EXPORT_LINK_LIFETIME;
+        expiry.replace_nanosecond(0).unwrap_or(expiry)
     }
 
     /// The link of `link`, signed.

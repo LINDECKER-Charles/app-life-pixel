@@ -64,6 +64,15 @@ fn link(links: &ExportLinks, animation: AnimationId, version: u64) -> ExportLink
 }
 
 #[test]
+fn a_link_announces_the_expiry_it_enforces() {
+    let clock = Arc::new(FixedClock::new(START + Duration::microseconds(734_512)));
+    let links = ExportLinks::new(&KEY, clock);
+    let expected = link(&links, AnimationId::from_uuid(Uuid::nil()), 3);
+
+    assert_eq!(links.verify(&links.sign(&expected)).unwrap(), expected);
+}
+
+#[test]
 fn a_link_verifies_until_it_expires_and_never_once_tampered_with() {
     let clock = Arc::new(FixedClock::new(START));
     let links = ExportLinks::new(&KEY, clock.clone());
