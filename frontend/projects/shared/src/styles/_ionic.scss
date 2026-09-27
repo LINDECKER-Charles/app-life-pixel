@@ -55,3 +55,10 @@ $ionic-step-size: 50;
 ion-modal {
   --background: var(--lp-color-surface-raised);
 }
+
+// An alert's message takes Ionic's mid step of the text, 3.5:1 over the raised surface with this
+// palette: it takes the supporting text colour, which keeps AA contrast. The wrapper outweighs
+// Ionic's scoped `.alert-message.sc-ion-alert-*`.
+ion-alert .alert-wrapper .alert-message {
+  color: var(--lp-color-text-muted);
+}
