@@ -17,6 +17,11 @@ services:
       prometheus.scrape: "true"
       prometheus.port: "9090"
       prometheus.path: /metrics
+    # The documents of LP_STORAGE_URL=file:///var/lib/life-pixel, while an environment has no
+    # bucket yet: without it, every deploy would recreate the container and lose them. Unused, and
+    # empty, once the environment stores to s3://.
+    volumes:
+      - documents:/var/lib/life-pixel
 
   admin:
     networks: [default, edge, observability]
@@ -103,3 +108,4 @@ networks:
 
 volumes:
   backups:
+  documents:
