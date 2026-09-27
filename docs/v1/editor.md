@@ -153,14 +153,35 @@ export interface EditorEngine {
   - `stage`: `<lp-canvas>`, with its view bar (U2), on the neutral canvas surround. It takes the
     height left, never less than half the window (`50dvh`): at 1366 × 768 and 1024 × 768 it
     measures 405 pixels, and a 32 × 32 animation at zoom 8 is seen whole.
-  - `inspector`, 17 rem wide on the right: Palette (`<lp-palette-panel>`), Layers
-    (`<lp-layer-list>`) and the playback preview (`<lp-playback-preview>`), each under its heading.
   - `timeline`, up to 11 rem under the rail and the stage: `<lp-timeline>`, the tags over the
     frame strip and its durations. It gives way to the stage first, and scrolls within itself.
+  - `inspector`, 17 rem wide on the right: Palette (`<lp-palette-panel>`), Layers
+    (`<lp-layer-list>`) and the playback preview (`<lp-playback-preview>`), each under its heading.
 
-  Below 48 rem the areas stack in that order and the page scrolls. Each feature fills its
-  component in its own folder (`tools/`, `palette/`, `canvas/`, `timeline/`, `export/`,
-  `library/`), so that the page never changes afterwards.
+  The layout adapts to the window's width (plan C11, `design-system/docs/foundations.md`,
+  "Responsive composition"), with media queries in literal rem:
+  - **From 75 rem**: the areas above, every panel open.
+  - **Below 75 rem**: the inspector shows one panel at a time behind the tabs Palette, Layers and
+    Preview (`editor/inspector-tabs/`, the `tablist` pattern of
+    `design-system/docs/components.md`): Left and Right Arrow move to the previous and next tab,
+    wrapping around, Home and End to the first and last; the focused tab is selected at once, and
+    only the selected one is in the Tab sequence. `InspectorLayout` follows the width through
+    `matchMedia` and turns the sections into tab panels, named by their tab; all the rest adapts
+    in CSS.
+  - **From 48 to 75 rem**: the inspector stays on the right, and the Panels button of the
+    document bar (`aria-expanded`, `aria-controls`) folds it away to widen the stage, or unfolds
+    it.
+  - **Below 48 rem**: one column that scrolls: the document bar, the stage (at least 24 rem, 60 %
+    of the window's height), the rail as rows of buttons that wrap, the frame strip — its commands
+    in a row above the frames — and the tabbed inspector. The rail shows under the stage but
+    comes before it in the focus order. At 320 pixels, nothing but the canvas and the frame
+    strip scrolls sideways (measured by the `visual` project).
+
+  The canvas and the panels are never rebuilt when the layout changes — hidden panels keep their
+  place —, and the view, the selection, the active colour, layer and frame, and the history live
+  in `EditorStore` and `EngineStore`: a change of width, even during a stroke, keeps them all.
+  Each feature fills its component in its own folder (`tools/`, `palette/`, `canvas/`,
+  `timeline/`, `export/`, `library/`), so that the page never changes afterwards.
 - **First visit** (`editor/welcome/`): with no document and no saved animation to open, the stage
   shows a welcome instead of the canvas, which it makes inert: what can be made, Pip, and one
   action, "Create animation". A visitor also reads that drawing and exporting need no account and
