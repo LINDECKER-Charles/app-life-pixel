@@ -2,9 +2,8 @@ name: Verify
 on:
   workflow_call:
 permissions: {}
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+# No concurrency group: a called workflow runs in its caller's, and its github.workflow is the
+# caller's name — the same group would deadlock against ci.yml.
 jobs:
   # F1: cmp CLAUDE.md AGENTS.md, actionlint on .github/workflows/.
   repository:
