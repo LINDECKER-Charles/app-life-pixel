@@ -2,11 +2,15 @@ use anyhow::bail;
 
 use crate::boundaries::{Workspace, check};
 
-/// Checks the licence boundary between the MIT and the AGPL code.
+/// Checks the licence boundary between the MIT and the AGPL code, then the dependency direction
+/// between the workspace crates.
 ///
-/// `life-pixel-format` has no dependency, `life-pixel-player` depends on `life-pixel-format`
-/// only, both declare MIT, every other workspace member declares AGPL-3.0-only, and
-/// `player-js/package.json`, once it exists, declares MIT.
+/// Licence: `life-pixel-format` has no dependency, `life-pixel-player` depends on
+/// `life-pixel-format` only, both declare MIT, every other workspace member declares
+/// AGPL-3.0-only, and `player-js/package.json`, once it exists, declares MIT.
+///
+/// Direction: each member depends only on the members its layer allows — the leaves on none of
+/// them —, the pure crates on no runtime, and `service` and `mcp` on no transport.
 #[derive(clap::Args)]
 pub struct CheckBoundaries {}
 

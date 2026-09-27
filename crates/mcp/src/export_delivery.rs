@@ -24,7 +24,10 @@ pub trait ExportDelivery: Send + Sync {
     ///
     /// The transport's code: `request.malformed` for options it cannot read,
     /// `export.directory_not_allowed` locally, for example.
-    #[allow(clippy::too_many_arguments)] // The signature is the contract of mcp-cli.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the signature is the contract of mcp-cli.md"
+    )]
     async fn deliver(
         &self,
         owner: &Owner,

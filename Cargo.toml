@@ -86,6 +86,9 @@ missing_docs = "warn"
 unsafe_code = "forbid"
 
 [workspace.lints.clippy]
+# Silencing a lint is a decision a reviewer must be able to judge: every `allow` or `expect`
+# says why, in its `reason`.
+allow_attributes_without_reason = "warn"
 cognitive_complexity = "warn"
 expect_used = "warn"
 too_many_arguments = "warn"

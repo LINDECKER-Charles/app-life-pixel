@@ -1,6 +1,6 @@
 //! The animations the integration tests export, and their expected pixels.
 
-#![allow(dead_code)] // Each test file uses its own share of the helpers.
+#![allow(dead_code, reason = "each test file uses its own share of the helpers")]
 
 pub mod wasm_player;
 

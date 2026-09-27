@@ -18,9 +18,13 @@
 //! `macros` and `rt` features among its dev-dependencies. The cases make their own ids and act
 //! for the fixture's owners only, so several cases may share one database.
 
-// A contract case fails by panicking, as any test does; each assertion counts as a branch in
-// cognitive complexity, though a case is a straight list of them.
-#![allow(clippy::unwrap_used, clippy::expect_used, clippy::cognitive_complexity)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::cognitive_complexity,
+    reason = "a contract case fails by panicking, as any test does; each assertion counts as a \
+              branch in cognitive complexity, though a case is a straight list of them"
+)]
 
 pub mod cases;
 mod documents;

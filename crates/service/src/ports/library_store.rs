@@ -27,7 +27,10 @@ use crate::paging::{Page, PageRequest};
 
 /// Where projects, animations and their documents are kept.
 #[async_trait]
-#[allow(clippy::too_many_arguments)] // The port's signatures are the contract of service.md.
+#[allow(
+    clippy::too_many_arguments,
+    reason = "the port's signatures are the contract of service.md"
+)]
 pub trait LibraryStore: Send + Sync {
     /// Adds `project`.
     async fn create_project(&self, owner: &Owner, project: ProjectRecord)

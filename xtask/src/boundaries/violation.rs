@@ -12,12 +12,17 @@ pub enum Violation {
         /// The licence it declares, if any.
         found: Option<String>,
     },
-    /// An MIT crate depends on a package it must not.
+    /// A package depends on one its side of the licence boundary, or its layer, forbids.
     ForbiddenDependency {
-        /// The MIT crate.
+        /// The package.
         package: String,
         /// The dependency it must not have.
         dependency: String,
+    },
+    /// A workspace member has no place in the dependency direction.
+    UndeclaredMember {
+        /// The member.
+        package: String,
     },
 }
 
@@ -37,6 +42,12 @@ impl fmt::Display for Violation {
                 dependency,
             } => {
                 write!(formatter, "{package} must not depend on {dependency}")
+            }
+            Self::UndeclaredMember { package } => {
+                write!(
+                    formatter,
+                    "{package} is missing from the layers of xtask/src/boundaries/architecture.rs"
+                )
             }
         }
     }

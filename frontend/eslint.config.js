@@ -3,6 +3,7 @@ const eslint = require('@eslint/js');
 const { defineConfig } = require('eslint/config');
 const tseslint = require('typescript-eslint');
 const angular = require('angular-eslint');
+const eslintComments = require('@eslint-community/eslint-plugin-eslint-comments/configs');
 
 // The size and complexity limits of AGENTS.md.
 const sizeRules = {
@@ -44,6 +45,19 @@ const httpUsers = [
 ];
 
 module.exports = defineConfig([
+  {
+    // Silencing a rule is a decision a reviewer must be able to judge: a directive names its
+    // rules, says why after `--`, and goes once it silences nothing. `@ts-expect-error` needs a
+    // description too, and `@ts-ignore` is refused (typescript-eslint's `ban-ts-comment`).
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
+  },
+  {
+    files: ['**/*.ts', 'tools/**/*.mjs'],
+    extends: [eslintComments.recommended],
+    rules: {
+      '@eslint-community/eslint-comments/require-description': 'error',
+    },
+  },
   {
     files: ['**/*.ts'],
     extends: [

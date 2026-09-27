@@ -2,8 +2,11 @@
 //! repository's catalogues, a database that answers or not, an in-memory library and accounts,
 //! and one request at a time.
 
-#![allow(dead_code)] // Each test file uses its own share of the helpers.
-#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+#![allow(dead_code, reason = "each test file uses its own share of the helpers")]
+#![allow(
+    clippy::unwrap_used,
+    reason = "a helper fails its test by panicking, as the test would"
+)]
 
 pub mod accounts;
 pub mod auth;

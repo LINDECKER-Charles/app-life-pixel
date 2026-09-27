@@ -32,7 +32,10 @@ impl Library {
     ///
     /// The `document.*` code of an invalid document; `library.animation_not_found`;
     /// `document.version_conflict`; `quota.storage_exceeded`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn save_document(
         &self,
         owner: &Owner,
@@ -51,7 +54,10 @@ impl Library {
     ///
     /// `document.name` for an invalid title; `library.animation_not_found`;
     /// `document.version_conflict`; `quota.storage_exceeded`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn rename_animation(
         &self,
         owner: &Owner,
