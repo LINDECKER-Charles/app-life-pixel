@@ -72,12 +72,17 @@ const KEYS: [&str; 4] = [
 ];
 /// `.env.example`'s public development key for LP_SESSION_SECRET: one repeated byte.
 const DEVELOPMENT_KEY: &str = "0101010101010101010101010101010101010101010101010101010101010101";
-/// Keys a host refuses: the development one, zeros, and a hand-made pattern of 8 distinct bytes.
-const WEAK_KEYS: [&str; 3] = [
+/// Keys a host refuses: the development one, zeros, hand-made patterns of 8 and 16 distinct bytes.
+const WEAK_KEYS: [&str; 4] = [
     DEVELOPMENT_KEY,
     "0000000000000000000000000000000000000000000000000000000000000000",
     "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+    "000102030405060708090a0b0c0d0e0f000102030405060708090a0b0c0d0e0f",
 ];
+/// The least regular key a host still refuses has 16 distinct bytes: this one, 00 to 10 then
+/// zeros, has 17.
+const SEVENTEEN_DISTINCT_BYTES: &str =
+    "000102030405060708090a0b0c0d0e0f10000000000000000000000000000000";
 
 fn local() -> HashMap<String, String> {
     local_env(Path::new("frontend/dist/app/browser"))
@@ -206,6 +211,12 @@ fn a_host_refuses_every_development_key_of_the_example() {
 fn a_host_takes_strong_keys_and_local_takes_the_development_ones() {
     let config = read_config(&host("production")).unwrap();
     assert_eq!(config.environment, Environment::Production);
+    let mut boundary = host("production");
+    boundary.insert(
+        "LP_SESSION_SECRET".to_owned(),
+        SEVENTEEN_DISTINCT_BYTES.to_owned(),
+    );
+    assert!(read_config(&boundary).is_ok());
     let mut development = local();
     for variable in KEYS {
         development.insert(variable.to_owned(), DEVELOPMENT_KEY.to_owned());
