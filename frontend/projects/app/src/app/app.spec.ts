@@ -40,6 +40,21 @@ function page(fixture: ComponentFixture<App>): string | undefined {
   return fixture.nativeElement.querySelector('ion-router-outlet')?.lastElementChild?.localName;
 }
 
+/**
+ * The one main landmark of the shell and the page shown — the pages the outlet keeps in its
+ * stack are hidden —, once Ionic has rendered it.
+ */
+async function mainLandmark(root: HTMLElement): Promise<Element> {
+  return vi.waitFor(() => {
+    const shown = root.querySelector('ion-router-outlet')?.lastElementChild;
+    const landmarks = [...root.querySelectorAll('main, [role="main"]')].filter(
+      (landmark) => !landmark.closest('ion-router-outlet > *') || shown?.contains(landmark),
+    );
+    expect(landmarks).toHaveLength(1);
+    return landmarks[0];
+  });
+}
+
 describe('routes', () => {
   it('loads every page lazily', () => {
     const pages = routes.filter((route) => route.redirectTo === undefined);
@@ -80,26 +95,44 @@ describe('App', () => {
     expect(fixture.nativeElement.querySelector('.brand')?.textContent).toBe(en['app.name']);
   });
 
-  it('opens on a skip link that takes the focus to the page, in the main landmark', async () => {
+  it('opens on a skip link that takes the focus into the page’s one main landmark', async () => {
     const fixture = await startApp();
-    await navigate(fixture, '/settings');
     const root = fixture.nativeElement as HTMLElement;
     document.body.append(root);
-    const skipLink = root.querySelector<HTMLAnchorElement>('a[href]');
-    const main = root.querySelector<HTMLElement>('[role="main"]');
 
-    expect(skipLink?.textContent?.trim()).toBe(en['shell.skip_to_content']);
-    skipLink?.focus();
-    expect(document.activeElement).toBe(skipLink);
+    for (const path of ['/settings', '/editor']) {
+      await navigate(fixture, path);
+      const skipLink = root.querySelector<HTMLAnchorElement>('a[href]');
+      const main = await mainLandmark(root);
 
-    skipLink?.click();
+      expect(skipLink?.textContent?.trim()).toBe(en['shell.skip_to_content']);
+      skipLink?.focus();
+      expect(document.activeElement).toBe(skipLink);
 
-    expect(document.activeElement?.localName).toBe('lp-settings-page');
-    expect(main?.contains(document.activeElement)).toBe(true);
-    expect(TestBed.inject(Router).url).toBe('/settings');
-    // A shadow host with a negative tabindex would drop the whole page from the Tab order.
-    expect(main?.hasAttribute('tabindex')).toBe(false);
+      skipLink?.click();
+
+      expect(main.contains(document.activeElement)).toBe(true);
+      expect(TestBed.inject(Router).url).toBe(path);
+      // A shadow host with a negative tabindex would drop the whole page from the Tab order.
+      expect(
+        root.querySelectorAll('[tabindex="-1"]:is(ion-content, ion-router-outlet)'),
+      ).toHaveLength(0);
+    }
     root.remove();
+  });
+
+  it('gives every page exactly one main landmark', async () => {
+    const fixture = await startApp();
+    const root = fixture.nativeElement as HTMLElement;
+
+    for (const path of ['/editor', '/settings', '/sign-in', '/no/such/page']) {
+      await navigate(fixture, path);
+
+      const main = await mainLandmark(root);
+      const shown = root.querySelector('ion-router-outlet')?.lastElementChild;
+
+      expect(shown?.contains(main)).toBe(true);
+    }
   });
 
   it('resolves each path to its page', async () => {

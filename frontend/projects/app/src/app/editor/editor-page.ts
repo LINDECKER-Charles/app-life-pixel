@@ -57,7 +57,8 @@ import { EditorWelcome } from './welcome/editor-welcome';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './editor-page.html',
   styleUrl: './editor-page.scss',
-  host: { '(document:keydown)': 'onKeydown($event)' },
+  // The page's single main landmark: the other pages get theirs from `ion-content`.
+  host: { role: 'main', '(document:keydown)': 'onKeydown($event)' },
 })
 export class EditorPage implements ViewDidEnter, ViewWillLeave {
   private readonly engine = inject(EngineStore);
