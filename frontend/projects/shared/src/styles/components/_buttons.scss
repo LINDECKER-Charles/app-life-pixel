@@ -131,9 +131,31 @@
 }
 
 // Forced colours drop backgrounds: the selected state keeps a thicker, system-coloured edge.
+// A primary's HighlightText label would sit on the Canvas backplate painted behind text, so it
+// is drawn as a button pair instead, told apart by its strong edge (Highlight when hovered).
 @media (forced-colors: active) {
   .lp-button[aria-pressed='true'],
   .lp-icon-button[aria-pressed='true'] {
     border: var(--lp-border-width-strong) solid Highlight;
+  }
+
+  .lp-button--primary {
+    &,
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      color: ButtonText;
+      background: ButtonFace;
+      border: var(--lp-border-width-strong) solid ButtonText;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: Highlight;
+    }
+
+    &:disabled,
+    &[aria-disabled='true'] {
+      color: GrayText;
+      border-color: GrayText;
+    }
   }
 }
