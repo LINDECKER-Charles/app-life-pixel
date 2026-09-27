@@ -85,13 +85,13 @@ $rail-max-width: 10rem;
   overflow-y: auto;
 }
 
-// The canvas fills the stage; the welcome covers it while no document is open; the view bar (lot
-// 4) keeps a row of its own underneath.
+// The canvas, with its view bar underneath, fills the stage; the welcome covers it while no
+// document is open.
 .stage {
   display: grid;
   grid-area: stage;
-  grid-template-rows: minmax(0, 1fr) auto;
-  grid-template-areas: 'canvas' 'view-bar';
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'canvas';
   overflow: hidden;
   background: var(--lp-color-canvas-bg);
 }
@@ -104,10 +104,6 @@ $rail-max-width: 10rem;
 
 .welcome {
   z-index: var(--lp-z-sticky);
-}
-
-.view-bar {
-  grid-area: view-bar;
 }
 
 .inspector {

@@ -166,4 +166,26 @@ describe('ViewBar', () => {
     await fixture.whenStable();
     expect(bar().textContent).toContain('Pixel —');
   });
+
+  // Its width is reserved in CSS, so the bar only keeps its height if the reading stays in that
+  // same field: no reading may add, drop or restyle a part of the status line.
+  it('keeps the pixel reading in the same field as the pointer comes and goes', async () => {
+    await open();
+    const view: HTMLCanvasElement = fixture.nativeElement.querySelector('.view');
+    const status = (): HTMLElement => bar().querySelector('.status') as HTMLElement;
+    const shape = (): string[] => [...status().children].map((part) => part.className);
+    const field = status().querySelector('.position');
+    const before = shape();
+
+    view.dispatchEvent(new PointerEvent('pointermove', { clientX: 0, clientY: 0 }));
+    await fixture.whenStable();
+    expect(field?.textContent?.trim()).toMatch(/^Pixel \d+, \d+$/);
+    expect(status().querySelector('.position')).toBe(field);
+    expect(shape()).toEqual(before);
+
+    view.dispatchEvent(new PointerEvent('pointerleave'));
+    await fixture.whenStable();
+    expect(status().querySelector('.position')).toBe(field);
+    expect(shape()).toEqual(before);
+  });
 });

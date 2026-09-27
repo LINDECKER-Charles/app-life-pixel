@@ -1,5 +1,7 @@
 // A quiet row of UI chrome under the neutral stage: compact controls, then the readouts, wrapping
-// onto a second line in a narrow stage rather than squeezing the canvas sideways.
+// onto a second line in a narrow stage rather than squeezing the canvas sideways. Whether it wraps
+// never depends on the pointer: the readouts keep their width as it moves, so the bar keeps its
+// height and the artwork never jumps under a stroke.
 :host {
   display: flex;
   flex-wrap: wrap;
@@ -49,6 +51,11 @@
   margin: 0;
   color: var(--lp-color-text-muted);
 
+  // Each reading stays whole; only the layer's name may wrap.
+  > span:not(.layer) {
+    white-space: nowrap;
+  }
+
   > span + span {
     padding-inline-start: var(--lp-space-3);
     border-inline-start: var(--lp-border-width) solid var(--lp-color-border-subtle);
@@ -56,6 +63,9 @@
 }
 
 .position {
+  // Room for the widest reading, "Pixel 511, 511" (a side is at most 512 pixels), so that
+  // "Pixel —" and every pixel take the same width.
+  min-inline-size: 14ch;
   font-family: var(--lp-font-family-mono);
   font-variant-numeric: tabular-nums;
 }
