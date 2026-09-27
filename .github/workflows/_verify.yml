@@ -564,6 +564,9 @@ jobs:
           cache-from: type=gha,scope=admin
       - name: Configure the local stack
         run: cp .env.example .env
+      # The third-party images only: `app` and `admin` are the ones just built, never pulled.
+      - name: Pull the local stack's images
+        run: docker compose pull postgres objectstore mail
       - name: Start the app with the local stack
         run: docker compose --profile app up -d --wait --no-build --pull never
       - name: Check /healthz and the user
