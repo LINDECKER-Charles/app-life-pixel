@@ -12,6 +12,10 @@ const FIND_ACTIVE_ADMIN: &str = "select id, email::text, password_hash, totp_sec
 const INSERT_ADMIN: &str = "insert into admins (id, email, password_hash, totp_secret, \
                             created_at) values ($1, $2, $3, $4, $5) \
                             on conflict (email) do nothing";
+/// Blocks every other writer of `admins`, and every other lock of this mode, until the end of
+/// the transaction: two servers starting together cannot both see no admin.
+const LOCK_ADMINS: &str = "lock table admins in share row exclusive mode";
+const INSERT_FIRST_ADMIN: &str = "insert into admins (id, email, password_hash, totp_secret,                                   created_at) select $1, $2::citext, $3, $4, $5                                   where not exists (select 1 from admins)";
 const DISABLE_ADMIN: &str = "update admins set disabled_at = $2 \
                              where email = $1::citext and disabled_at is null returning id";
 const DELETE_ADMIN_SESSIONS: &str = "delete from admin_sessions where admin_id = $1";
@@ -55,6 +59,17 @@ pub struct NewAdmin {
     pub totp_secret: Vec<u8>,
     /// Now.
     pub created_at: OffsetDateTime,
+}
+
+impl NewAdmin {
+    /// Its id and address.
+    #[must_use]
+    pub fn identity(&self) -> AdminIdentity {
+        AdminIdentity {
+            id: self.id,
+            email: self.email.clone(),
+        }
+    }
 }
 
 /// A session to store.
@@ -137,6 +152,27 @@ impl AdminStore {
             .bind(admin.created_at)
             .execute(&self.pool)
             .await?;
+        Ok(inserted.rows_affected() == 1)
+    }
+
+    /// Creates `admin` when the table holds no admin at all, disabled ones included: `false`
+    /// when it holds one.
+    ///
+    /// # Errors
+    ///
+    /// When the database fails.
+    pub async fn insert_first(&self, admin: &NewAdmin) -> Result<bool, sqlx::Error> {
+        let mut transaction = self.pool.begin().await?;
+        sqlx::query(LOCK_ADMINS).execute(&mut *transaction).await?;
+        let inserted = sqlx::query(INSERT_FIRST_ADMIN)
+            .bind(admin.id)
+            .bind(&admin.email)
+            .bind(&admin.password_hash)
+            .bind(&admin.totp_secret)
+            .bind(admin.created_at)
+            .execute(&mut *transaction)
+            .await?;
+        transaction.commit().await?;
         Ok(inserted.rows_affected() == 1)
     }
 
