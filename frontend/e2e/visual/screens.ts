@@ -1,6 +1,6 @@
 import { expect, type Page } from '@playwright/test';
 import { relative, resolve } from 'node:path';
-import { OUTPUT_DIR, VIEWPORTS } from './visual-matrix';
+import { OUTPUT_DIR, VIEWPORTS, type Viewport } from './visual-matrix';
 
 /** The page a route shows: Ionic keeps the previous ones in the outlet, hidden. */
 export const ROUTED_PAGE = 'ion-router-outlet > .ion-page:not(.ion-page-hidden)';
@@ -34,13 +34,21 @@ export async function captureAtEveryWidth(
 ): Promise<string[]> {
   const paths: string[] = [];
   for (const viewport of VIEWPORTS) {
-    await page.setViewportSize(viewport);
-    await settle(page);
-    const path = resolve(OUTPUT_DIR, folder, `${screen}-${viewport.width}.png`);
-    await page.screenshot({ path, animations: 'disabled', caret: 'hide' });
-    paths.push(relative(OUTPUT_DIR, path).replaceAll('\\', '/'));
+    paths.push(await captureAt(page, `${folder}/${screen}`, viewport));
   }
   await page.setViewportSize(VIEWPORTS[0]);
   await settle(page);
   return paths;
+}
+
+/**
+ * Captures what the screen shows at one width, once settled, as `<screen>-<width>.png` under the
+ * output directory; returns the file's path relative to it.
+ */
+export async function captureAt(page: Page, screen: string, viewport: Viewport): Promise<string> {
+  await page.setViewportSize(viewport);
+  await settle(page);
+  const path = resolve(OUTPUT_DIR, `${screen}-${viewport.width}.png`);
+  await page.screenshot({ path, animations: 'disabled', caret: 'hide' });
+  return relative(OUTPUT_DIR, path).replaceAll('\\', '/');
 }

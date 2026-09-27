@@ -62,6 +62,42 @@ export async function measureStage(
   };
 }
 
+/**
+ * Whether the editor scrolls sideways on a narrow screen: the page as a whole, and each element
+ * that sticks out of the window — but those within the canvas stage and the timeline, which may
+ * pan within their bounds (design-system/docs/foundations.md, "Responsive composition").
+ */
+export interface OverflowMeasure {
+  readonly viewport: { readonly width: number; readonly height: number };
+  readonly pageScrollWidth: number;
+  readonly scrollsSideways: boolean;
+  /** The elements outside the stage and the timeline that stick out, by tag and class. */
+  readonly outside: readonly string[];
+}
+
+export async function measureOverflow(
+  editor: VisualEditor,
+  viewport: { width: number; height: number },
+): Promise<OverflowMeasure> {
+  await editor.page.setViewportSize(viewport);
+  await settle(editor.page);
+  const found = await editor.page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const bounded = [...document.querySelectorAll('section.stage, section.timeline')];
+    const outside = [...document.querySelectorAll('body *')].filter((element) => {
+      if (bounded.some((region) => region !== element && region.contains(element))) return false;
+      const box = element.getBoundingClientRect();
+      return box.width > 0 && box.height > 0 && (box.right > width + 0.5 || box.left < -0.5);
+    });
+    return {
+      pageScrollWidth: document.documentElement.scrollWidth,
+      scrollsSideways: document.documentElement.scrollWidth > width,
+      outside: outside.map((element) => [element.localName, ...element.classList].join('.')),
+    };
+  });
+  return { viewport, ...found };
+}
+
 interface Layout {
   readonly contentBottom: number;
   readonly outletBottom: number;

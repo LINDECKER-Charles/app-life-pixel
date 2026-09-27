@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { measureScroll, measureStage } from './measurements';
-import { captureAtEveryWidth, openRoute } from './screens';
-import { VisualEditor } from './visual-editor';
+import { measureOverflow, measureScroll, measureStage } from './measurements';
+import { captureAt, captureAtEveryWidth, openRoute } from './screens';
+import { INSPECTOR_TABS, VisualEditor } from './visual-editor';
 import { LANGUAGES, THEMES, VIEWPORTS, writeJson, type Language } from './visual-matrix';
 
 // C12 (docs/plans, "visual" project): screenshots of the real app, engine included, for review.
@@ -14,6 +14,10 @@ const STAGE_VIEWPORTS = [
 ];
 /** A small phone, on which every routed page must scroll down to its end. */
 const PHONE = { width: 390, height: 640 };
+/** The narrowest screen to support: nothing but the canvas and the timeline may scroll sideways. */
+const NARROWEST = { width: 320, height: 640 };
+/** The widths at which the inspector's panels are tabs: 768 px and 390 px. */
+const TABBED_VIEWPORTS = [VIEWPORTS[2], VIEWPORTS[3]];
 /** Routed pages reachable without the hosted stack: without `ion-content`, then with it. */
 const SCROLLED_PATHS = [
   '/sign-in',
@@ -38,6 +42,29 @@ function watchErrors(page: Page): { pageErrors: string[]; consoleErrors: string[
   return errors;
 }
 
+/**
+ * The editor's narrower layouts (plan C11): each inspector tab at 768 and 390 px, then the
+ * inspector folded away at 768 px; the widest width and the first tab are restored after.
+ */
+async function captureInspector(editor: VisualEditor, folder: string): Promise<string[]> {
+  const { page } = editor;
+  const captures: string[] = [];
+  for (const viewport of TABBED_VIEWPORTS) {
+    await page.setViewportSize(viewport);
+    for (const [name, key] of Object.entries(INSPECTOR_TABS)) {
+      await editor.showInspectorTab(key);
+      captures.push(await captureAt(page, `${folder}/editor-tab-${name}`, viewport));
+    }
+  }
+  await page.setViewportSize(TABBED_VIEWPORTS[0]);
+  await editor.toggleInspector();
+  captures.push(await captureAt(page, `${folder}/editor-inspector-folded`, TABBED_VIEWPORTS[0]));
+  await editor.toggleInspector();
+  await editor.showInspectorTab(INSPECTOR_TABS.palette);
+  await page.setViewportSize(VIEWPORTS[0]);
+  return captures;
+}
+
 async function captureJourney(page: Page, language: Language, folder: string): Promise<string[]> {
   const captures: string[] = [];
   const capture = async (screen: string): Promise<void> => {
@@ -57,6 +84,7 @@ async function captureJourney(page: Page, language: Language, folder: string): P
   await editor.create();
   await editor.drawTwoFrames();
   await capture('editor');
+  captures.push(...(await captureInspector(editor, folder)));
   await editor.openExport();
   await capture('export');
   return captures;
@@ -99,12 +127,13 @@ test.describe('measurements', () => {
     await editor.create();
     const stage = [];
     for (const viewport of STAGE_VIEWPORTS) stage.push(await measureStage(editor, viewport));
+    const overflow = await measureOverflow(editor, NARROWEST);
 
     await page.setViewportSize(PHONE);
     const scrolling = [];
     for (const path of SCROLLED_PATHS) scrolling.push(await measureScroll(page, path));
 
-    writeJson('measurements.json', { stage, phone: PHONE, scrolling, ...errors });
+    writeJson('measurements.json', { stage, overflow, phone: PHONE, scrolling, ...errors });
     expect(errors.pageErrors, 'uncaught errors on the page').toEqual([]);
   });
 });

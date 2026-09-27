@@ -13,6 +13,13 @@ export const DEFAULT_ZOOM = 8;
  */
 const CREATE_ANIMATION = /^(create (an )?animation|créer une animation)$/i;
 
+/** The inspector's tabs below 75 rem (plan C11): each capture's name, and the tab's label key. */
+export const INSPECTOR_TABS = {
+  palette: 'editor.region.palette',
+  layers: 'timeline.layers.heading',
+  preview: 'editor.inspector.preview',
+} as const;
+
 /** Palette indices of core's default palette: black, red and green. */
 const BLACK = 1;
 const RED = 6;
@@ -103,6 +110,24 @@ export class VisualEditor {
     await expect(sized.first())
       .toBeVisible({ timeout: 20_000 })
       .catch(() => undefined);
+  }
+
+  /**
+   * Below 75 rem, shows the inspector's tab labelled by `key` and scrolls its panel into view:
+   * below 48 rem, the panels come after the canvas and the frame strip.
+   */
+  async showInspectorTab(key: string): Promise<void> {
+    await this.page.getByRole('tab', { name: this.text(key), exact: true }).click();
+    // The capture shows the tab at rest, not hovered.
+    await this.page.mouse.move(0, 0);
+    const panel = this.page.getByRole('tabpanel', { name: this.text(key), exact: true });
+    await expect(panel).toBeVisible();
+    await panel.scrollIntoViewIfNeeded();
+  }
+
+  /** Between 48 and 75 rem, folds the inspector away or unfolds it. */
+  async toggleInspector(): Promise<void> {
+    await this.button('editor.inspector.label').click();
   }
 
   private text(key: string, values?: Readonly<Record<string, number>>): string {

@@ -7,13 +7,19 @@ export const OUTPUT_DIR = resolve(__dirname, 'output');
 export type Language = 'en' | 'fr';
 export type Theme = 'light' | 'dark';
 
+/** A screen's size, in CSS pixels. */
+export interface Viewport {
+  readonly width: number;
+  readonly height: number;
+}
+
 /** The widths every screen is captured at, each with a height typical of such a screen. */
 export const VIEWPORTS = [
   { width: 1440, height: 900 },
   { width: 1024, height: 768 },
   { width: 768, height: 1024 },
   { width: 390, height: 844 },
-] as const;
+] as const satisfies readonly Viewport[];
 
 /**
  * The languages, chosen as a visitor's browser chooses them: the web keeps no preference (D37),
