@@ -40,8 +40,10 @@ Thumbs.db
 # a literal %SystemDrive% folder of its working directory.
 /%SystemDrive%/
 
-# Local agent data
-.claude/
+# Local agent data. The project's agent settings are versioned: they hold the permission rules
+# every contributor's Claude Code session follows.
+.claude/*
+!.claude/settings.json
 
 # AGENTS.md is versioned here — it mirrors CLAUDE.md for the other coding agents — even where a
 # global gitignore excludes it. A repository .gitignore takes precedence over core.excludesFile.
