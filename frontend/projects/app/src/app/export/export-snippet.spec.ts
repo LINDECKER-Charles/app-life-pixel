@@ -37,21 +37,34 @@ describe('the export snippet', () => {
     return fixture;
   }
 
+  /** The field a label names, found by the label's text: the name a screen reader gives it. */
+  function fieldLabelled<T extends HTMLElement>(
+    root: HTMLElement,
+    key: string,
+    type: new () => T,
+  ): T {
+    const label = Array.from(root.querySelectorAll('label')).find(
+      (candidate) => candidate.textContent?.trim() === TEXTS[key],
+    );
+    const field = label?.control;
+    if (!(field instanceof type)) throw new Error(`no field labelled ${TEXTS[key]}`);
+    return field;
+  }
+
   afterEach(() => document.body.replaceChildren());
 
   it('defaults the URLs from the WASM export, and calls engine.snippet on every change', async () => {
     const fixture = await configure();
     const root = fixture.nativeElement as HTMLElement;
-    const src = root.querySelector<HTMLInputElement>('#export-src');
-    expect(src?.value).toBe('/assets/mascot.wasm');
-    const loader = root.querySelector<HTMLInputElement>('#export-loader');
-    expect(loader?.value).toBe('/assets/life-pixel.js');
+    const src = fieldLabelled(root, 'export.snippet.src', HTMLInputElement);
+    expect(src.value).toBe('/assets/mascot.wasm');
+    const loader = fieldLabelled(root, 'export.snippet.loader', HTMLInputElement);
+    expect(loader.value).toBe('/assets/life-pixel.js');
 
     const engine = TestBed.inject(EDITOR_ENGINE);
     const spy = vi.spyOn(engine, 'snippet');
 
-    const framework = root.querySelector<HTMLSelectElement>('#export-framework');
-    if (!framework) throw new Error('no framework field');
+    const framework = fieldLabelled(root, 'export.snippet.framework', HTMLSelectElement);
     framework.value = 'react';
     framework.dispatchEvent(new Event('change'));
     fixture.detectChanges();

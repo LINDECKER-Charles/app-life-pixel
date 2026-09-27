@@ -2,7 +2,13 @@ import axe from 'axe-core';
 import { ApiProblem } from 'shared';
 import { vi } from 'vitest';
 import { ACCOUNT, openAccountPage, waitForEffects } from '../account/testing/account-test-support';
-import { CREATED, mockTokens, TOKEN } from './testing/tokens-test-support';
+import {
+  CREATED,
+  description,
+  labelledControl,
+  mockTokens,
+  TOKEN,
+} from './testing/tokens-test-support';
 import { TokensPage } from './tokens-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
@@ -40,9 +46,16 @@ async function openCreationForm(): Promise<HTMLFormElement> {
   return shown<HTMLFormElement>('form');
 }
 
+function nameField(form: HTMLFormElement): HTMLInputElement {
+  return labelledControl(form, 'Name', HTMLInputElement);
+}
+
+function expiryField(form: HTMLFormElement): HTMLSelectElement {
+  return labelledControl(form, 'Expires after', HTMLSelectElement);
+}
+
 function typeName(form: HTMLFormElement, name: string): void {
-  const field = form.querySelector<HTMLInputElement>('#token-name');
-  if (!field) throw new Error('no name field');
+  const field = nameField(form);
   field.value = name;
   field.dispatchEvent(new Event('input'));
 }
@@ -98,7 +111,7 @@ describe('TokensPage', () => {
       .filter((box) => box.checked)
       .map((box) => box.value);
     expect(checked).toEqual(['read', 'write']);
-    expect(form.querySelector<HTMLSelectElement>('#token-expiry')?.value).toBe('90');
+    expect(expiryField(form).value).toBe('90');
 
     typeName(form, '  Claude Code  ');
     buttonNamed(form, 'Create').click();
@@ -118,8 +131,7 @@ describe('TokensPage', () => {
       form.querySelector<HTMLInputElement>(`input[type="checkbox"][value="${value}"]`);
     scope('write')?.click();
     scope('export')?.click();
-    const expiry = form.querySelector<HTMLSelectElement>('#token-expiry');
-    if (!expiry) throw new Error('no expiry field');
+    const expiry = expiryField(form);
     expiry.value = '365';
     expiry.dispatchEvent(new Event('change'));
     typeName(form, 'CI');
@@ -151,7 +163,7 @@ describe('TokensPage', () => {
         'Choose at least one permission.',
       ]),
     );
-    await vi.waitFor(() => expect(document.activeElement).toBe(form.querySelector('#token-name')));
+    await vi.waitFor(() => expect(document.activeElement).toBe(nameField(form)));
     expect(api.create).not.toHaveBeenCalled();
   });
 
@@ -166,9 +178,11 @@ describe('TokensPage', () => {
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() =>
-      expect(document.activeElement).toBe(form.querySelector('#token-scope-read')),
+      expect(document.activeElement).toBe(
+        form.querySelector('input[type="checkbox"][value="read"]'),
+      ),
     );
-    form.querySelector<HTMLInputElement>('#token-scope-export')?.click();
+    form.querySelector<HTMLInputElement>('input[type="checkbox"][value="export"]')?.click();
     await vi.waitFor(() => expect(form.querySelector('[role="alert"]')).toBeNull());
     expect(api.create).not.toHaveBeenCalled();
   });
@@ -214,7 +228,7 @@ describe('TokensPage', () => {
     buttonNamed(form, 'Create').click();
 
     await vi.waitFor(() =>
-      expect(form.querySelector('#token-name-error')?.textContent).toContain('60'),
+      expect(description(nameField(form))).toContain('A token name holds 1 to 60 characters.'),
     );
   });
 
@@ -288,9 +302,11 @@ describe('TokensPage', () => {
     await waitForEffects(() =>
       expect(root.querySelector('section [role="status"]')?.textContent).toContain('Laptop'),
     );
-    await waitForEffects(() =>
-      expect(document.activeElement).toBe(root.querySelector('#tokens-list-heading')),
+    const heading = [...root.querySelectorAll('h2')].find(
+      (candidate) => candidate.textContent?.trim() === 'Your active tokens',
     );
+    expect(heading).toBeDefined();
+    await waitForEffects(() => expect(document.activeElement).toBe(heading));
   });
 
   it('selects the secret to copy by hand when the browser refuses the copy', async () => {

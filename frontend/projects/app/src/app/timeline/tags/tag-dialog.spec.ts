@@ -39,6 +39,16 @@ describe('the tag dialog', () => {
     });
   }
 
+  /** The field a label names, found as assistive technology finds it: through its `for`. */
+  function fieldLabelled(dialog: HTMLElement, text: string): HTMLInputElement {
+    const label = [...dialog.querySelectorAll('label')].find(
+      (candidate) => candidate.textContent?.trim() === text,
+    );
+    const field = label?.control;
+    if (!(field instanceof HTMLInputElement)) throw new Error(`no field labelled ${text}`);
+    return field;
+  }
+
   afterEach(() => document.body.replaceChildren());
 
   it('adds a tag over the frame selection', async () => {
@@ -46,8 +56,7 @@ describe('the tag dialog', () => {
     state.open({ kind: 'add', first: 0, last: 1 });
     fixture.detectChanges();
     const dialog = await form();
-    const name = dialog.querySelector<HTMLInputElement>('#tag-name');
-    if (!name) throw new Error('no name field');
+    const name = fieldLabelled(dialog, 'Name');
 
     name.value = 'walk';
     name.dispatchEvent(new Event('input'));
@@ -67,9 +76,9 @@ describe('the tag dialog', () => {
     state.open({ kind: 'edit', tag });
     fixture.detectChanges();
     const dialog = await form();
-    const name = dialog.querySelector<HTMLInputElement>('#tag-name');
+    const name = fieldLabelled(dialog, 'Name');
     const once = dialog.querySelector<HTMLInputElement>('input[value="once"]');
-    if (!name || !once) throw new Error('missing fields');
+    if (!once) throw new Error('no once option');
 
     name.value = 'run';
     name.dispatchEvent(new Event('input'));
@@ -101,10 +110,9 @@ describe('the tag dialog', () => {
     state.open({ kind: 'add', first: 1, last: 1 });
     fixture.detectChanges();
     const dialog = await form();
-    const first = dialog.querySelector<HTMLInputElement>('#tag-first');
-    const last = dialog.querySelector<HTMLInputElement>('#tag-last');
-    const name = dialog.querySelector<HTMLInputElement>('#tag-name');
-    if (!first || !last || !name) throw new Error('missing fields');
+    const first = fieldLabelled(dialog, 'First frame');
+    const last = fieldLabelled(dialog, 'Last frame');
+    const name = fieldLabelled(dialog, 'Name');
     expect([first.value, last.value, last.max]).toEqual(['2', '2', '3']);
 
     name.value = 'blink';
@@ -123,15 +131,16 @@ describe('the tag dialog', () => {
     state.open({ kind: 'add', first: 0, last: 0 });
     fixture.detectChanges();
     const dialog = await form();
-    const last = dialog.querySelector<HTMLInputElement>('#tag-last');
-    if (!last) throw new Error('no last field');
+    const last = fieldLabelled(dialog, 'Last frame');
 
     last.value = '9';
     last.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(last.getAttribute('aria-invalid')).toBe('true');
-    expect(dialog.querySelector('#tag-range-error')).not.toBeNull();
+    const error = document.getElementById(last.getAttribute('aria-describedby') ?? '');
+    expect(dialog.contains(error)).toBe(true);
+    expect(error?.textContent).toContain('Choose frames from 1 to');
     expect(dialog.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
   });
 
@@ -141,8 +150,7 @@ describe('the tag dialog', () => {
     state.open({ kind: 'add', first: 2, last: 2 });
     fixture.detectChanges();
     const dialog = await form();
-    const name = dialog.querySelector<HTMLInputElement>('#tag-name');
-    if (!name) throw new Error('no name field');
+    const name = fieldLabelled(dialog, 'Name');
 
     name.value = 'walk';
     name.dispatchEvent(new Event('input'));

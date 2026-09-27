@@ -32,22 +32,28 @@ describe('ImportSpriteSheetForm', () => {
     await fixture.whenStable();
   }
 
-  function field(selector: string): HTMLInputElement {
-    return fixture.nativeElement.querySelector(selector);
+  /** The field a label names, found as assistive technology finds it: through its `for`. */
+  function field(label: string): HTMLInputElement {
+    const host = fixture.nativeElement as HTMLElement;
+    const found = [...host.querySelectorAll('label')].find(
+      (candidate) => candidate.textContent?.trim() === label,
+    )?.control;
+    if (!(found instanceof HTMLInputElement)) throw new Error(`no field labelled ${label}`);
+    return found;
   }
 
   it('bounds the cell size and defaults the duration to the engine limit', async () => {
     await setup();
     const limits = engine.limits();
 
-    expect(field('#sprite-sheet-cell-width').max).toBe(String(limits?.importMaxSide));
-    expect(field('#sprite-sheet-duration').valueAsNumber).toBe(limits?.defaultFrameDurationMs);
+    expect(field('Cell width').max).toBe(String(limits?.importMaxSide));
+    expect(field('Frame duration (ms)').valueAsNumber).toBe(limits?.defaultFrameDurationMs);
   });
 
   it('marks an out-of-bounds duration invalid, disabling submit', async () => {
     await setup();
     const limits = engine.limits();
-    const duration = field('#sprite-sheet-duration');
+    const duration = field('Frame duration (ms)');
 
     duration.value = String((limits?.maxFrameDurationMs ?? 0) + 1);
     duration.dispatchEvent(new Event('input'));
@@ -59,25 +65,24 @@ describe('ImportSpriteSheetForm', () => {
 
   it('explains an out-of-bounds cell width beside the field', async () => {
     await setup();
-    const width = field('#sprite-sheet-cell-width');
+    const width = field('Cell width');
 
     width.value = '0';
     width.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    const errorId = 'sprite-sheet-cell-width-error';
-    expect(width.getAttribute('aria-describedby')?.split(' ')).toContain(errorId);
-    const error = fixture.nativeElement.querySelector(`#${errorId}`) as HTMLElement | null;
+    const error = width.closest('.lp-field')?.querySelector<HTMLElement>('.lp-field__error');
+    expect(width.getAttribute('aria-describedby')?.split(' ')).toContain(error?.id);
     expect(error?.textContent).toMatch(/1.*4,?096/);
   });
 
   it('submits the cell size and the duration through ImportSpriteSheetFlow', async () => {
     await setup();
     const submit = vi.spyOn(TestBed.inject(ImportSpriteSheetFlow), 'submit');
-    field('#sprite-sheet-cell-width').value = '4';
-    field('#sprite-sheet-cell-width').dispatchEvent(new Event('input'));
-    field('#sprite-sheet-cell-height').value = '4';
-    field('#sprite-sheet-cell-height').dispatchEvent(new Event('input'));
+    field('Cell width').value = '4';
+    field('Cell width').dispatchEvent(new Event('input'));
+    field('Cell height').value = '4';
+    field('Cell height').dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));

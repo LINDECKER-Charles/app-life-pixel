@@ -11,7 +11,7 @@
       <button
         type="button"
         class="lp-button lp-button--quiet inspector-toggle"
-        aria-controls="editor-inspector"
+        [attr.aria-controls]="id('inspector')"
         [attr.aria-expanded]="inspectorOpen()"
         (click)="inspectorOpen.set(!inspectorOpen())"
       >
@@ -42,7 +42,7 @@
   <section class="region timeline" [attr.aria-label]="'editor.region.timeline' | transloco">
     <lp-timeline />
   </section>
-  <div id="editor-inspector" class="inspector">
+  <div [id]="id('inspector')" class="inspector">
     @if (tabbed()) {
       <lp-inspector-tabs
         class="tabs"
@@ -53,37 +53,37 @@
     }
     <!-- Sections with a heading each; tabbed, panels of which one shows at a time. -->
     <section
-      id="inspector-palette-panel"
+      [id]="id('inspector-palette-panel')"
       class="panel"
       [attr.role]="tabbed() ? 'tabpanel' : null"
       [attr.aria-labelledby]="panelLabel('inspector-palette-panel', 'inspector-palette')"
       [hidden]="isPanelHidden('inspector-palette-panel')"
     >
-      <h2 id="inspector-palette" class="panel-title" [class.lp-visually-hidden]="tabbed()">
+      <h2 [id]="id('inspector-palette')" class="panel-title" [class.lp-visually-hidden]="tabbed()">
         {{ 'editor.region.palette' | transloco }}
       </h2>
       <lp-palette-panel />
     </section>
     <section
-      id="inspector-layers-panel"
+      [id]="id('inspector-layers-panel')"
       class="panel"
       [attr.role]="tabbed() ? 'tabpanel' : null"
       [attr.aria-labelledby]="panelLabel('inspector-layers-panel', 'inspector-layers')"
       [hidden]="isPanelHidden('inspector-layers-panel')"
     >
-      <h2 id="inspector-layers" class="panel-title" [class.lp-visually-hidden]="tabbed()">
+      <h2 [id]="id('inspector-layers')" class="panel-title" [class.lp-visually-hidden]="tabbed()">
         {{ 'timeline.layers.heading' | transloco }}
       </h2>
       <lp-layer-list />
     </section>
     <section
-      id="inspector-playback-panel"
+      [id]="id('inspector-playback-panel')"
       class="panel"
       [attr.role]="tabbed() ? 'tabpanel' : null"
       [attr.aria-labelledby]="panelLabel('inspector-playback-panel', 'inspector-playback')"
       [hidden]="isPanelHidden('inspector-playback-panel')"
     >
-      <h2 id="inspector-playback" class="panel-title" [class.lp-visually-hidden]="tabbed()">
+      <h2 [id]="id('inspector-playback')" class="panel-title" [class.lp-visually-hidden]="tabbed()">
         {{ 'timeline.playback.heading' | transloco }}
       </h2>
       <lp-playback-preview />

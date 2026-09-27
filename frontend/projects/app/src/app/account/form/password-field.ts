@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Icon } from '../../ui/icon/icon';
 import type { FormError } from './form-errors';
 
@@ -16,7 +17,7 @@ import type { FormError } from './form-errors';
   template: `
     <label class="lp-field__label" [for]="fieldId()">{{ label() }}</label>
     @if (hint(); as hint) {
-      <p class="lp-field__hint" [id]="fieldId() + '-hint'">{{ hint }}</p>
+      <p class="lp-field__hint" [id]="id('hint')">{{ hint }}</p>
     }
     <div class="lp-field__control">
       <input
@@ -41,7 +42,7 @@ import type { FormError } from './form-errors';
       </button>
     </div>
     @if (error(); as error) {
-      <p class="lp-field__error" [id]="fieldId() + '-error'">
+      <p class="lp-field__error" [id]="id('error')">
         <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
       </p>
     }
@@ -57,7 +58,7 @@ import type { FormError } from './form-errors';
   `,
 })
 export class PasswordField {
-  /** The `<input>`'s id: unique in the app, since the outlet may keep another page around. */
+  /** The `<input>`'s id, from the parent's id scope: its error summary links the field by it. */
   readonly fieldId = input.required<string>();
   readonly label = input.required<string>();
   readonly hint = input<string>();
@@ -67,12 +68,13 @@ export class PasswordField {
   readonly error = input<FormError>();
   readonly valueChange = output<string>();
 
+  protected readonly id = idScope('password-field');
   protected readonly visible = signal(false);
 
   protected readonly describedBy = computed(() => {
     const ids = [
-      this.hint() ? `${this.fieldId()}-hint` : undefined,
-      this.error() ? `${this.fieldId()}-error` : undefined,
+      this.hint() ? this.id('hint') : undefined,
+      this.error() ? this.id('error') : undefined,
     ].filter((id) => id !== undefined);
     return ids.length > 0 ? ids.join(' ') : null;
   });

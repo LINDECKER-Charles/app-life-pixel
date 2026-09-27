@@ -17,7 +17,7 @@
         class="bar"
         [style.grid-column]="columnsOf(tag)"
         [attr.aria-label]="'timeline.tags.edit' | transloco: { name: tag.name }"
-        [attr.aria-describedby]="'tag-summary-' + index"
+        [attr.aria-describedby]="id('summary-' + index)"
         (click)="edit(tag)"
       >
         <span class="bar-name">{{ tag.name }}</span>
@@ -25,7 +25,7 @@
           <span class="bar-once">{{ 'timeline.tags.once' | transloco }}</span>
         }
       </button>
-      <span [id]="'tag-summary-' + index" class="lp-visually-hidden">
+      <span [id]="id('summary-' + index)" class="lp-visually-hidden">
         {{
           'timeline.tags.summary'
             | transloco: { first: tag.first + 1, last: tag.last + 1, loop: tag.loop }

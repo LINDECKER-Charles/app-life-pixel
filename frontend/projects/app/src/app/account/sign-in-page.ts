@@ -11,6 +11,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { ACCOUNT_LIMITS } from './account-limits';
 import { ErrorSummary } from './form/error-summary';
@@ -46,8 +47,9 @@ export class SignInPage {
 
   readonly returnUrl = input<string>();
 
+  protected readonly id = idScope('sign-in-page');
   protected readonly limits = ACCOUNT_LIMITS;
-  protected readonly targets = { email: 'sign-in-email', password: 'sign-in-password' };
+  protected readonly targets = { email: this.id('email'), password: this.id('password') };
   protected readonly email = signal('');
   protected readonly password = signal('');
   protected readonly pending = signal(false);

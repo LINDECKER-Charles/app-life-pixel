@@ -10,6 +10,7 @@ import {
   untracked,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EDITOR_ENGINE } from '../engine/editor-engine';
 import { isEngineError, type Framework, type SnippetRequest } from '../engine/engine-types';
 import { Icon } from '../ui/icon/icon';
@@ -44,6 +45,8 @@ export class ExportSnippet {
   private readonly flow = inject(ExportFlow);
   private readonly copiedTimeout = signal<ReturnType<typeof setTimeout> | undefined>(undefined);
   private requestId = 0;
+
+  protected readonly id = idScope('export-snippet');
 
   protected readonly frameworks = FRAMEWORKS;
   protected readonly framework = signal<Framework>('html');

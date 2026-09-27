@@ -48,7 +48,7 @@
             type="button"
             class="select"
             [attr.aria-current]="active ? 'true' : null"
-            aria-describedby="layer-reorder-hint"
+            [attr.aria-describedby]="id('reorder-hint')"
             (click)="activate(layer.id)"
             (dblclick)="startRename(layer.id)"
             (keydown)="onKeydown(index, $event)"
@@ -88,7 +88,7 @@
       </li>
     }
   </ul>
-  <p id="layer-reorder-hint" class="lp-visually-hidden">
+  <p [id]="id('reorder-hint')" class="lp-visually-hidden">
     {{ 'timeline.layers.reorder_hint' | transloco }}
   </p>
 } @else {

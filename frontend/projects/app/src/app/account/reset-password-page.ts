@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal, viewChild } from '@
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { AuthApi } from 'shared';
+import { AuthApi, idScope } from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { StatusBanner } from '../ui/status-banner/status-banner';
 import { ACCOUNT_LIMITS } from './account-limits';
@@ -29,8 +29,9 @@ export class ResetPasswordPage {
   private readonly authApi = inject(AuthApi);
   private readonly summary = viewChild(ErrorSummary);
 
+  protected readonly id = idScope('reset-password-page');
   protected readonly limits = ACCOUNT_LIMITS;
-  protected readonly targets = { email: 'reset-password-email' };
+  protected readonly targets = { email: this.id('email') };
   protected readonly email = signal('');
   protected readonly pending = signal(false);
   protected readonly sent = signal(false);

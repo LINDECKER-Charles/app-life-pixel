@@ -11,10 +11,12 @@ import {
 import { SignInPage } from './sign-in-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
+const EMAIL = 'input[type="email"]';
+const PASSWORD = 'lp-password-field input';
 
 function fillForm(fixture: ComponentFixture<SignInPage>, email: string, password: string): void {
-  typeInto(fixture.nativeElement, '#sign-in-email', email);
-  typeInto(fixture.nativeElement, '#sign-in-password', password);
+  typeInto(fixture.nativeElement, EMAIL, email);
+  typeInto(fixture.nativeElement, PASSWORD, password);
 }
 
 function summaryItems(fixture: ComponentFixture<SignInPage>): (string | undefined)[] {
@@ -49,21 +51,22 @@ describe('SignInPage', () => {
 
     TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/sign-in');
     expect(summaryItems(fixture)).toEqual(['Enter your email address.', 'Enter your password.']);
-    const email = fixture.nativeElement.querySelector('#sign-in-email');
+    const email = fixture.nativeElement.querySelector(EMAIL);
     expect(email.getAttribute('aria-invalid')).toBe('true');
-    expect(email.getAttribute('aria-describedby')).toBe('sign-in-email-error');
+    const error = email.closest('.lp-field')?.querySelector('.lp-field__error');
+    expect(email.getAttribute('aria-describedby')).toBe(error?.id);
     await waitForEffects(() => expect(document.activeElement).toBe(email));
   });
 
   it('focuses the password when only the password is missing, and clears it once typed', async () => {
     const fixture = await openAccountPage(SignInPage);
-    typeInto(fixture.nativeElement, '#sign-in-email', 'lee@example.com');
+    typeInto(fixture.nativeElement, EMAIL, 'lee@example.com');
 
     await submitForm(fixture);
 
-    const password = fixture.nativeElement.querySelector('#sign-in-password');
+    const password = fixture.nativeElement.querySelector(PASSWORD);
     await waitForEffects(() => expect(document.activeElement).toBe(password));
-    typeInto(fixture.nativeElement, '#sign-in-password', 'a');
+    typeInto(fixture.nativeElement, PASSWORD, 'a');
     await fixture.whenStable();
     expect(password.getAttribute('aria-invalid')).toBeNull();
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
@@ -81,12 +84,11 @@ describe('SignInPage', () => {
         { status: 401, statusText: 'Unauthorized' },
       );
 
-    const password = fixture.nativeElement.querySelector('#sign-in-password');
+    const password = fixture.nativeElement.querySelector(PASSWORD);
     await waitForEffects(() => expect(document.activeElement).toBe(password));
     expect(password.getAttribute('aria-invalid')).toBe('true');
-    expect(fixture.nativeElement.querySelector('#sign-in-password-error')?.textContent).toContain(
-      'The email address or the password is not correct.',
-    );
+    const error = password.closest('.lp-field')?.querySelector('.lp-field__error');
+    expect(error?.textContent).toContain('The email address or the password is not correct.');
     expect((password as HTMLInputElement).value).toBe('wrong password');
   });
 

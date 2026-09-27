@@ -3,6 +3,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 import axe from 'axe-core';
 import { firstValueFrom } from 'rxjs';
+import { idScope } from 'shared';
 import en from '../../../../../../../i18n/en.json';
 import type { InspectorTab } from './inspector-tab';
 import { InspectorTabs } from './inspector-tabs';
@@ -28,12 +29,14 @@ const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] 
   `,
 })
 class Host {
+  private readonly id = idScope('inspector-tabs-host');
+
   readonly tabs: readonly InspectorTab[] = [
-    { panelId: 'palette', labelKey: 'editor.region.palette' },
-    { panelId: 'layers', labelKey: 'timeline.layers.heading' },
-    { panelId: 'preview', labelKey: 'editor.inspector.preview' },
+    { panelId: this.id('palette'), labelKey: 'editor.region.palette' },
+    { panelId: this.id('layers'), labelKey: 'timeline.layers.heading' },
+    { panelId: this.id('preview'), labelKey: 'editor.inspector.preview' },
   ];
-  readonly selected = signal('palette');
+  readonly selected = signal(this.tabs[0].panelId);
 }
 
 interface Tabs {
@@ -63,12 +66,22 @@ async function press(target: HTMLElement, key: string, fixture: ComponentFixture
   await fixture.whenStable();
 }
 
-function visiblePanels({ panels }: Tabs): string[] {
-  return panels.filter((panel) => !panel.hidden).map((panel) => panel.id);
+/** What names `element` through its `aria-labelledby`. */
+function nameOf(element: HTMLElement): string {
+  const label = document.getElementById(element.getAttribute('aria-labelledby') ?? '');
+  return label?.textContent?.trim() ?? '';
 }
 
+/** The panels shown, each by the name its tab gives it. */
+function visiblePanels({ panels }: Tabs): string[] {
+  return panels.filter((panel) => !panel.hidden).map(nameOf);
+}
+
+/** The selected tabs, by their text. */
 function selectedTabs({ tabs }: Tabs): string[] {
-  return tabs.filter((tab) => tab.getAttribute('aria-selected') === 'true').map((tab) => tab.id);
+  return tabs
+    .filter((tab) => tab.getAttribute('aria-selected') === 'true')
+    .map((tab) => tab.textContent?.trim() ?? '');
 }
 
 describe('InspectorTabs', () => {
@@ -93,8 +106,8 @@ describe('InspectorTabs', () => {
   it('shows one panel, whose tab alone is selected and in the Tab sequence', async () => {
     const tabs = await render();
 
-    expect(visiblePanels(tabs)).toEqual(['palette']);
-    expect(selectedTabs(tabs)).toEqual(['palette-tab']);
+    expect(visiblePanels(tabs)).toEqual(['Palette']);
+    expect(selectedTabs(tabs)).toEqual(['Palette']);
     expect(tabs.tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1]);
   });
 
@@ -104,9 +117,10 @@ describe('InspectorTabs', () => {
     tabs.tabs[2].click();
     await tabs.fixture.whenStable();
 
-    expect(visiblePanels(tabs)).toEqual(['preview']);
-    expect(selectedTabs(tabs)).toEqual(['preview-tab']);
-    expect(tabs.fixture.componentInstance.selected()).toBe('preview');
+    const host = tabs.fixture.componentInstance;
+    expect(visiblePanels(tabs)).toEqual(['Preview']);
+    expect(selectedTabs(tabs)).toEqual(['Preview']);
+    expect(host.selected()).toBe(host.tabs[2].panelId);
   });
 
   it('moves with Left and Right Arrow, wrapping around, and selects the focused tab', async () => {
@@ -115,16 +129,16 @@ describe('InspectorTabs', () => {
 
     await press(tabs.tabs[0], 'ArrowRight', tabs.fixture);
     expect(document.activeElement).toBe(tabs.tabs[1]);
-    expect(visiblePanels(tabs)).toEqual(['layers']);
+    expect(visiblePanels(tabs)).toEqual(['Layers']);
 
     await press(tabs.tabs[1], 'ArrowLeft', tabs.fixture);
     await press(tabs.tabs[0], 'ArrowLeft', tabs.fixture);
     expect(document.activeElement).toBe(tabs.tabs[2]);
-    expect(visiblePanels(tabs)).toEqual(['preview']);
+    expect(visiblePanels(tabs)).toEqual(['Preview']);
 
     await press(tabs.tabs[2], 'ArrowRight', tabs.fixture);
     expect(document.activeElement).toBe(tabs.tabs[0]);
-    expect(visiblePanels(tabs)).toEqual(['palette']);
+    expect(visiblePanels(tabs)).toEqual(['Palette']);
     expect(tabs.tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1]);
   });
 
@@ -134,11 +148,11 @@ describe('InspectorTabs', () => {
 
     await press(tabs.tabs[0], 'End', tabs.fixture);
     expect(document.activeElement).toBe(tabs.tabs[2]);
-    expect(visiblePanels(tabs)).toEqual(['preview']);
+    expect(visiblePanels(tabs)).toEqual(['Preview']);
 
     await press(tabs.tabs[2], 'Home', tabs.fixture);
     expect(document.activeElement).toBe(tabs.tabs[0]);
-    expect(visiblePanels(tabs)).toEqual(['palette']);
+    expect(visiblePanels(tabs)).toEqual(['Palette']);
   });
 
   it('leaves other keys to the page', async () => {
@@ -153,7 +167,7 @@ describe('InspectorTabs', () => {
     await tabs.fixture.whenStable();
 
     expect(event.defaultPrevented).toBe(false);
-    expect(visiblePanels(tabs)).toEqual(['palette']);
+    expect(visiblePanels(tabs)).toEqual(['Palette']);
   });
 
   it('has no serious accessibility violation', async () => {

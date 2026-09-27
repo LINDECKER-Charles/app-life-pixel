@@ -7,8 +7,17 @@ import { AccountPage } from './account-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 
-function section(host: HTMLElement, heading: string): HTMLElement {
-  return host.querySelector(`section[aria-labelledby="${heading}"]`) as HTMLElement;
+/** The section whose `aria-labelledby` heading reads `name`. */
+function section(host: HTMLElement, name: string): HTMLElement {
+  const sections = [...host.querySelectorAll<HTMLElement>('section[aria-labelledby]')];
+  const named = sections.find((candidate) => {
+    const heading = host.querySelector(`[id="${candidate.getAttribute('aria-labelledby')}"]`);
+    return heading?.textContent?.trim() === name;
+  });
+  if (!named) {
+    throw new Error(`No section is named ${name}`);
+  }
+  return named;
 }
 
 describe('AccountPage', () => {
@@ -16,7 +25,7 @@ describe('AccountPage', () => {
 
   it('shows the address, unverified, with a way to resend the verification email', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
-    const address = section(fixture.nativeElement, 'account-address-heading');
+    const address = section(fixture.nativeElement, 'Your address');
 
     expect(address.textContent).toContain(ACCOUNT.email);
     expect(address.textContent).toContain('This address is not verified yet.');
@@ -34,7 +43,7 @@ describe('AccountPage', () => {
 
   it('says a verified address is verified, without a resend button', async () => {
     const fixture = await openAccountPage(AccountPage, { ...ACCOUNT, emailVerified: true });
-    const address = section(fixture.nativeElement, 'account-address-heading');
+    const address = section(fixture.nativeElement, 'Your address');
 
     expect(address.textContent).toContain('This address is verified.');
     expect(address.querySelector('button')).toBeNull();
@@ -46,7 +55,7 @@ describe('AccountPage', () => {
       storage: { usedBytes: 512_000, limitBytes: 1_000_000 },
     });
 
-    const usage = section(fixture.nativeElement, 'account-usage-heading').querySelector('p');
+    const usage = section(fixture.nativeElement, 'Storage').querySelector('p');
     expect(usage?.textContent?.trim()).toBe(
       `${new Intl.NumberFormat('en').format(512_000)} of ${new Intl.NumberFormat('en').format(1_000_000)} bytes used.`,
     );
@@ -54,7 +63,8 @@ describe('AccountPage', () => {
 
   it('changes the language with a CSRF header, and applies it through the preference', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
-    const select = fixture.nativeElement.querySelector('#account-language') as HTMLSelectElement;
+    const select = section(fixture.nativeElement, 'Language').querySelector('select');
+    if (!select) throw new Error('no language select');
     expect(select.labels?.[0]?.textContent?.trim()).toBe('Language');
 
     select.value = 'fr';
@@ -73,17 +83,17 @@ describe('AccountPage', () => {
   it('keeps sign-out apart from deletion, and deletion last', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
 
-    const headings = [...fixture.nativeElement.querySelectorAll('h2')].map(
-      (heading) => (heading as HTMLElement).id,
+    const headings = [...fixture.nativeElement.querySelectorAll('h2')].map((heading) =>
+      (heading as HTMLElement).textContent?.trim(),
     );
-    expect(headings.slice(-2)).toEqual(['account-sign-out-heading', 'account-delete-heading']);
+    expect(headings.slice(-2)).toEqual(['Sign out', 'Delete this account']);
   });
 
   it('signs out and returns to the editor', async () => {
     const fixture = await openAccountPage(AccountPage, ACCOUNT);
     const navigation = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
 
-    section(fixture.nativeElement, 'account-sign-out-heading').querySelector('button')?.click();
+    section(fixture.nativeElement, 'Sign out').querySelector('button')?.click();
     await fixture.whenStable();
 
     TestBed.inject(HttpTestingController)

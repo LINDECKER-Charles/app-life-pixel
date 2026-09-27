@@ -1,8 +1,8 @@
 <div class="options">
   <div class="lp-field">
-    <label class="lp-field__label" for="export-tag">{{ 'export.options.tag' | transloco }}</label>
+    <label class="lp-field__label" [for]="id('tag')">{{ 'export.options.tag' | transloco }}</label>
     <select
-      id="export-tag"
+      [id]="id('tag')"
       class="lp-input"
       #tagField
       [value]="tag() ?? ''"
@@ -15,13 +15,13 @@
     </select>
   </div>
   <div class="lp-field">
-    <label class="lp-field__label" for="export-scale">{{
+    <label class="lp-field__label" [for]="id('scale')">{{
       'export.options.scale' | transloco
     }}</label>
     <div class="lp-field__control">
       <input
         #scaleField
-        id="export-scale"
+        [id]="id('scale')"
         class="lp-input"
         type="number"
         inputmode="numeric"
@@ -29,14 +29,14 @@
         [min]="bounds().min"
         [max]="bounds().max"
         [value]="scale()"
-        aria-describedby="export-scale-hint"
+        [attr.aria-describedby]="id('scale-hint')"
         (change)="onScaleChange(scaleField)"
       />
       <span class="lp-field__unit" aria-hidden="true">{{
         'export.options.scale_unit' | transloco
       }}</span>
     </div>
-    <p id="export-scale-hint" class="lp-field__hint">
+    <p [id]="id('scale-hint')" class="lp-field__hint">
       {{ 'export.options.scale_hint' | transloco: bounds() }}
     </p>
   </div>

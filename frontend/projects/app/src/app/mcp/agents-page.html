@@ -22,8 +22,8 @@
       @default {
         @if (paths(); as agentPaths) {
           @for (setup of setups(); track setup.id) {
-            <section class="lp-card" [attr.aria-labelledby]="'mcp-' + setup.id + '-heading'">
-              <h2 [id]="'mcp-' + setup.id + '-heading'" class="lp-card__title">
+            <section class="lp-card" [attr.aria-labelledby]="id(setup.id + '-heading')">
+              <h2 class="lp-card__title" [id]="id(setup.id + '-heading')">
                 {{ setup.heading | transloco }}
               </h2>
               <div class="lp-stack">
@@ -44,8 +44,8 @@
         }
       }
     }
-    <section class="lp-section" aria-labelledby="mcp-abilities-heading">
-      <h2 id="mcp-abilities-heading">{{ 'mcp.agents.abilities.heading' | transloco }}</h2>
+    <section class="lp-section" [attr.aria-labelledby]="id('abilities-heading')">
+      <h2 [id]="id('abilities-heading')">{{ 'mcp.agents.abilities.heading' | transloco }}</h2>
       <ul>
         @for (ability of abilities; track ability) {
           <li>{{ ability | transloco }}</li>

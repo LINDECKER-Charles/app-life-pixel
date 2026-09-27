@@ -1,4 +1,10 @@
-import { importProvidersFrom } from '@angular/core';
+import {
+  ApplicationRef,
+  type ComponentRef,
+  createComponent,
+  EnvironmentInjector,
+  importProvidersFrom,
+} from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { provideIonicAngular } from '@ionic/angular';
@@ -11,6 +17,7 @@ import { CurrentAnimation } from '../../library/current-animation';
 import { DiscardConfirmation } from './discard-confirmation';
 import { NewAnimationDialog } from './new-animation-dialog';
 import { NewAnimationFlow } from './new-animation-flow';
+import { NewAnimationForm } from './new-animation-form';
 
 const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] } };
 
@@ -43,10 +50,18 @@ describe('the new-animation dialog', () => {
     });
   }
 
-  function field(form: HTMLFormElement, id: string): HTMLInputElement {
-    const input = form.querySelector<HTMLInputElement>(`#${id}`);
-    if (!input) throw new Error(`no field ${id}`);
-    return input;
+  /** The field its label names, reached through that label as assistive technology does. */
+  function field(form: HTMLFormElement, label: string): HTMLInputElement {
+    const labels = Array.from(form.querySelectorAll('label'));
+    const control = labels.find((candidate) => candidate.textContent?.trim() === label)?.control;
+    if (!(control instanceof HTMLInputElement)) throw new Error(`no field labelled ${label}`);
+    return control;
+  }
+
+  /** The texts that describe `element` through its `aria-describedby`, in order. */
+  function descriptions(element: Element | null): string[] {
+    const ids = element?.getAttribute('aria-describedby')?.split(' ') ?? [];
+    return ids.map((id) => document.getElementById(id)?.textContent?.trim() ?? `no #${id}`);
   }
 
   beforeEach(() => {
@@ -57,7 +72,7 @@ describe('the new-animation dialog', () => {
 
   it('creates a 32 × 32 animation with the translated default names', async () => {
     const form = await openDialog();
-    expect(field(form, 'new-animation-title').value).toBe(en['editor.new.default_title']);
+    expect(field(form, 'Title').value).toBe(en['editor.new.default_title']);
 
     form.querySelector<HTMLButtonElement>('button[type="submit"]')?.click();
 
@@ -75,7 +90,7 @@ describe('the new-animation dialog', () => {
   it('bounds the size by the engine limits', async () => {
     const form = await openDialog();
     const limits = TestBed.inject(EngineStore).limits();
-    const width = field(form, 'new-animation-width');
+    const width = field(form, 'Width');
     expect(width.max).toBe(String(limits?.canvasMaxSide));
 
     width.value = String((limits?.canvasMaxSide ?? 0) + 1);
@@ -88,7 +103,7 @@ describe('the new-animation dialog', () => {
 
   it('focuses the title, its default selected, once the dialog is shown', async () => {
     const form = await openDialog();
-    const title = field(form, 'new-animation-title');
+    const title = field(form, 'Title');
 
     await vi.waitFor(() => expect(document.activeElement).toBe(title));
     expect(title.selectionStart).toBe(0);
@@ -98,28 +113,64 @@ describe('the new-animation dialog', () => {
   it('states the sides in pixels, within the engine limits', async () => {
     const form = await openDialog();
     const limits = TestBed.inject(EngineStore).limits();
-    const hint = form.querySelector('#new-animation-size-hint')?.textContent?.trim();
+    const hints = descriptions(form.querySelector('fieldset'));
 
-    expect(hint).toBe(
+    expect(hints).toEqual([
       `From ${limits?.canvasMinSide} to ${limits?.canvasMaxSide} pixels on each side.`,
-    );
+    ]);
     const units = Array.from(form.querySelectorAll('.lp-field__unit'), (unit) => unit.textContent);
     expect(units.map((unit) => unit?.trim())).toEqual(['px', 'px']);
   });
 
   it('explains a side out of the limits next to it, keeping what was typed', async () => {
     const form = await openDialog();
-    const height = field(form, 'new-animation-height');
+    const height = field(form, 'Height');
 
     height.value = '0';
     height.dispatchEvent(new Event('input'));
     TestBed.tick();
 
-    const error = form.querySelector('#new-animation-height-error');
-    expect(error?.textContent).toContain('Enter a whole number from');
-    expect(height.getAttribute('aria-describedby')).toBe('new-animation-height-error');
+    expect(descriptions(height)).toEqual([expect.stringContaining('Enter a whole number from')]);
+    expect(height.closest('.lp-field')?.textContent).toContain('Enter a whole number from');
     expect(height.value).toBe('0');
   });
+
+  it('keeps its labels and hints on its own fields beside another copy of the form', async () => {
+    const form = await openDialog();
+    const copy = await mountFormCopyFirst();
+    try {
+      expect(form.isConnected).toBe(true);
+      for (const label of Array.from(form.querySelectorAll('label'))) {
+        expect(form.contains(label.control), label.textContent?.trim()).toBe(true);
+      }
+      for (const described of Array.from(form.querySelectorAll('[aria-describedby]'))) {
+        for (const id of described.getAttribute('aria-describedby')?.split(' ') ?? []) {
+          expect(form.contains(document.getElementById(id)), id).toBe(true);
+        }
+      }
+    } finally {
+      copy.destroy();
+    }
+  });
+
+  /**
+   * Mounts another form first in the document, where it would take any id the two forms shared.
+   * Not through `TestBed.createComponent`: that removes the dialog fixture's root, and Ionic
+   * dismisses — unmounting its form — a modal whose original parent leaves the document.
+   */
+  async function mountFormCopyFirst(): Promise<ComponentRef<NewAnimationForm>> {
+    const host = document.createElement('div');
+    document.body.prepend(host);
+    const application = TestBed.inject(ApplicationRef);
+    const copy = createComponent(NewAnimationForm, {
+      environmentInjector: TestBed.inject(EnvironmentInjector),
+      hostElement: host,
+    });
+    copy.setInput('limits', TestBed.inject(EngineStore).limits());
+    application.attachView(copy.hostView);
+    await application.whenStable();
+    return copy;
+  }
 
   it('asks before replacing unsaved work, and opens only once allowed', async () => {
     await configure();

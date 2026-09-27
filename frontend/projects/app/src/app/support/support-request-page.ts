@@ -12,7 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { ApiProblem, SupportApi, type SupportRequestThread } from 'shared';
+import { ApiProblem, idScope, SupportApi, type SupportRequestThread } from 'shared';
 import { ErrorSummary } from '../account/form/error-summary';
 import { fieldError } from '../account/form/field-error';
 import { type FieldCheck, FormErrors } from '../account/form/form-errors';
@@ -61,7 +61,8 @@ export class SupportRequestPage {
   protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly statusLabels = STATUS_LABELS;
   protected readonly maxChars = SUPPORT_LIMITS.messageMaxChars;
-  protected readonly targets = { body: 'support-reply' };
+  protected readonly id = idScope('support-request-page');
+  protected readonly targets = { body: this.id('reply') };
 
   protected readonly thread = signal<SupportRequestThread | undefined>(undefined);
   protected readonly loadError = signal<ApiProblem | undefined>(undefined);

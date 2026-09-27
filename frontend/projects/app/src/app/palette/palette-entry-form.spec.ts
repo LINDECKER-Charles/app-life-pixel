@@ -11,6 +11,10 @@ const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] 
 /** The catalogue by any key, those of i18n-pending/ included once merged. */
 const TEXTS: Readonly<Record<string, string>> = en;
 const NEW_ANIMATION = { title: 'Entry', width: 8, height: 8, layerName: 'Base' };
+/** The fields, by the i18n key of their label. */
+const COLOR = 'palette.dialog.color';
+const ALPHA = 'palette.dialog.alpha';
+const HEX = 'palette.dialog.hex';
 
 describe('PaletteEntryForm', () => {
   let fixture: ComponentFixture<PaletteEntryForm>;
@@ -28,40 +32,47 @@ describe('PaletteEntryForm', () => {
     await fixture.whenStable();
   }
 
-  function field(selector: string): HTMLInputElement {
-    return fixture.nativeElement.querySelector(selector);
+  /** The input its label names, as a person finds it: by the label's text. */
+  function field(labelKey: string): HTMLInputElement {
+    const labels = fixture.nativeElement.querySelectorAll('label');
+    const label = Array.from<HTMLLabelElement>(labels).find(
+      (candidate) => candidate.textContent?.trim() === TEXTS[labelKey],
+    );
+    const control = label?.control;
+    if (!(control instanceof HTMLInputElement)) throw new Error(`no field labelled ${labelKey}`);
+    return control;
   }
 
   it('keeps the colour input, the alpha slider and the hex field in sync from the hex field', async () => {
     await setup({ kind: 'add' });
 
-    const hex = field('#palette-entry-hex');
+    const hex = field(HEX);
     hex.value = '#1a2b3cab';
     hex.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    expect(field('#palette-entry-color').value).toBe('#1a2b3c');
-    expect(field('#palette-entry-alpha').valueAsNumber).toBe(0xab);
+    expect(field(COLOR).value).toBe('#1a2b3c');
+    expect(field(ALPHA).valueAsNumber).toBe(0xab);
   });
 
   it('keeps the fields in sync from the colour input and the alpha slider', async () => {
     await setup({ kind: 'add' });
 
-    const color = field('#palette-entry-color');
+    const color = field(COLOR);
     color.value = '#334455';
     color.dispatchEvent(new Event('input'));
-    const alpha = field('#palette-entry-alpha');
+    const alpha = field(ALPHA);
     alpha.value = '128';
     alpha.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    expect(field('#palette-entry-hex').value).toBe('#33445580');
+    expect(field(HEX).value).toBe('#33445580');
   });
 
   it('marks an invalid hex value invalid, without touching the other fields', async () => {
     await setup({ kind: 'add' });
 
-    const hex = field('#palette-entry-hex');
+    const hex = field(HEX);
     hex.value = 'not a colour';
     hex.dispatchEvent(new Event('input'));
     fixture.detectChanges();
@@ -69,33 +80,36 @@ describe('PaletteEntryForm', () => {
     expect(hex.getAttribute('aria-invalid')).toBe('true');
     expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
     expect(fixture.nativeElement.textContent).toContain(TEXTS['palette.dialog.hex_error']);
-    expect(hex.getAttribute('aria-describedby')).toBe('palette-entry-hex-error');
+    const description: HTMLElement | null = fixture.nativeElement.querySelector(
+      `[id="${hex.getAttribute('aria-describedby')}"]`,
+    );
+    expect(description?.textContent?.trim()).toBe(TEXTS['palette.dialog.hex_error']);
   });
 
   it('keeps the colour input and the slider on the last valid colour while the hex is invalid', async () => {
     await setup({ kind: 'edit', index: 1, color: '#00ff00cc' });
 
-    const hex = field('#palette-entry-hex');
+    const hex = field(HEX);
     hex.value = '#00ff';
     hex.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
-    expect(field('#palette-entry-color').value).toBe('#00ff00');
-    expect(field('#palette-entry-alpha').valueAsNumber).toBe(0xcc);
+    expect(field(COLOR).value).toBe('#00ff00');
+    expect(field(ALPHA).valueAsNumber).toBe(0xcc);
   });
 
   it('starts from the entry being edited', async () => {
     await setup({ kind: 'edit', index: 1, color: '#00ff00cc' });
 
-    expect(field('#palette-entry-hex').value).toBe('#00ff00cc');
-    expect(field('#palette-entry-color').value).toBe('#00ff00');
-    expect(field('#palette-entry-alpha').valueAsNumber).toBe(0xcc);
+    expect(field(HEX).value).toBe('#00ff00cc');
+    expect(field(COLOR).value).toBe('#00ff00');
+    expect(field(ALPHA).valueAsNumber).toBe(0xcc);
   });
 
   it('submits the entry through PaletteEntryFlow', async () => {
     await setup({ kind: 'add' });
     const submit = vi.spyOn(TestBed.inject(PaletteEntryFlow), 'submit');
-    const hex = field('#palette-entry-hex');
+    const hex = field(HEX);
     hex.value = '#1a2b3cab';
     hex.dispatchEvent(new Event('input'));
     fixture.detectChanges();

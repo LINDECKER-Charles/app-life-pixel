@@ -50,5 +50,18 @@ export async function startUnsavedWork(title = 'Work'): Promise<EngineStore> {
   return engine;
 }
 
+/**
+ * The field that the label reading `label`, under `root`, names: fails when no label reads so,
+ * or when its `for` points at no field — the name assistive technologies announce.
+ */
+export function fieldLabelled(root: ParentNode, label: string): HTMLInputElement {
+  const found = Array.from(root.querySelectorAll('label')).find(
+    (candidate) => candidate.textContent?.trim() === label,
+  );
+  const field = found?.control;
+  if (!(field instanceof HTMLInputElement)) throw new Error(`no field labelled "${label}"`);
+  return field;
+}
+
 /** Serious and critical accessibility violations: what the tests forbid. */
 export const SERIOUS_IMPACTS = ['serious', 'critical'];

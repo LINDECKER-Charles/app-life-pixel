@@ -34,6 +34,29 @@ export type MockTokensApi = Record<'list' | 'create' | 'revoke', ReturnType<type
 export type MockRevocation = Record<'confirm', ReturnType<typeof vi.fn>>;
 
 /**
+ * The control that the `<label>` reading `text` names through its `for`, as assistive technology
+ * finds it: throws when the label names no `type` control.
+ */
+export function labelledControl<T extends HTMLElement>(
+  root: ParentNode,
+  text: string,
+  type: new () => T,
+): T {
+  const label = [...root.querySelectorAll('label')].find(
+    (candidate) => candidate.textContent?.trim() === text,
+  );
+  const control = label?.control;
+  if (!(control instanceof type)) throw new Error(`no ${type.name} labelled "${text}"`);
+  return control;
+}
+
+/** What `control`'s `aria-describedby` reads out: the text of each element it names, in order. */
+export function description(control: Element): string {
+  const ids = control.getAttribute('aria-describedby')?.split(' ') ?? [];
+  return ids.map((id) => control.ownerDocument.getElementById(id)?.textContent?.trim()).join(' ');
+}
+
+/**
  * Provides a mocked `TokensApi` and revocation confirmation to the next `openAccountPage`: call it
  * first, before the testing module is instantiated.
  */

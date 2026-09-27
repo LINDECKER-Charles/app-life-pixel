@@ -7,7 +7,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { type AccessTokenScope, type CreatedAccessToken, TokensApi } from 'shared';
+import { type AccessTokenScope, type CreatedAccessToken, idScope, TokensApi } from 'shared';
 import { ErrorSummary } from '../account/form/error-summary';
 import { fieldError } from '../account/form/field-error';
 import { type FieldCheck, type FieldMap, FormErrors } from '../account/form/form-errors';
@@ -49,14 +49,16 @@ export class TokenCreationForm {
   /** The person gave up. */
   readonly cancelled = output();
 
+  protected readonly id = idScope('token-creation-form');
+
   protected readonly limits = TOKEN_LIMITS;
   protected readonly scopeOptions = SCOPES;
   protected readonly scopeLabels = SCOPE_LABELS;
   protected readonly scopeHints = SCOPE_HINTS;
   protected readonly targets = {
-    name: 'token-name',
-    scopes: `token-scope-${SCOPES[0]}`,
-    expiry: 'token-expiry',
+    name: this.id('name'),
+    scopes: this.id(`scope-${SCOPES[0]}`),
+    expiry: this.id('expiry'),
   };
 
   protected readonly name = signal('');

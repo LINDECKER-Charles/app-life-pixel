@@ -30,8 +30,8 @@
         <p class="meta">{{ 'support.thread.screenshot_attached' | transloco }}</p>
       }
 
-      <section class="lp-section" aria-labelledby="support-messages-heading">
-        <h2 id="support-messages-heading">{{ 'support.thread.messages' | transloco }}</h2>
+      <section class="lp-section" [attr.aria-labelledby]="id('messages-heading')">
+        <h2 [id]="id('messages-heading')">{{ 'support.thread.messages' | transloco }}</h2>
         <ol class="messages">
           @for (message of thread.messages; track message.id) {
             <li class="lp-panel message" [class.team]="message.author === 'team'">
@@ -51,8 +51,8 @@
         </ol>
       </section>
 
-      <section class="lp-card lp-stack" aria-labelledby="support-reply-heading">
-        <h2 id="support-reply-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('reply-heading')">
+        <h2 [id]="id('reply-heading')" class="lp-card__title">
           {{ 'support.thread.reply_heading' | transloco }}
         </h2>
         @if (thread.status === 'closed') {
@@ -61,11 +61,11 @@
           <form class="lp-stack" novalidate (submit)="send($event, thread)">
             <lp-error-summary [entries]="errors.entries()" [targets]="targets" />
             <div class="lp-field">
-              <label class="lp-field__label" for="support-reply">
+              <label class="lp-field__label" [for]="id('reply')">
                 {{ 'support.thread.reply_label' | transloco }}
               </label>
               <textarea
-                id="support-reply"
+                [id]="id('reply')"
                 class="lp-input"
                 rows="4"
                 [value]="reply()"
@@ -73,16 +73,16 @@
                 [attr.aria-invalid]="errors.of('body') ? 'true' : null"
                 [attr.aria-describedby]="
                   errors.of('body')
-                    ? 'support-reply-counter support-reply-error'
-                    : 'support-reply-counter'
+                    ? id('reply-counter') + ' ' + id('reply-error')
+                    : id('reply-counter')
                 "
                 (input)="onReply($event)"
               ></textarea>
-              <p id="support-reply-counter" class="lp-field__hint">
+              <p [id]="id('reply-counter')" class="lp-field__hint">
                 {{ 'support.new.counter' | transloco: { count: length(), max: maxChars } }}
               </p>
               @if (errors.of('body'); as error) {
-                <p class="lp-field__error" id="support-reply-error">
+                <p class="lp-field__error" [id]="id('reply-error')">
                   <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
                 </p>
               }

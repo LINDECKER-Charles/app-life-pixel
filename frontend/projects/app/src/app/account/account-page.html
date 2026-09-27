@@ -6,8 +6,8 @@
       </div>
     </header>
     @if (account(); as account) {
-      <section class="lp-card lp-stack" aria-labelledby="account-address-heading">
-        <h2 id="account-address-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('address-heading')">
+        <h2 [id]="id('address-heading')" class="lp-card__title">
           {{ 'account.address.heading' | transloco }}
         </h2>
         <p class="address">{{ account.email }}</p>
@@ -47,8 +47,8 @@
         }
       </section>
 
-      <section class="lp-card lp-stack" aria-labelledby="account-usage-heading">
-        <h2 id="account-usage-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('usage-heading')">
+        <h2 [id]="id('usage-heading')" class="lp-card__title">
           {{ 'account.usage.heading' | transloco }}
         </h2>
         @if (account.storage.limitBytes === null) {
@@ -65,21 +65,21 @@
         }
       </section>
 
-      <section class="lp-card lp-stack" aria-labelledby="account-language-heading">
-        <h2 id="account-language-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('language-heading')">
+        <h2 [id]="id('language-heading')" class="lp-card__title">
           {{ 'account.language.heading' | transloco }}
         </h2>
         <div class="lp-field">
-          <label class="lp-field__label" for="account-language">
+          <label class="lp-field__label" [for]="id('language')">
             {{ 'account.language.label' | transloco }}
           </label>
           <select
             #languageSelect
-            id="account-language"
+            [id]="id('language')"
             class="lp-input"
             [disabled]="languagePending()"
             [attr.aria-invalid]="languageError() ? 'true' : null"
-            [attr.aria-describedby]="languageError() ? 'account-language-error' : null"
+            [attr.aria-describedby]="languageError() ? id('language-error') : null"
             (change)="changeLanguage(languageSelect.value)"
           >
             @for (item of languages(); track item.code) {
@@ -89,7 +89,7 @@
             }
           </select>
           @if (languageError(); as error) {
-            <p class="lp-field__error" id="account-language-error" role="alert">
+            <p class="lp-field__error" [id]="id('language-error')" role="alert">
               <lp-icon name="error" size="small" />{{
                 'errors.' + error.code | transloco: error.params
               }}
@@ -98,8 +98,8 @@
         </div>
       </section>
 
-      <section class="lp-card lp-stack" aria-labelledby="account-export-heading">
-        <h2 id="account-export-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('export-heading')">
+        <h2 [id]="id('export-heading')" class="lp-card__title">
           {{ 'account.export.heading' | transloco }}
         </h2>
         <p>
@@ -109,8 +109,8 @@
         </p>
       </section>
 
-      <section class="lp-card lp-stack" aria-labelledby="account-sign-out-heading">
-        <h2 id="account-sign-out-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('sign-out-heading')">
+        <h2 [id]="id('sign-out-heading')" class="lp-card__title">
           {{ 'account.sign_out.heading' | transloco }}
         </h2>
         <p>

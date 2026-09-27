@@ -7,15 +7,15 @@
       </div>
     </header>
     @if (languages().length > 0) {
-      <section class="lp-card" aria-labelledby="settings-language-heading">
-        <h2 id="settings-language-heading" class="lp-card__title">
+      <section class="lp-card" [attr.aria-labelledby]="id('language-heading')">
+        <h2 [id]="id('language-heading')" class="lp-card__title">
           {{ 'settings.language.label' | transloco }}
         </h2>
         <select
           #languageField
-          id="settings-language"
+          [id]="id('language')"
           class="lp-input language"
-          aria-labelledby="settings-language-heading"
+          [attr.aria-labelledby]="id('language-heading')"
           (change)="preferences.setLanguage(languageField.value)"
         >
           @for (language of languages(); track language.code) {
@@ -30,8 +30,8 @@
         </select>
       </section>
     }
-    <section class="lp-card" aria-labelledby="settings-appearance-heading">
-      <h2 id="settings-appearance-heading" class="lp-card__title">
+    <section class="lp-card" [attr.aria-labelledby]="id('appearance-heading')">
+      <h2 [id]="id('appearance-heading')" class="lp-card__title">
         {{ 'settings.appearance.heading' | transloco }}
       </h2>
       <fieldset class="lp-fieldset">
@@ -52,11 +52,11 @@
                 name="theme"
                 [value]="choice.value"
                 [checked]="preferences.theme() === choice.value"
-                [attr.aria-describedby]="'settings-theme-' + choice.value + '-hint'"
+                [attr.aria-describedby]="id('theme-' + choice.value + '-hint')"
                 (change)="preferences.setTheme(choice.value)"
               />
               <span class="theme__name">{{ choice.label | transloco }}</span>
-              <span class="theme__hint" [id]="'settings-theme-' + choice.value + '-hint'">
+              <span class="theme__hint" [id]="id('theme-' + choice.value + '-hint')">
                 {{ choice.hint | transloco }}
               </span>
             </label>
@@ -65,11 +65,11 @@
       </fieldset>
       <p class="note">{{ 'settings.theme.canvas_note' | transloco }}</p>
     </section>
-    <section class="lp-card" aria-labelledby="settings-motion-heading">
-      <h2 id="settings-motion-heading" class="lp-card__title">
+    <section class="lp-card" [attr.aria-labelledby]="id('motion-heading')">
+      <h2 [id]="id('motion-heading')" class="lp-card__title">
         {{ 'settings.motion.legend' | transloco }}
       </h2>
-      <fieldset class="lp-fieldset" aria-labelledby="settings-motion-heading">
+      <fieldset class="lp-fieldset" [attr.aria-labelledby]="id('motion-heading')">
         @for (choice of motions; track choice.value) {
           <label class="lp-check">
             <input
@@ -85,8 +85,8 @@
       </fieldset>
     </section>
     @if (desktop) {
-      <section class="lp-card library-folder" aria-labelledby="settings-folder-heading">
-        <h2 id="settings-folder-heading" class="lp-card__title">
+      <section class="lp-card library-folder" [attr.aria-labelledby]="id('folder-heading')">
+        <h2 [id]="id('folder-heading')" class="lp-card__title">
           {{ 'settings.library_folder.legend' | transloco }}
         </h2>
         <div class="lp-stack">
@@ -110,8 +110,8 @@
           }
         </div>
       </section>
-      <section class="lp-card agents" aria-labelledby="settings-agents-heading">
-        <h2 id="settings-agents-heading" class="lp-card__title">
+      <section class="lp-card agents" [attr.aria-labelledby]="id('agents-heading')">
+        <h2 [id]="id('agents-heading')" class="lp-card__title">
           {{ 'mcp.agents.title' | transloco }}
         </h2>
         <div class="lp-stack">
@@ -125,8 +125,8 @@
       </section>
     }
     @if (account()) {
-      <section class="lp-card tokens" aria-labelledby="settings-tokens-heading">
-        <h2 id="settings-tokens-heading" class="lp-card__title">
+      <section class="lp-card tokens" [attr.aria-labelledby]="id('tokens-heading')">
+        <h2 [id]="id('tokens-heading')" class="lp-card__title">
           {{ 'mcp.agents.title' | transloco }}
         </h2>
         <div class="lp-stack">

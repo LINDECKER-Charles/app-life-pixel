@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Shortcuts } from '../editor/shortcuts';
 import { describeShortcut } from './shortcut-label';
 import { ShortcutsHelpState } from './shortcuts-help-state';
@@ -48,5 +49,6 @@ import { ShortcutsHelpState } from './shortcuts-help-state';
 export class ShortcutsHelpDialog {
   protected readonly state = inject(ShortcutsHelpState);
   protected readonly shortcuts = inject(Shortcuts);
+  protected readonly id = idScope('shortcuts-help-dialog');
   protected readonly describe = describeShortcut;
 }

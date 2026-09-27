@@ -1,6 +1,6 @@
-<div class="scroller" role="region" aria-labelledby="export-table-caption">
+<div class="scroller" role="region" [attr.aria-labelledby]="id('caption')">
   <table class="table" [attr.aria-busy]="isPreparing()">
-    <caption id="export-table-caption" class="lp-visually-hidden">
+    <caption [id]="id('caption')" class="lp-visually-hidden">
       {{
         'export.table.caption' | transloco
       }}

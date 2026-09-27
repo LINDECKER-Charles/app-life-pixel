@@ -11,7 +11,7 @@ import {
 import { ResetPasswordConfirmPage } from './reset-password-confirm-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
-const FIELD = '#reset-password-confirm-password';
+const FIELD = 'lp-password-field input';
 
 async function submit(
   fixture: ComponentFixture<ResetPasswordConfirmPage>,
@@ -53,9 +53,8 @@ describe('ResetPasswordConfirmPage', () => {
     TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/password-reset/confirm');
     const password = fixture.nativeElement.querySelector(FIELD);
     await waitForEffects(() => expect(document.activeElement).toBe(password));
-    expect(fixture.nativeElement.querySelector(`${FIELD}-error`)?.textContent).toContain(
-      'A password holds 12 to 128 characters.',
-    );
+    const error = password.closest('.lp-field')?.querySelector('.lp-field__error');
+    expect(error?.textContent).toContain('A password holds 12 to 128 characters.');
   });
 
   it('shows an invalid-token error in the summary, which takes the focus', async () => {

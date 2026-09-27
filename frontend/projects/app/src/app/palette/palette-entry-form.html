@@ -3,12 +3,12 @@
     <div class="preview">
       <span class="chip" [style.--lp-swatch-color]="lastValid()"></span>
       <div class="lp-field color">
-        <label class="lp-field__label" for="palette-entry-color">
+        <label class="lp-field__label" [for]="id('color')">
           {{ 'palette.dialog.color' | transloco }}
         </label>
         <input
           #colorField
-          id="palette-entry-color"
+          [id]="id('color')"
           type="color"
           [value]="rgb()"
           (input)="setRgb(colorField.value)"
@@ -16,13 +16,13 @@
       </div>
     </div>
     <div class="lp-field">
-      <label class="lp-field__label" for="palette-entry-alpha">
+      <label class="lp-field__label" [for]="id('alpha')">
         {{ 'palette.dialog.alpha' | transloco }}
       </label>
       <div class="lp-field__control">
         <input
           #alphaField
-          id="palette-entry-alpha"
+          [id]="id('alpha')"
           class="alpha"
           type="range"
           min="0"
@@ -31,16 +31,16 @@
           [value]="alpha()"
           (input)="setAlpha(alphaField.valueAsNumber)"
         />
-        <output class="lp-field__unit" for="palette-entry-alpha">{{ alpha() }}</output>
+        <output class="lp-field__unit" [attr.for]="id('alpha')">{{ alpha() }}</output>
       </div>
     </div>
     <div class="lp-field">
-      <label class="lp-field__label" for="palette-entry-hex">
+      <label class="lp-field__label" [for]="id('hex')">
         {{ 'palette.dialog.hex' | transloco }}
       </label>
       <input
         #hexField
-        id="palette-entry-hex"
+        [id]="id('hex')"
         class="lp-input hex"
         type="text"
         autocomplete="off"
@@ -48,11 +48,11 @@
         maxlength="9"
         [value]="hex()"
         [attr.aria-invalid]="!isValid()"
-        [attr.aria-describedby]="isValid() ? null : 'palette-entry-hex-error'"
+        [attr.aria-describedby]="isValid() ? null : id('hex-error')"
         (input)="setHex(hexField.value)"
       />
       @if (!isValid()) {
-        <p id="palette-entry-hex-error" class="lp-field__error">
+        <p [id]="id('hex-error')" class="lp-field__error">
           <lp-icon name="error" size="small" />
           {{ 'palette.dialog.hex_error' | transloco }}
         </p>

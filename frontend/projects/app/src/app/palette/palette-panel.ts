@@ -7,6 +7,7 @@ import {
   inject,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EditorStore } from '../editor/editor-store';
 import { Shortcuts } from '../editor/shortcuts';
 import { EngineStore } from '../engine/engine-store';
@@ -42,6 +43,8 @@ export class PalettePanel {
   private readonly entryFlow = inject(PaletteEntryFlow);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private dragFrom: number | null = null;
+
+  protected readonly id = idScope('palette-panel');
 
   protected readonly colorIndex = this.editor.colorIndex;
   protected readonly palette = computed(() => this.engine.document()?.palette ?? []);

@@ -33,6 +33,30 @@ export const TEAM_MESSAGE: SupportRequestMessage = {
   createdAt: '2026-09-26T11:00:00Z',
 };
 
+/** The control the `<label>` reading `name` points at, resolved as assistive technology does. */
+export function labelledControl<T extends HTMLElement>(root: HTMLElement, name: string): T {
+  const label = [...root.querySelectorAll('label')].find(
+    (candidate) => candidate.textContent?.trim() === name,
+  );
+  const control = label?.control;
+  if (!control) {
+    throw new Error(`No control is labelled ${name}`);
+  }
+  return control as T;
+}
+
+/** The text of each element describing `control`, in its `aria-describedby` order. */
+export function descriptionOf(control: Element): string[] {
+  const ids = control.getAttribute('aria-describedby')?.split(/\s+/) ?? [];
+  return ids.map((id) => {
+    const description = control.ownerDocument.getElementById(id);
+    if (!description) {
+      throw new Error(`No element has the id ${id}`);
+    }
+    return description.textContent?.trim() ?? '';
+  });
+}
+
 /** A `SupportApi` whose every method is a mock, answering an empty list by default. */
 export type MockSupportApi = Record<'create' | 'list' | 'get' | 'reply', ReturnType<typeof vi.fn>>;
 

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EngineStore } from '../../engine/engine-store';
 
 /**
@@ -12,12 +13,12 @@ import { EngineStore } from '../../engine/engine-store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     @if (document(); as document) {
-      <label class="lp-visually-hidden" for="animation-title">
+      <label class="lp-visually-hidden" [for]="id('field')">
         {{ 'editor.title.label' | transloco }}
       </label>
       <input
         #field
-        id="animation-title"
+        [id]="id('field')"
         class="title"
         type="text"
         autocomplete="off"
@@ -67,6 +68,8 @@ import { EngineStore } from '../../engine/engine-store';
 })
 export class AnimationTitle {
   private readonly engine = inject(EngineStore);
+
+  protected readonly id = idScope('animation-title');
 
   protected readonly document = this.engine.document;
   protected readonly maxLength = computed(() => this.engine.limits()?.nameMaxChars ?? null);

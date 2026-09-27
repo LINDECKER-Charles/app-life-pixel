@@ -6,7 +6,7 @@ import { LibraryPrompts } from '../actions/library-prompts';
 import { LibraryPage } from '../pages/library-page';
 import { ProjectPage } from '../pages/project-page';
 import type { FakeLibraryStore } from '../testing/fake-library-store';
-import { configureLibrary } from '../testing/library-test-support';
+import { configureLibrary, fieldLabelled } from '../testing/library-test-support';
 
 // Texts of i18n-pending/l8a, merged into the catalogues at integration.
 const CLEAR = 'Clear the search';
@@ -44,9 +44,12 @@ function buttonNamed(root: HTMLElement, label: string): HTMLButtonElement | unde
   );
 }
 
+function searchField(root: HTMLElement): HTMLInputElement {
+  return fieldLabelled(root, en['library.animations.search_label']);
+}
+
 async function searchFor(root: HTMLElement, query: string): Promise<void> {
-  const field = root.querySelector<HTMLInputElement>('#library-search');
-  if (!field) throw new Error('no search field');
+  const field = searchField(root);
   field.value = query;
   field.dispatchEvent(new Event('input'));
   root.querySelector<HTMLFormElement>('form[role="search"]')?.requestSubmit();
@@ -93,8 +96,9 @@ describe('the library states', () => {
     buttonNamed(list, CLEAR)?.click();
 
     await vi.waitFor(() => expect(titles(root)).toEqual(['Walk']));
-    expect(list.querySelector<HTMLInputElement>('#library-search')?.value).toBe('');
-    expect(document.activeElement?.id).toBe('library-search');
+    const field = searchField(list);
+    expect(field.value).toBe('');
+    expect(document.activeElement).toBe(field);
   });
 
   it('shows a failure to read the library as an error with Retry, never as empty', async () => {

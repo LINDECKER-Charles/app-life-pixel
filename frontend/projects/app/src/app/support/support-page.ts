@@ -11,6 +11,7 @@ import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import {
   ApiProblem,
+  idScope,
   SupportApi,
   type SupportRequestSummary,
   type SupportRequestThread,
@@ -43,6 +44,7 @@ export class SupportPage {
   private readonly api = inject(SupportApi);
   private readonly transloco = inject(TranslocoService);
 
+  protected readonly id = idScope('support-page');
   protected readonly account = inject(SessionStore).account;
   protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly statusLabels = STATUS_LABELS;

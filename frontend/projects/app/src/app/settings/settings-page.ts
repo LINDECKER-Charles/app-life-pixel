@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { AvailableLanguages, type MotionPreference, type ThemePreference } from 'shared';
+import { AvailableLanguages, idScope, type MotionPreference, type ThemePreference } from 'shared';
 import { SessionStore } from '../account/session-store';
 import { DesktopPreferencesStore } from '../platform/desktop-preferences';
 import { isDesktop, PlatformService, type PlatformInfo } from '../platform/platform';
@@ -43,6 +43,7 @@ const MOTION_CHOICES: readonly Choice<MotionPreference>[] = [
   styleUrl: './settings-page.scss',
 })
 export class SettingsPage {
+  protected readonly id = idScope('settings-page');
   protected readonly preferences = inject(PreferencesStore);
   protected readonly languages = inject(AvailableLanguages).languages;
   protected readonly themes = THEME_CHOICES;

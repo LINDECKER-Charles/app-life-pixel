@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { LIBRARY_ACCESS } from '../../library/library-access';
 import { Icon } from '../../ui/icon/icon';
 import { NewAnimationFlow } from '../new-animation/new-animation-flow';
@@ -20,6 +21,7 @@ import { viewBarClearance } from './view-bar-clearance';
   styleUrl: './editor-welcome.scss',
 })
 export class EditorWelcome {
+  protected readonly id = idScope('editor-welcome');
   protected readonly flow = inject(NewAnimationFlow);
   protected readonly access = inject(LIBRARY_ACCESS);
   protected readonly barHeight = viewBarClearance();

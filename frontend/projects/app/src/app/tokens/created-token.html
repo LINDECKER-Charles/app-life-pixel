@@ -4,19 +4,19 @@
   </lp-status-banner>
   @for (field of fields(); track field.what) {
     <div class="lp-field">
-      <span class="lp-field__label" [id]="'created-' + field.what + '-label'">
+      <span class="lp-field__label" [id]="id(field.what + '-label')">
         {{ field.label | transloco }}
       </span>
       @if (field.hint; as hint) {
-        <p class="lp-field__hint" [id]="'created-' + field.what + '-hint'">
+        <p class="lp-field__hint" [id]="id(field.what + '-hint')">
           {{ hint.key | transloco: hint.params }}
         </p>
       }
       <pre
         #shown
         class="secret"
-        [attr.aria-labelledby]="'created-' + field.what + '-label'"
-        [attr.aria-describedby]="field.hint ? 'created-' + field.what + '-hint' : null"
+        [attr.aria-labelledby]="id(field.what + '-label')"
+        [attr.aria-describedby]="field.hint ? id(field.what + '-hint') : null"
       ><code>{{ field.text }}</code></pre>
       <p class="lp-cluster">
         <button

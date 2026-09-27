@@ -9,29 +9,29 @@
     <form class="lp-card lp-stack account-form" novalidate (submit)="submit($event)">
       <lp-error-summary [entries]="form.entries()" [targets]="targets" />
       <div class="lp-field">
-        <label class="lp-field__label" for="sign-in-email">
+        <label class="lp-field__label" [for]="id('email')">
           {{ 'auth.sign_in.email_label' | transloco }}
         </label>
         <input
           #emailInput
-          id="sign-in-email"
+          [id]="id('email')"
           class="lp-input"
           type="email"
           autocomplete="email"
           [attr.maxlength]="limits.emailMaxChars"
           [value]="email()"
           [attr.aria-invalid]="form.of('email') ? 'true' : null"
-          [attr.aria-describedby]="form.of('email') ? 'sign-in-email-error' : null"
+          [attr.aria-describedby]="form.of('email') ? id('email-error') : null"
           (input)="onEmail(emailInput.value)"
         />
         @if (form.of('email'); as error) {
-          <p class="lp-field__error" id="sign-in-email-error">
+          <p class="lp-field__error" [id]="id('email-error')">
             <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
           </p>
         }
       </div>
       <lp-password-field
-        fieldId="sign-in-password"
+        [fieldId]="id('password')"
         [label]="'auth.sign_in.password_label' | transloco"
         autocomplete="current-password"
         [value]="password()"

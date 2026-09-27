@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import type { CreatedAccessToken } from 'shared';
+import { type CreatedAccessToken, idScope } from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { StatusBanner } from '../ui/status-banner/status-banner';
 import { claudeHttpCommand, codexHttpCommand, tokenVariable } from './token-values';
@@ -56,6 +56,8 @@ export class CreatedToken {
   readonly token = input.required<CreatedAccessToken>();
   /** The person has kept the secret. */
   readonly done = output();
+
+  protected readonly id = idScope('created-token');
 
   protected readonly fields = computed(() => copyFields(this.token()));
   protected readonly copied = signal<CopyState | undefined>(undefined);

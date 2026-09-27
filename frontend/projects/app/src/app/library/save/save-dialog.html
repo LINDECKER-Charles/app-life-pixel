@@ -50,13 +50,13 @@
                     {{ 'library.save.conflict.recommended' | transloco }}
                   </span>
                 </span>
-                <span id="save-conflict-copy">
+                <span [id]="id('conflict-copy')">
                   {{ 'library.save.conflict.copy_consequence' | transloco }}
                 </span>
               </li>
               <li class="choice">
                 <span class="choice__name">{{ 'library.save.conflict.reload' | transloco }}</span>
-                <span id="save-conflict-reload">
+                <span [id]="id('conflict-reload')">
                   {{ 'library.save.conflict.reload_consequence' | transloco }}
                 </span>
               </li>
@@ -64,7 +64,7 @@
                 <span class="choice__name">{{
                   'library.save.conflict.overwrite' | transloco
                 }}</span>
-                <span id="save-conflict-overwrite">
+                <span [id]="id('conflict-overwrite')">
                   {{ 'library.save.conflict.overwrite_consequence' | transloco }}
                 </span>
               </li>
@@ -75,7 +75,7 @@
             <button
               type="button"
               class="lp-button lp-button--primary"
-              aria-describedby="save-conflict-copy"
+              [attr.aria-describedby]="id('conflict-copy')"
               (click)="prompts.answerConflict('copy')"
             >
               {{ 'library.save.conflict.copy' | transloco }}
@@ -90,7 +90,7 @@
             <button
               type="button"
               class="lp-button lp-button--danger"
-              aria-describedby="save-conflict-reload"
+              [attr.aria-describedby]="id('conflict-reload')"
               (click)="prompts.answerConflict('reload')"
             >
               {{ 'library.save.conflict.reload' | transloco }}
@@ -98,7 +98,7 @@
             <button
               type="button"
               class="lp-button lp-button--danger"
-              aria-describedby="save-conflict-overwrite"
+              [attr.aria-describedby]="id('conflict-overwrite')"
               (click)="prompts.answerConflict('overwrite')"
             >
               {{ 'library.save.conflict.overwrite' | transloco }}

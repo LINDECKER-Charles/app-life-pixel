@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { CreateAnimationButton } from '../actions/create-animation-button';
 import { AnimationList } from '../lists/animation-list';
 import { ProjectList } from '../lists/project-list';
@@ -20,16 +21,18 @@ import { ProjectList } from '../lists/project-list';
           </div>
           <div class="lp-page-header__actions"><lp-create-animation-button /></div>
         </header>
-        <section class="lp-section" aria-labelledby="library-projects-heading">
-          <h2 id="library-projects-heading">{{ 'library.projects.heading' | transloco }}</h2>
+        <section class="lp-section" [attr.aria-labelledby]="id('projects-heading')">
+          <h2 [id]="id('projects-heading')">{{ 'library.projects.heading' | transloco }}</h2>
           <lp-project-list />
         </section>
-        <section class="lp-section" aria-labelledby="library-animations-heading">
-          <h2 id="library-animations-heading">{{ 'library.animations.heading' | transloco }}</h2>
+        <section class="lp-section" [attr.aria-labelledby]="id('animations-heading')">
+          <h2 [id]="id('animations-heading')">{{ 'library.animations.heading' | transloco }}</h2>
           <lp-animation-list />
         </section>
       </div>
     </ion-content>
   `,
 })
-export class LibraryPage {}
+export class LibraryPage {
+  protected readonly id = idScope('library-page');
+}

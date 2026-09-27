@@ -1,11 +1,11 @@
 <form class="create" novalidate (submit)="create($event)">
   <div class="lp-field">
-    <label class="lp-field__label" for="library-new-project">
+    <label class="lp-field__label" [for]="id('new-project')">
       {{ 'library.project.name_label' | transloco }}
     </label>
     <div class="lp-field__control">
       <input
-        id="library-new-project"
+        [id]="id('new-project')"
         class="lp-input"
         type="text"
         name="name"

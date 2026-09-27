@@ -13,8 +13,12 @@
     </header>
     <lp-token-creation-dialog [(open)]="creating" (created)="onCreated($event)" />
 
-    <section class="lp-section" aria-labelledby="tokens-list-heading" [attr.aria-busy]="loading()">
-      <h2 #listHeading id="tokens-list-heading" tabindex="-1">
+    <section
+      class="lp-section"
+      [attr.aria-labelledby]="id('list-heading')"
+      [attr.aria-busy]="loading()"
+    >
+      <h2 #listHeading tabindex="-1" [id]="id('list-heading')">
         {{ 'tokens.list.heading' | transloco }}
       </h2>
       <p class="lp-visually-hidden" role="status">

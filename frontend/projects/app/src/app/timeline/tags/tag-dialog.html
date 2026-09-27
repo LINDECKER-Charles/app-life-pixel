@@ -14,12 +14,12 @@
         <form class="form" novalidate (submit)="submit($event)">
           <div class="lp-dialog__body">
             <div class="lp-field">
-              <label class="lp-field__label" for="tag-name">
+              <label class="lp-field__label" [for]="id('name')">
                 {{ 'timeline.tags.dialog.name_label' | transloco }}
               </label>
               <input
                 #nameField
-                id="tag-name"
+                [id]="id('name')"
                 class="lp-input"
                 type="text"
                 autocomplete="off"
@@ -27,12 +27,12 @@
                 [value]="name()"
                 [attr.maxlength]="limits()?.tagNameMaxChars"
                 [attr.aria-invalid]="showNameError()"
-                [attr.aria-describedby]="showNameError() ? 'tag-name-error' : null"
+                [attr.aria-describedby]="showNameError() ? id('name-error') : null"
                 (input)="name.set(nameField.value)"
                 (blur)="nameTouched.set(true)"
               />
               @if (showNameError()) {
-                <p id="tag-name-error" class="lp-field__error">
+                <p [id]="id('name-error')" class="lp-field__error">
                   <lp-icon name="error" size="small" />
                   {{
                     'timeline.tags.dialog.name_error'
@@ -41,19 +41,19 @@
                 </p>
               }
             </div>
-            <fieldset class="lp-fieldset" aria-describedby="tag-range-hint">
+            <fieldset class="lp-fieldset" [attr.aria-describedby]="id('range-hint')">
               <legend>{{ 'timeline.frames.heading' | transloco }}</legend>
-              <p id="tag-range-hint" class="lp-field__hint">
+              <p [id]="id('range-hint')" class="lp-field__hint">
                 {{ 'timeline.tags.dialog.range_hint' | transloco: { count: frameCount() } }}
               </p>
               <div class="range">
                 <div class="lp-field">
-                  <label class="lp-field__label" for="tag-first">
+                  <label class="lp-field__label" [for]="id('first')">
                     {{ 'timeline.tags.dialog.first_label' | transloco }}
                   </label>
                   <input
                     #firstField
-                    id="tag-first"
+                    [id]="id('first')"
                     class="lp-input"
                     type="number"
                     inputmode="numeric"
@@ -63,17 +63,17 @@
                     [max]="frameCount()"
                     [value]="first() + 1"
                     [attr.aria-invalid]="!isRangeValid()"
-                    [attr.aria-describedby]="isRangeValid() ? null : 'tag-range-error'"
+                    [attr.aria-describedby]="isRangeValid() ? null : id('range-error')"
                     (input)="first.set(firstField.valueAsNumber - 1)"
                   />
                 </div>
                 <div class="lp-field">
-                  <label class="lp-field__label" for="tag-last">
+                  <label class="lp-field__label" [for]="id('last')">
                     {{ 'timeline.tags.dialog.last_label' | transloco }}
                   </label>
                   <input
                     #lastField
-                    id="tag-last"
+                    [id]="id('last')"
                     class="lp-input"
                     type="number"
                     inputmode="numeric"
@@ -83,13 +83,13 @@
                     [max]="frameCount()"
                     [value]="last() + 1"
                     [attr.aria-invalid]="!isRangeValid()"
-                    [attr.aria-describedby]="isRangeValid() ? null : 'tag-range-error'"
+                    [attr.aria-describedby]="isRangeValid() ? null : id('range-error')"
                     (input)="last.set(lastField.valueAsNumber - 1)"
                   />
                 </div>
               </div>
               @if (!isRangeValid()) {
-                <p id="tag-range-error" class="lp-field__error">
+                <p [id]="id('range-error')" class="lp-field__error">
                   <lp-icon name="error" size="small" />
                   {{ 'timeline.tags.dialog.range_error' | transloco: { count: frameCount() } }}
                 </p>

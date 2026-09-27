@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import type { ExportFormat } from '../engine/engine-types';
 import { Icon } from '../ui/icon/icon';
 import type { ExportRow } from './export-row';
@@ -29,6 +30,8 @@ export class ExportFormatTable {
   /** The format being downloaded, whose button shows it; the others wait. */
   readonly downloading = input<ExportFormat | null>(null);
   readonly download = output<ExportFormat>();
+
+  protected readonly id = idScope('export-format-table');
 
   protected readonly isPreparing = computed(() =>
     this.rows().some((row) => row.status === 'loading'),

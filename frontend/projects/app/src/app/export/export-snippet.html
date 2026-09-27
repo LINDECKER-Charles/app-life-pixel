@@ -1,12 +1,12 @@
-<section class="snippet" aria-labelledby="export-snippet-title">
-  <h3 id="export-snippet-title" class="heading">{{ 'export.snippet.title' | transloco }}</h3>
+<section class="snippet" [attr.aria-labelledby]="id('title')">
+  <h3 [id]="id('title')" class="heading">{{ 'export.snippet.title' | transloco }}</h3>
   <div class="fields">
     <div class="lp-field">
-      <label class="lp-field__label" for="export-framework">{{
+      <label class="lp-field__label" [for]="id('framework')">{{
         'export.snippet.framework' | transloco
       }}</label>
       <select
-        id="export-framework"
+        [id]="id('framework')"
         class="lp-input"
         #frameworkField
         [value]="framework()"
@@ -18,11 +18,11 @@
       </select>
     </div>
     <div class="lp-field">
-      <label class="lp-field__label" for="export-snippet-tag">{{
+      <label class="lp-field__label" [for]="id('tag')">{{
         'export.snippet.tag' | transloco
       }}</label>
       <select
-        id="export-snippet-tag"
+        [id]="id('tag')"
         class="lp-input"
         #tagField
         [value]="tag()"
@@ -35,9 +35,11 @@
       </select>
     </div>
     <div class="lp-field">
-      <label class="lp-field__label" for="export-src">{{ 'export.snippet.src' | transloco }}</label>
+      <label class="lp-field__label" [for]="id('src')">{{
+        'export.snippet.src' | transloco
+      }}</label>
       <input
-        id="export-src"
+        [id]="id('src')"
         class="lp-input"
         #srcField
         type="text"
@@ -46,11 +48,11 @@
       />
     </div>
     <div class="lp-field">
-      <label class="lp-field__label" for="export-loader">{{
+      <label class="lp-field__label" [for]="id('loader')">{{
         'export.snippet.loader' | transloco
       }}</label>
       <input
-        id="export-loader"
+        [id]="id('loader')"
         class="lp-input"
         #loaderField
         type="text"
@@ -59,9 +61,11 @@
       />
     </div>
     <div class="lp-field wide">
-      <label class="lp-field__label" for="export-alt">{{ 'export.snippet.alt' | transloco }}</label>
+      <label class="lp-field__label" [for]="id('alt')">{{
+        'export.snippet.alt' | transloco
+      }}</label>
       <input
-        id="export-alt"
+        [id]="id('alt')"
         class="lp-input"
         #altField
         type="text"

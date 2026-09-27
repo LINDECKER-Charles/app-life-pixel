@@ -53,6 +53,28 @@ function editingState() {
   };
 }
 
+/** The page's own elements that point at others by id: the fold, the tabs, panels and welcome. */
+const ID_REFERENCES = [
+  '.inspector-toggle',
+  '.inspector [role="tab"]',
+  '.inspector .panel',
+  'lp-editor-welcome [aria-labelledby]',
+].join(', ');
+
+/** The ids `element` points at, through `aria-controls` and `aria-labelledby`. */
+function referencedIds(element: Element): string[] {
+  return ['aria-controls', 'aria-labelledby'].flatMap(
+    (name) => element.getAttribute(name)?.split(' ') ?? [],
+  );
+}
+
+/** The label of the focused field, as assistive technology announces it. */
+function focusedFieldLabel(): string | undefined {
+  const focused = document.activeElement;
+  if (!(focused instanceof HTMLInputElement)) return undefined;
+  return focused.labels?.[0]?.textContent?.trim();
+}
+
 /** The button whose text is `name`, within `root`. */
 function buttonNamed(root: HTMLElement, name: string): HTMLButtonElement {
   const button = Array.from(root.querySelectorAll('button')).find(
@@ -157,7 +179,7 @@ describe('EditorPage', () => {
     buttonNamed(fixture.nativeElement, 'Create animation').click();
 
     await vi.waitFor(() => expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(true));
-    await vi.waitFor(() => expect(document.activeElement?.id).toBe('new-animation-title'));
+    await vi.waitFor(() => expect(focusedFieldLabel()).toBe('Title'));
   });
 
   it('shows no welcome on a saved animation’s route', async () => {
@@ -302,5 +324,20 @@ describe('EditorPage', () => {
 
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(root.querySelector('.editor')?.classList).toContain('inspector-closed');
+  });
+
+  it('gives each page ids of its own, never taken by a page the router keeps', async () => {
+    await configure();
+    tabbed.set(true);
+    const kept = await open();
+    const root = (await open()).nativeElement as HTMLElement;
+    // First in the document, the kept page would take any id the two pages shared.
+    document.body.prepend(kept.nativeElement as HTMLElement);
+
+    const ids = Array.from(root.querySelectorAll(ID_REFERENCES)).flatMap(referencedIds);
+    expect(ids.length).toBeGreaterThan(0);
+    for (const id of ids) {
+      expect(root.contains(document.getElementById(id)), id).toBe(true);
+    }
   });
 });

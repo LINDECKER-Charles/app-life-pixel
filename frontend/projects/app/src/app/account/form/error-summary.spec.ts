@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
+import { idScope } from 'shared';
 import en from '../../../../../../../i18n/en.json';
 import { ErrorSummary } from './error-summary';
 import type { FormErrorEntry } from './form-errors';
@@ -27,14 +28,15 @@ const CSRF = { field: 'form', error: { key: 'errors.auth.csrf', params: {} } };
   template: `
     <form>
       <lp-error-summary [entries]="entries()" [targets]="targets" />
-      <input id="test-email" />
-      <input id="test-password" />
+      <input name="email" [id]="targets.email" />
+      <input name="password" [id]="targets.password" />
     </form>
   `,
 })
 class Host {
+  private readonly id = idScope('test-form');
   readonly entries = signal<readonly FormErrorEntry[]>([]);
-  readonly targets = { email: 'test-email', password: 'test-password' };
+  readonly targets = { email: this.id('email'), password: this.id('password') };
   readonly summary = viewChild.required(ErrorSummary);
 }
 
@@ -75,7 +77,7 @@ describe('ErrorSummary', () => {
       'Enter your email address.',
       'This request could not be verified. Reload the page and try again.',
     ]);
-    expect(items[0].querySelector('a')?.getAttribute('href')).toBe('#test-email');
+    expect(items[0].querySelector('a')?.getAttribute('href')).toBe(`#${host.targets.email}`);
     expect(items[1].querySelector('a')).toBeNull();
   });
 
@@ -86,7 +88,7 @@ describe('ErrorSummary', () => {
     host.summary().focusFirstError();
     await settle();
 
-    expect(document.activeElement).toBe(element.querySelector('#test-password'));
+    expect(document.activeElement).toBe(element.querySelector('input[name="password"]'));
   });
 
   it('moves the focus to itself when only the form as a whole was refused', async () => {
@@ -106,6 +108,6 @@ describe('ErrorSummary', () => {
 
     (element.querySelector('a') as HTMLAnchorElement).click();
 
-    expect(document.activeElement).toBe(element.querySelector('#test-email'));
+    expect(document.activeElement).toBe(element.querySelector('input[name="email"]'));
   });
 });

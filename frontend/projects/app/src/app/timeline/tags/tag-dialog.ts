@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, linkedSignal } from '@angular/core';
 import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EngineStore } from '../../engine/engine-store';
 import type { LoopMode, TagSpec } from '../../engine/engine-types';
 import { ModalLabel } from '../../library/save/modal-label';
@@ -24,6 +25,8 @@ import { initialValues, isValidRange, isValidTagName } from './tag-values';
 export class TagDialog {
   private readonly engine = inject(EngineStore);
   protected readonly state = inject(TagDialogState);
+
+  protected readonly id = idScope('tag-dialog');
 
   protected readonly target = this.state.current;
   protected readonly isOpen = computed(() => this.target() !== null);

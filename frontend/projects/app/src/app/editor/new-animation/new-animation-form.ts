@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import type { Limits } from '../../engine/engine-types';
 import { Icon } from '../../ui/icon/icon';
 import { NewAnimationFlow } from './new-animation-flow';
@@ -29,6 +30,7 @@ export class NewAnimationForm {
 
   readonly limits = input.required<Limits>();
 
+  protected readonly id = idScope('new-animation-form');
   protected readonly bounds = computed(() => sideBounds(this.limits()));
   protected readonly title = signal(inject(TranslocoService).translate('editor.new.default_title'));
   protected readonly width = linkedSignal(() => defaultSide(this.bounds()));

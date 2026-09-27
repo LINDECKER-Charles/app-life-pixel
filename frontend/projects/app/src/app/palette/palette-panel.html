@@ -10,7 +10,7 @@
         [attr.aria-label]="
           (index === 0 ? 'palette.swatch_eraser' : 'palette.swatch') | transloco: { index }
         "
-        [attr.aria-describedby]="index > 0 ? 'palette-reorder-hint' : null"
+        [attr.aria-describedby]="index > 0 ? id('reorder-hint') : null"
         [attr.draggable]="index > 0"
         (click)="select(index)"
         (dragstart)="onDragStart($event, index)"
@@ -25,7 +25,7 @@
     </li>
   }
 </ul>
-<p id="palette-reorder-hint" class="lp-visually-hidden">
+<p [id]="id('reorder-hint')" class="lp-visually-hidden">
   {{ 'palette.reorder_hint' | transloco }}
 </p>
 @if (selected(); as selected) {
@@ -71,7 +71,7 @@
     type="button"
     class="lp-button lp-button--quiet lp-button--compact"
     [disabled]="isFull()"
-    [attr.aria-describedby]="isFull() ? 'palette-full-hint' : null"
+    [attr.aria-describedby]="isFull() ? id('full-hint') : null"
     (click)="add()"
   >
     <lp-icon name="plus" size="small" />
@@ -79,6 +79,6 @@
   </button>
 </div>
 @if (isFull()) {
-  <p id="palette-full-hint" class="hint">{{ 'palette.full_hint' | transloco }}</p>
+  <p [id]="id('full-hint')" class="hint">{{ 'palette.full_hint' | transloco }}</p>
 }
 <lp-palette-entry-dialog />

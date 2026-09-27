@@ -44,7 +44,7 @@
           [attr.aria-pressed]="isSelected(index)"
           [attr.aria-current]="active ? 'true' : null"
           [attr.aria-label]="'timeline.frames.thumbnail_label' | transloco: { number: index + 1 }"
-          aria-describedby="frame-strip-hint"
+          [attr.aria-describedby]="id('strip-hint')"
           (click)="select(index, $event)"
           (keydown)="onKeydown(index, $event)"
         >
@@ -56,14 +56,14 @@
             {{ index + 1 }}
           </span>
         </button>
-        <label class="lp-visually-hidden" [attr.for]="'frame-duration-' + frame.id">
+        <label class="lp-visually-hidden" [for]="id('duration-' + frame.id)">
           {{ 'timeline.frames.duration_label' | transloco: { number: index + 1 } }}
         </label>
         <div class="duration">
           <input
             #durationField
             class="lp-input lp-input--compact duration-field"
-            [id]="'frame-duration-' + frame.id"
+            [id]="id('duration-' + frame.id)"
             type="number"
             inputmode="numeric"
             step="1"
@@ -79,7 +79,7 @@
       </li>
     }
   </ol>
-  <p id="frame-strip-hint" class="lp-visually-hidden">
+  <p [id]="id('strip-hint')" class="lp-visually-hidden">
     {{ 'timeline.frames.strip_hint' | transloco }}
   </p>
 }

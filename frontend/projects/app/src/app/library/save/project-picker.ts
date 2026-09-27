@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { StatusBanner } from '../../ui/status-banner/status-banner';
 import { LIBRARY_STORE } from '../library-store';
 import type { Project } from '../library-types';
@@ -65,11 +66,11 @@ const NEW_PROJECT = '';
         </fieldset>
         @if (selected() === newProject) {
           <div class="lp-field">
-            <label class="lp-field__label" for="save-project-name">
+            <label class="lp-field__label" [for]="id('project-name')">
               {{ 'library.project.name_label' | transloco }}
             </label>
             <input
-              id="save-project-name"
+              [id]="id('project-name')"
               class="lp-input"
               type="text"
               name="name"
@@ -105,6 +106,8 @@ export class ProjectPicker {
 
   readonly chosen = output<ProjectChoice>();
   readonly cancelled = output<void>();
+
+  protected readonly id = idScope('project-picker');
 
   protected readonly newProject = NEW_PROJECT;
   protected readonly projects = new PagedList<Project>((page) => this.store.listProjects(page));

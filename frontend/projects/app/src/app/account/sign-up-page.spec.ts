@@ -11,10 +11,12 @@ import {
 import { SignUpPage } from './sign-up-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
+const EMAIL = 'input[type="email"]';
+const PASSWORD = 'lp-password-field input';
 
 function fillForm(fixture: ComponentFixture<SignUpPage>, email: string, password: string): void {
-  typeInto(fixture.nativeElement, '#sign-up-email', email);
-  typeInto(fixture.nativeElement, '#sign-up-password', password);
+  typeInto(fixture.nativeElement, EMAIL, email);
+  typeInto(fixture.nativeElement, PASSWORD, password);
 }
 
 describe('SignUpPage', () => {
@@ -35,7 +37,7 @@ describe('SignUpPage', () => {
     const fixture = await openAccountPage(SignUpPage);
     fixture.componentRef.setInput('returnUrl', '/editor/abc');
     fillForm(fixture, 'lee@example.com', 'a very long password');
-    const language = fixture.nativeElement.querySelector('#sign-up-language') as HTMLSelectElement;
+    const language = fixture.nativeElement.querySelector('form select') as HTMLSelectElement;
     language.value = 'fr';
     language.dispatchEvent(new Event('change'));
     const navigation = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
@@ -64,15 +66,14 @@ describe('SignUpPage', () => {
     await submitForm(fixture);
 
     TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/sign-up');
-    const password = fixture.nativeElement.querySelector('#sign-up-password');
+    const password = fixture.nativeElement.querySelector(PASSWORD);
     await waitForEffects(() => expect(document.activeElement).toBe(password));
-    expect(password.getAttribute('aria-describedby')).toBe(
-      'sign-up-password-hint sign-up-password-error',
-    );
-    expect(fixture.nativeElement.querySelector('#sign-up-password-error')?.textContent).toContain(
-      'A password holds 12 to 128 characters.',
-    );
-    expect(fixture.nativeElement.querySelector('#sign-up-email').value).toBe('lee@example.com');
+    const field = password.closest('.lp-field');
+    const hint = field?.querySelector('.lp-field__hint');
+    const error = field?.querySelector('.lp-field__error');
+    expect(password.getAttribute('aria-describedby')).toBe(`${hint?.id} ${error?.id}`);
+    expect(error?.textContent).toContain('A password holds 12 to 128 characters.');
+    expect(fixture.nativeElement.querySelector(EMAIL).value).toBe('lee@example.com');
   });
 
   it('shows an email-taken error next to the email field, and focuses it', async () => {
@@ -84,12 +85,11 @@ describe('SignUpPage', () => {
       .expectOne('/api/v1/auth/sign-up')
       .flush({ code: 'auth.email_taken', params: {} }, { status: 409, statusText: 'Conflict' });
 
-    const email = fixture.nativeElement.querySelector('#sign-up-email');
+    const email = fixture.nativeElement.querySelector(EMAIL);
     await waitForEffects(() => expect(document.activeElement).toBe(email));
     expect(email.getAttribute('aria-invalid')).toBe('true');
-    expect(fixture.nativeElement.querySelector('#sign-up-email-error')?.textContent).toContain(
-      'An account already uses this email address.',
-    );
+    const error = email.closest('.lp-field')?.querySelector('.lp-field__error');
+    expect(error?.textContent).toContain('An account already uses this email address.');
   });
 
   it('has no serious accessibility violation', async () => {

@@ -2,18 +2,18 @@
   <div class="lp-dialog__body">
     <fieldset class="lp-fieldset">
       <legend>{{ 'tools.sprite_sheet.cell_size' | transloco }}</legend>
-      <p id="sprite-sheet-size-hint" class="lp-field__hint">
+      <p [id]="id('size-hint')" class="lp-field__hint">
         {{ 'tools.sprite_sheet.size_hint' | transloco: cellBounds() }}
       </p>
       <div class="sides">
         <div class="lp-field">
-          <label class="lp-field__label" for="sprite-sheet-cell-width">{{
+          <label class="lp-field__label" [for]="id('cell-width')">{{
             'tools.sprite_sheet.cell_width' | transloco
           }}</label>
           <div class="lp-field__control">
             <input
               #widthField
-              id="sprite-sheet-cell-width"
+              [id]="id('cell-width')"
               class="lp-input"
               type="number"
               inputmode="numeric"
@@ -25,28 +25,28 @@
               [attr.aria-invalid]="!isCellWidthValid()"
               [attr.aria-describedby]="
                 isCellWidthValid()
-                  ? 'sprite-sheet-size-hint'
-                  : 'sprite-sheet-size-hint sprite-sheet-cell-width-error'
+                  ? id('size-hint')
+                  : id('size-hint') + ' ' + id('cell-width-error')
               "
               (input)="cellWidth.set(widthField.valueAsNumber)"
             />
             <span class="lp-field__unit">{{ 'import.unit.pixels' | transloco }}</span>
           </div>
           @if (!isCellWidthValid()) {
-            <p id="sprite-sheet-cell-width-error" class="lp-field__error">
+            <p [id]="id('cell-width-error')" class="lp-field__error">
               <lp-icon name="error" size="small" />
               {{ 'import.sheet.range_error' | transloco: cellBounds() }}
             </p>
           }
         </div>
         <div class="lp-field">
-          <label class="lp-field__label" for="sprite-sheet-cell-height">{{
+          <label class="lp-field__label" [for]="id('cell-height')">{{
             'tools.sprite_sheet.cell_height' | transloco
           }}</label>
           <div class="lp-field__control">
             <input
               #heightField
-              id="sprite-sheet-cell-height"
+              [id]="id('cell-height')"
               class="lp-input"
               type="number"
               inputmode="numeric"
@@ -58,15 +58,15 @@
               [attr.aria-invalid]="!isCellHeightValid()"
               [attr.aria-describedby]="
                 isCellHeightValid()
-                  ? 'sprite-sheet-size-hint'
-                  : 'sprite-sheet-size-hint sprite-sheet-cell-height-error'
+                  ? id('size-hint')
+                  : id('size-hint') + ' ' + id('cell-height-error')
               "
               (input)="cellHeight.set(heightField.valueAsNumber)"
             />
             <span class="lp-field__unit">{{ 'import.unit.pixels' | transloco }}</span>
           </div>
           @if (!isCellHeightValid()) {
-            <p id="sprite-sheet-cell-height-error" class="lp-field__error">
+            <p [id]="id('cell-height-error')" class="lp-field__error">
               <lp-icon name="error" size="small" />
               {{ 'import.sheet.range_error' | transloco: cellBounds() }}
             </p>
@@ -75,15 +75,15 @@
       </div>
     </fieldset>
     <div class="lp-field">
-      <label class="lp-field__label" for="sprite-sheet-duration">{{
+      <label class="lp-field__label" [for]="id('duration')">{{
         'tools.sprite_sheet.duration' | transloco
       }}</label>
-      <p id="sprite-sheet-duration-hint" class="lp-field__hint">
+      <p [id]="id('duration-hint')" class="lp-field__hint">
         {{ 'tools.sprite_sheet.duration_hint' | transloco: durationRange() }}
       </p>
       <input
         #durationField
-        id="sprite-sheet-duration"
+        [id]="id('duration')"
         class="lp-input duration"
         type="number"
         inputmode="numeric"
@@ -94,14 +94,12 @@
         [value]="durationMs()"
         [attr.aria-invalid]="!isDurationValid()"
         [attr.aria-describedby]="
-          isDurationValid()
-            ? 'sprite-sheet-duration-hint'
-            : 'sprite-sheet-duration-hint sprite-sheet-duration-error'
+          isDurationValid() ? id('duration-hint') : id('duration-hint') + ' ' + id('duration-error')
         "
         (input)="durationMs.set(durationField.valueAsNumber)"
       />
       @if (!isDurationValid()) {
-        <p id="sprite-sheet-duration-error" class="lp-field__error">
+        <p [id]="id('duration-error')" class="lp-field__error">
           <lp-icon name="error" size="small" />
           {{ 'import.sheet.range_error' | transloco: durationRange() }}
         </p>

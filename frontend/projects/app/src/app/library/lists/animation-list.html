@@ -1,13 +1,13 @@
 @if (projectId() === undefined) {
   <form class="search" role="search" novalidate (submit)="search($event)">
     <div class="lp-field">
-      <label class="lp-field__label" for="library-search">
+      <label class="lp-field__label" [for]="id('search')">
         {{ 'library.animations.search_label' | transloco }}
       </label>
       <div class="lp-field__control">
         <input
           #searchField
-          id="library-search"
+          [id]="id('search')"
           class="lp-input"
           type="search"
           name="q"

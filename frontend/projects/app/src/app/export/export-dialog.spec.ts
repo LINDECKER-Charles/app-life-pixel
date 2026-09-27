@@ -73,6 +73,16 @@ describe('the export dialog', () => {
     return button;
   }
 
+  /** The scale field, found through its label: the name a screen reader gives it. */
+  function scaleField(root: HTMLElement): HTMLInputElement {
+    const label = Array.from(root.querySelectorAll('label')).find(
+      (candidate) => candidate.textContent?.trim() === TEXTS['export.options.scale'],
+    );
+    const field = label?.control;
+    if (!(field instanceof HTMLInputElement)) throw new Error('no field labelled Scale');
+    return field;
+  }
+
   afterEach(() => document.body.replaceChildren());
 
   it('lists every format with its raw and gzip sizes', async () => {
@@ -112,10 +122,9 @@ describe('the export dialog', () => {
     await everyRowSettled(root);
     const gifCellBefore = rows(root)[1]?.querySelectorAll('td')[0]?.textContent;
 
-    const scaleField = root.querySelector<HTMLInputElement>('#export-scale');
-    if (!scaleField) throw new Error('no scale field');
-    scaleField.value = '16';
-    scaleField.dispatchEvent(new Event('change'));
+    const scale = scaleField(root);
+    scale.value = '16';
+    scale.dispatchEvent(new Event('change'));
 
     await vi.waitFor(() => {
       const gifCellAfter = rows(root)[1]?.querySelectorAll('td')[0]?.textContent;
@@ -126,13 +135,12 @@ describe('the export dialog', () => {
   it('bounds the scale by the engine limits', async () => {
     const root = await openDialog();
     const limits = TestBed.inject(EngineStore).limits();
-    const scaleField = root.querySelector<HTMLInputElement>('#export-scale');
-    if (!scaleField) throw new Error('no scale field');
+    const scale = scaleField(root);
 
-    scaleField.value = String((limits?.exportMaxScale ?? 0) + 10);
-    scaleField.dispatchEvent(new Event('change'));
+    scale.value = String((limits?.exportMaxScale ?? 0) + 10);
+    scale.dispatchEvent(new Event('change'));
 
-    await vi.waitFor(() => expect(scaleField.value).toBe(String(limits?.exportMaxScale)));
+    await vi.waitFor(() => expect(scale.value).toBe(String(limits?.exportMaxScale)));
   });
 
   it('downloads a row through ExportSaver, tells the observer, then says it is done', async () => {

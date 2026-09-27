@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { PlatformService, type PlatformInfo } from '../platform/platform';
 import { Icon } from '../ui/icon/icon';
 import { StatusBanner } from '../ui/status-banner/status-banner';
@@ -75,6 +76,7 @@ function agentSetups(paths: AgentPaths): readonly AgentSetup[] {
 export class AgentsPage {
   private readonly platform = inject(PlatformService);
 
+  protected readonly id = idScope('agents-page');
   protected readonly abilities = ABILITIES;
   protected readonly lookup = signal<InfoLookup>({ kind: 'loading' });
   /** The paths an agent needs, once the build is known to ship the CLI. */

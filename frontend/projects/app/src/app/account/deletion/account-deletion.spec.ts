@@ -12,8 +12,8 @@ import {
 import { AccountDeletion } from './account-deletion';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
-const PASSWORD = '#account-delete-password';
-const CONFIRMATION = '#account-delete-confirmation';
+const PASSWORD = 'lp-password-field input';
+const CONFIRMATION = 'input[type="email"]';
 
 async function open(): Promise<ComponentFixture<AccountDeletion>> {
   const fixture = await openAccountPage(AccountDeletion, ACCOUNT, { account: ACCOUNT });
@@ -97,11 +97,11 @@ describe('AccountDeletion', () => {
         { status: 403, statusText: 'Forbidden' },
       );
 
+    const password = fixture.nativeElement.querySelector(PASSWORD);
     await waitForEffects(() => {
-      expect(fixture.nativeElement.querySelector(`${PASSWORD}-error`)?.textContent).toContain(
-        'The current password is not correct.',
-      );
-      expect(document.activeElement).toBe(fixture.nativeElement.querySelector(PASSWORD));
+      const error = password.closest('.lp-field')?.querySelector('.lp-field__error');
+      expect(error?.textContent).toContain('The current password is not correct.');
+      expect(document.activeElement).toBe(password);
     });
   });
 

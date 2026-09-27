@@ -3,7 +3,7 @@ import axe from 'axe-core';
 import { LibraryPrompts } from '../actions/library-prompts';
 import { LibraryChanges } from '../changes/library-changes';
 import type { FakeLibraryStore } from '../testing/fake-library-store';
-import { configureLibrary, SERIOUS_IMPACTS } from '../testing/library-test-support';
+import { configureLibrary, fieldLabelled, SERIOUS_IMPACTS } from '../testing/library-test-support';
 import { LibraryPage } from './library-page';
 import { ProjectPage } from './project-page';
 
@@ -39,9 +39,8 @@ function button(root: HTMLElement, label: string): HTMLButtonElement {
   return found;
 }
 
-function type(root: HTMLElement, selector: string, value: string): void {
-  const field = root.querySelector<HTMLInputElement>(selector);
-  if (!field) throw new Error(`no field ${selector}`);
+function type(root: HTMLElement, label: string, value: string): void {
+  const field = fieldLabelled(root, label);
   field.value = value;
   field.dispatchEvent(new Event('input'));
 }
@@ -71,7 +70,7 @@ describe('the library page', () => {
     const root = await render(LibraryPage);
     await vi.waitFor(() => expect(texts(root, 'lp-animation-list .name')).toHaveLength(2));
 
-    type(root, '#library-search', 'ru');
+    type(root, 'Search the animations by title', 'ru');
     root.querySelector<HTMLFormElement>('form[role="search"]')?.requestSubmit();
 
     await vi.waitFor(() => expect(texts(root, 'lp-animation-list .name')).toEqual(['Run']));
@@ -95,7 +94,7 @@ describe('the library page', () => {
     const { store } = await setUp();
     const root = await render(LibraryPage);
 
-    type(root, '#library-new-project', 'Heroes');
+    type(root, 'Project name', 'Heroes');
     root.querySelector<HTMLFormElement>('lp-project-list form')?.requestSubmit();
     await vi.waitFor(() => expect(texts(root, 'lp-project-list .name')).toEqual(['Heroes']));
     button(root, 'Duplicate Heroes').click();
@@ -197,6 +196,23 @@ describe('the library page', () => {
     expect(
       violations.filter((violation) => SERIOUS_IMPACTS.includes(violation.impact ?? '')),
     ).toEqual([]);
+  });
+
+  it('names its own fields and sections while the router outlet keeps another copy', async () => {
+    await setUp();
+    await render(LibraryPage);
+
+    const root = await render(LibraryPage);
+
+    for (const label of ['Search the animations by title', 'Project name']) {
+      expect(root.contains(fieldLabelled(root, label))).toBe(true);
+    }
+    const sections = Array.from(root.querySelectorAll('section'));
+    expect(sections).toHaveLength(2);
+    for (const section of sections) {
+      const heading = document.getElementById(section.getAttribute('aria-labelledby') ?? '');
+      expect(section.contains(heading)).toBe(true);
+    }
   });
 });
 

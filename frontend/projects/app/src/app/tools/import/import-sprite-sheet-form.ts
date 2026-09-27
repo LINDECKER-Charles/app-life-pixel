@@ -7,6 +7,7 @@ import {
   linkedSignal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import type { Limits } from '../../engine/engine-types';
 import { Icon } from '../../ui/icon/icon';
 import { ImportSpriteSheetFlow } from './import-sprite-sheet-flow';
@@ -27,6 +28,8 @@ export class ImportSpriteSheetForm {
   private readonly flow = inject(ImportSpriteSheetFlow);
 
   readonly limits = input.required<Limits>();
+
+  protected readonly id = idScope('import-sprite-sheet-form');
 
   protected readonly cellBounds = computed(() => cellSideBounds(this.limits()));
   protected readonly durationRange = computed(() => durationBounds(this.limits()));

@@ -3,7 +3,12 @@ import { ApiProblem } from 'shared';
 import { ACCOUNT, openAccountPage, waitForEffects } from '../account/testing/account-test-support';
 import { SupportPage } from './support-page';
 import { SUPPORT_LIMITS } from './support-limits';
-import { mockSupportApi, THREAD } from './testing/support-test-support';
+import {
+  descriptionOf,
+  labelledControl,
+  mockSupportApi,
+  THREAD,
+} from './testing/support-test-support';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 const SUMMARY = {
@@ -23,7 +28,7 @@ function element<T extends Element>(root: HTMLElement, selector: string): T {
 
 /** Picks `category` and types `message` in the new request's form. */
 async function fill(root: HTMLElement, category: string, message: string): Promise<void> {
-  const select = element<HTMLSelectElement>(root, '#support-category');
+  const select = labelledControl<HTMLSelectElement>(root, 'Category');
   select.value = category;
   select.dispatchEvent(new Event('change'));
   const field = element<HTMLTextAreaElement>(root, 'textarea');
@@ -75,9 +80,9 @@ describe('SupportPage', () => {
     const root: HTMLElement = fixture.nativeElement;
     await fill(root, 'bug', 'The canvas stays blank.');
     await fixture.whenStable();
-    expect(element(root, '#support-message-counter').textContent?.trim()).toBe(
+    expect(descriptionOf(labelledControl(root, 'Message'))).toEqual([
       `23 of ${new Intl.NumberFormat('en').format(SUPPORT_LIMITS.messageMaxChars)} characters`,
-    );
+    ]);
     element(root, 'form').dispatchEvent(new Event('submit'));
 
     await waitForEffects(() =>
@@ -139,7 +144,7 @@ describe('SupportPage', () => {
     element(root, 'form').dispatchEvent(new Event('submit'));
 
     await waitForEffects(() =>
-      expect(document.activeElement).toBe(root.querySelector('#support-category')),
+      expect(document.activeElement).toBe(labelledControl(root, 'Category')),
     );
     const items = [...root.querySelectorAll('form [role="alert"] li')].map((item) =>
       item.textContent?.trim(),
@@ -156,15 +161,16 @@ describe('SupportPage', () => {
     const fixture = await openAccountPage(SupportPage, ACCOUNT);
     const root: HTMLElement = fixture.nativeElement;
 
+    const picker = labelledControl(root, 'Screenshot');
     pick(root, new File(['GIF89a'], 'capture.gif', { type: 'image/gif' }));
     await waitForEffects(() =>
-      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('PNG or JPEG'),
+      expect(descriptionOf(picker)).toContainEqual(expect.stringContaining('Choose a PNG or JPEG')),
     );
     const heavy = new File(['x'], 'capture.png', { type: 'image/png' });
     Object.defineProperty(heavy, 'size', { value: SUPPORT_LIMITS.screenshotMaxBytes + 1 });
     pick(root, heavy);
     await waitForEffects(() =>
-      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('too large'),
+      expect(descriptionOf(picker)).toContainEqual(expect.stringContaining('too large')),
     );
     const fine = new File(['png'], 'capture.png', { type: 'image/png' });
     pick(root, fine);
@@ -189,7 +195,9 @@ describe('SupportPage', () => {
     element(root, 'form').dispatchEvent(new Event('submit'));
 
     await waitForEffects(() =>
-      expect(root.querySelector('#support-screenshot-error')?.textContent).toContain('4,096'),
+      expect(descriptionOf(labelledControl(root, 'Screenshot'))).toContainEqual(
+        expect.stringContaining('4,096'),
+      ),
     );
   });
 

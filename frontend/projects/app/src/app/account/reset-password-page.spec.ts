@@ -10,9 +10,10 @@ import {
 import { ResetPasswordPage } from './reset-password-page';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
+const EMAIL = 'input[type="email"]';
 
 async function submit(fixture: ComponentFixture<ResetPasswordPage>, email: string): Promise<void> {
-  typeInto(fixture.nativeElement, '#reset-password-email', email);
+  typeInto(fixture.nativeElement, EMAIL, email);
   await submitForm(fixture);
 }
 
@@ -41,7 +42,7 @@ describe('ResetPasswordPage', () => {
     await submit(fixture, '   ');
 
     TestBed.inject(HttpTestingController).expectNone('/api/v1/auth/password-reset');
-    const email = fixture.nativeElement.querySelector('#reset-password-email');
+    const email = fixture.nativeElement.querySelector(EMAIL);
     await waitForEffects(() => expect(document.activeElement).toBe(email));
     expect(email.getAttribute('aria-invalid')).toBe('true');
   });
@@ -60,9 +61,7 @@ describe('ResetPasswordPage', () => {
     await waitForEffects(() => {
       expect(fixture.nativeElement.querySelector('[role="alert"] li')?.textContent).toBeTruthy();
     });
-    expect(fixture.nativeElement.querySelector('#reset-password-email').value).toBe(
-      'lee@example.com',
-    );
+    expect(fixture.nativeElement.querySelector(EMAIL).value).toBe('lee@example.com');
   });
 
   it('has no serious accessibility violation', async () => {

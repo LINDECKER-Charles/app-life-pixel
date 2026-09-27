@@ -1,4 +1,4 @@
-<section class="welcome-card lp-card" aria-labelledby="welcome-title">
+<section class="welcome-card lp-card" [attr.aria-labelledby]="id('title')">
   <img
     class="illustration"
     src="/design-system/illustrations/pip-atelier.webp"
@@ -7,7 +7,7 @@
     height="576"
     fetchpriority="high"
   />
-  <h2 id="welcome-title">{{ 'editor.welcome.title' | transloco }}</h2>
+  <h2 [id]="id('title')">{{ 'editor.welcome.title' | transloco }}</h2>
   <p class="description">{{ 'editor.welcome.description' | transloco }}</p>
   <div class="actions">
     <button type="button" class="lp-button lp-button--primary" (click)="flow.start()">

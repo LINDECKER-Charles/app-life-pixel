@@ -6,16 +6,16 @@
     </lp-status-banner>
   }
   <div class="lp-field">
-    <label class="lp-field__label" for="support-category">
+    <label class="lp-field__label" [for]="id('category')">
       {{ 'support.new.category_label' | transloco }}
     </label>
     <select
       #categorySelect
-      id="support-category"
+      [id]="id('category')"
       class="lp-input"
       [disabled]="pending()"
       [attr.aria-invalid]="errors.of('category') ? 'true' : null"
-      [attr.aria-describedby]="errors.of('category') ? 'support-category-error' : null"
+      [attr.aria-describedby]="errors.of('category') ? id('category-error') : null"
       (change)="onCategory(categorySelect.value)"
     >
       <option value="" [selected]="category() === undefined">
@@ -28,17 +28,17 @@
       }
     </select>
     @if (errors.of('category'); as error) {
-      <p class="lp-field__error" id="support-category-error">
+      <p class="lp-field__error" [id]="id('category-error')">
         <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
       </p>
     }
   </div>
   <div class="lp-field">
-    <label class="lp-field__label" for="support-message">
+    <label class="lp-field__label" [for]="id('message')">
       {{ 'support.new.message_label' | transloco }}
     </label>
     <textarea
-      id="support-message"
+      [id]="id('message')"
       class="lp-input"
       rows="6"
       [value]="message()"
@@ -46,30 +46,30 @@
       [attr.aria-invalid]="errors.of('message') ? 'true' : null"
       [attr.aria-describedby]="
         errors.of('message')
-          ? 'support-message-counter support-message-error'
-          : 'support-message-counter'
+          ? id('message-counter') + ' ' + id('message-error')
+          : id('message-counter')
       "
       (input)="onMessage($event)"
     ></textarea>
-    <p id="support-message-counter" class="lp-field__hint">
+    <p [id]="id('message-counter')" class="lp-field__hint">
       {{ 'support.new.counter' | transloco: { count: length(), max: maxChars } }}
     </p>
     @if (errors.of('message'); as error) {
-      <p class="lp-field__error" id="support-message-error">
+      <p class="lp-field__error" [id]="id('message-error')">
         <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
       </p>
     }
   </div>
   <div class="lp-field">
-    <label class="lp-field__label" for="support-screenshot">
+    <label class="lp-field__label" [for]="id('screenshot')">
       {{ 'support.new.screenshot_label' | transloco }}
     </label>
-    <p id="support-screenshot-hint" class="lp-field__hint">
+    <p [id]="id('screenshot-hint')" class="lp-field__hint">
       {{ 'support.new.screenshot_hint' | transloco: { maxMegabytes } }}
     </p>
     <input
       #fileInput
-      id="support-screenshot"
+      [id]="id('screenshot')"
       class="lp-input"
       type="file"
       [accept]="accept"
@@ -77,17 +77,17 @@
       [attr.aria-invalid]="screenshotError() ? 'true' : null"
       [attr.aria-describedby]="
         screenshotError()
-          ? 'support-screenshot-hint support-screenshot-error'
-          : 'support-screenshot-hint'
+          ? id('screenshot-hint') + ' ' + id('screenshot-error')
+          : id('screenshot-hint')
       "
       (change)="onScreenshot($event)"
     />
     @if (screenshotRefusal(); as refusal) {
-      <p class="lp-field__error" id="support-screenshot-error" role="alert">
+      <p class="lp-field__error" [id]="id('screenshot-error')" role="alert">
         <lp-icon name="error" size="small" />{{ refusal | transloco: { maxMegabytes } }}
       </p>
     } @else if (errors.of('screenshot'); as error) {
-      <p class="lp-field__error" id="support-screenshot-error">
+      <p class="lp-field__error" [id]="id('screenshot-error')">
         <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
       </p>
     }

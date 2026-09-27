@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { AccountApi, ApiProblem, AuthApi, AvailableLanguages } from 'shared';
+import { AccountApi, ApiProblem, AuthApi, AvailableLanguages, idScope } from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { StatusBanner } from '../ui/status-banner/status-banner';
 import { AccountDeletion } from './deletion/account-deletion';
@@ -25,6 +25,8 @@ export class AccountPage {
   private readonly authApi = inject(AuthApi);
   protected readonly accountApi = inject(AccountApi);
   private readonly router = inject(Router);
+
+  protected readonly id = idScope('account-page');
 
   protected readonly account = this.session.account;
   protected readonly languages = inject(AvailableLanguages).languages;

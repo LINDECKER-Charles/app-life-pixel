@@ -65,7 +65,7 @@ export class ErrorSummary {
 
   /** The errors to list, in the order of the fields. */
   readonly entries = input.required<readonly FormErrorEntry[]>();
-  /** The id of each field's control, by field. */
+  /** The id of each field's control, by field: ids of the form's own `idScope`. */
   readonly targets = input<Readonly<Record<string, string>>>({});
 
   /**

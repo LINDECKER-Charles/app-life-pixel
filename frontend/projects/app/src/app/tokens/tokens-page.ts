@@ -10,7 +10,13 @@ import {
 } from '@angular/core';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { type AccessTokenSummary, ApiProblem, type CreatedAccessToken, TokensApi } from 'shared';
+import {
+  type AccessTokenSummary,
+  ApiProblem,
+  type CreatedAccessToken,
+  idScope,
+  TokensApi,
+} from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { StatusBanner } from '../ui/status-banner/status-banner';
 import { TokenCreationDialog } from './token-creation-dialog';
@@ -36,6 +42,7 @@ export class TokensPage {
   private readonly injector = inject(Injector);
   private readonly listHeading = viewChild.required<ElementRef<HTMLElement>>('listHeading');
 
+  protected readonly id = idScope('tokens-page');
   protected readonly scopeLabels = SCOPE_LABELS;
 
   protected readonly tokens = signal<readonly AccessTokenSummary[]>([]);

@@ -9,7 +9,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { AuthApi } from 'shared';
+import { AuthApi, idScope } from 'shared';
 import { StatusBanner } from '../ui/status-banner/status-banner';
 import { ACCOUNT_LIMITS } from './account-limits';
 import { ErrorSummary } from './form/error-summary';
@@ -45,7 +45,8 @@ export class ResetPasswordConfirmPage {
   readonly token = input<string>();
 
   protected readonly limits = ACCOUNT_LIMITS;
-  protected readonly targets = { password: 'reset-password-confirm-password' };
+  protected readonly id = idScope('reset-password-confirm-page');
+  protected readonly targets = { password: this.id('password') };
   protected readonly password = signal('');
   protected readonly pending = signal(false);
   protected readonly done = signal(false);

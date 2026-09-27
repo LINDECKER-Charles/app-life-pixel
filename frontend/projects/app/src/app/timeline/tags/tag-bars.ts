@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EditorStore } from '../../editor/editor-store';
 import { EngineStore } from '../../engine/engine-store';
 import type { TagSpec } from '../../engine/engine-types';
@@ -22,6 +23,8 @@ export class TagBars {
   private readonly engine = inject(EngineStore);
   private readonly dialog = inject(TagDialogState);
   protected readonly editor = inject(EditorStore);
+
+  protected readonly id = idScope('tag-bars');
 
   protected readonly document = this.engine.document;
   protected readonly frameCount = computed(() => Math.max(this.document()?.frames.length ?? 0, 1));

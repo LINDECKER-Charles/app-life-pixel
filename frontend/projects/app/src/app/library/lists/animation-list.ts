@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EmptyState } from '../../ui/empty-state/empty-state';
 import { Icon } from '../../ui/icon/icon';
 import { MenuButton } from '../../ui/menu/menu-button';
@@ -48,6 +49,8 @@ import { PagedList } from './paged-list';
 export class AnimationList {
   private readonly store = inject(LIBRARY_STORE);
   protected readonly actions = inject(AnimationActions);
+
+  protected readonly id = idScope('animation-list');
 
   /** Only the animations of this project; all of them when absent, with a search field. */
   readonly projectId = input<string>();

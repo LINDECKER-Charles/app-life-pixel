@@ -6,8 +6,8 @@
       </div>
     </header>
     @if (account()) {
-      <section class="lp-card lp-stack" aria-labelledby="support-new-heading">
-        <h2 id="support-new-heading" class="lp-card__title">
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('new-heading')">
+        <h2 [id]="id('new-heading')" class="lp-card__title">
           {{ 'support.new.heading' | transloco }}
         </h2>
         <lp-new-support-request (sent)="onSent($event)" />
@@ -15,10 +15,10 @@
 
       <section
         class="lp-section"
-        aria-labelledby="support-list-heading"
+        [attr.aria-labelledby]="id('list-heading')"
         [attr.aria-busy]="loading()"
       >
-        <h2 id="support-list-heading">{{ 'support.list.heading' | transloco }}</h2>
+        <h2 [id]="id('list-heading')">{{ 'support.list.heading' | transloco }}</h2>
         @if (loadError(); as error) {
           <lp-status-banner variant="danger">
             <p>{{ 'errors.' + error.code | transloco: error.params }}</p>

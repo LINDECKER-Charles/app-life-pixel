@@ -1,8 +1,15 @@
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import axe from 'axe-core';
 import { ApiProblem } from 'shared';
 import { ACCOUNT, openAccountPage, waitForEffects } from '../account/testing/account-test-support';
 import { SupportRequestPage } from './support-request-page';
-import { mockSupportApi, TEAM_MESSAGE, THREAD } from './testing/support-test-support';
+import {
+  descriptionOf,
+  labelledControl,
+  mockSupportApi,
+  TEAM_MESSAGE,
+  THREAD,
+} from './testing/support-test-support';
 
 const SERIOUS_IMPACTS = ['serious', 'critical'];
 const ANSWERED = {
@@ -10,6 +17,20 @@ const ANSWERED = {
   status: 'waiting_for_user',
   messages: [...THREAD.messages, TEAM_MESSAGE],
 };
+
+/** The thread twice, as Ionic's router outlet keeps a page it leaves in the DOM. */
+@Component({
+  selector: 'lp-kept-threads',
+  imports: [SupportRequestPage],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <lp-support-request-page [requestId]="requestId" />
+    <lp-support-request-page [requestId]="requestId" />
+  `,
+})
+class KeptThreads {
+  protected readonly requestId = THREAD.id;
+}
 
 /** Opens the thread of `THREAD`, signed in unless `account` is `null`. */
 function open(account: typeof ACCOUNT | null = ACCOUNT) {
@@ -57,13 +78,24 @@ describe('SupportRequestPage', () => {
 
     root.querySelector('form')?.dispatchEvent(new Event('submit'));
 
-    const field = root.querySelector('#support-reply');
+    const field = labelledControl(root, 'Your reply');
     await waitForEffects(() => expect(document.activeElement).toBe(field));
-    expect(field?.getAttribute('aria-describedby')).toBe(
-      'support-reply-counter support-reply-error',
-    );
-    expect(root.querySelector('#support-reply-error')?.textContent).toContain('1 to 5,000');
+    expect(descriptionOf(field)).toEqual([
+      '0 of 5,000 characters',
+      expect.stringContaining('1 to 5,000'),
+    ]);
     expect(api.reply).not.toHaveBeenCalled();
+  });
+
+  it('labels its own reply field while the outlet keeps another copy of the thread', async () => {
+    mockSupportApi().get.mockResolvedValue(ANSWERED);
+    const fixture = await openAccountPage(KeptThreads, ACCOUNT);
+    const root: HTMLElement = fixture.nativeElement;
+    await waitForEffects(() => expect(root.querySelectorAll('form')).toHaveLength(2));
+
+    for (const page of root.querySelectorAll<HTMLElement>('lp-support-request-page')) {
+      expect(page.contains(labelledControl(page, 'Your reply'))).toBe(true);
+    }
   });
 
   it('offers no reply on a closed request', async () => {

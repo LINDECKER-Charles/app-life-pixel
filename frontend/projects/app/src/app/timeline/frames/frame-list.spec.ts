@@ -198,4 +198,19 @@ describe('the frame strip', () => {
 
     expect(engine.document()?.frames[1].id).toBe(firstId);
   });
+
+  // Ionic's router outlet keeps a page it leaves in the DOM: the strip can be there twice.
+  it('keeps the duration fields named with a second strip in the page', async () => {
+    const { fixture } = await setup();
+    const second = TestBed.createComponent(FrameList);
+    second.detectChanges();
+    // Creating a component detaches the previous one from the page: both go back in.
+    document.body.append(fixture.nativeElement, second.nativeElement);
+
+    for (const strip of [fixture, second]) {
+      const host = strip.nativeElement as HTMLElement;
+      const label = host.querySelector('label');
+      expect(label?.control).toBe(host.querySelector('input[type="number"]'));
+    }
+  });
 });

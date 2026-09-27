@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { StatusBanner } from '../../ui/status-banner/status-banner';
 import { ModalLabel } from './modal-label';
 import { ProjectPicker } from './project-picker';
@@ -35,6 +36,8 @@ const BACKDROP_ROLE = 'backdrop';
 })
 export class SaveDialog {
   protected readonly prompts = inject(SavePrompts);
+
+  protected readonly id = idScope('save-dialog');
 
   protected readonly kind = computed(() => this.prompts.current()?.kind ?? null);
   protected readonly titleKey = computed(() => {

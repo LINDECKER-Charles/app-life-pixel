@@ -1,5 +1,5 @@
-<section class="lp-card lp-stack" aria-labelledby="account-delete-heading">
-  <h2 id="account-delete-heading" class="lp-card__title">
+<section class="lp-card lp-stack" [attr.aria-labelledby]="id('heading')">
+  <h2 [id]="id('heading')" class="lp-card__title">
     {{ 'account.delete.heading' | transloco }}
   </h2>
   <p>{{ 'account.delete.consequence' | transloco }}</p>
@@ -13,7 +13,7 @@
     <form class="lp-stack" novalidate (submit)="confirm($event)">
       <lp-error-summary [entries]="errors.entries()" [targets]="targets" />
       <lp-password-field
-        fieldId="account-delete-password"
+        [fieldId]="id('password')"
         [label]="'account.delete.password_label' | transloco"
         autocomplete="current-password"
         [value]="password()"
@@ -21,19 +21,19 @@
         (valueChange)="onPassword($event)"
       />
       <div class="lp-field">
-        <label class="lp-field__label" for="account-delete-confirmation">
+        <label class="lp-field__label" [for]="id('confirmation')">
           {{ 'account.delete.confirm_label' | transloco: { email: account().email } }}
         </label>
-        <p class="lp-field__hint" id="account-delete-confirmation-hint">
+        <p class="lp-field__hint" [id]="id('confirmation-hint')">
           {{ 'account.delete.confirm_hint' | transloco }}
         </p>
         <input
           #confirmationInput
-          id="account-delete-confirmation"
+          [id]="id('confirmation')"
           class="lp-input"
           type="email"
           autocomplete="off"
-          aria-describedby="account-delete-confirmation-hint"
+          [attr.aria-describedby]="id('confirmation-hint')"
           [value]="confirmation()"
           (input)="confirmation.set(confirmationInput.value)"
         />

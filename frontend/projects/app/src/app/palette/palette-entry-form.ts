@@ -7,6 +7,7 @@ import {
   linkedSignal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Icon } from '../ui/icon/icon';
 import { DEFAULT_COLOR, isValidHex8, joinHex8, splitHex8 } from './palette-color';
 import { PaletteEntryFlow, type PaletteEntryMode } from './palette-entry-flow';
@@ -27,6 +28,8 @@ export class PaletteEntryForm {
   private readonly flow = inject(PaletteEntryFlow);
 
   readonly mode = input.required<PaletteEntryMode>();
+
+  protected readonly id = idScope('palette-entry-form');
 
   protected readonly hex = linkedSignal<PaletteEntryMode, string>({
     source: this.mode,

@@ -12,7 +12,7 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { AccountApi } from 'shared';
+import { AccountApi, idScope } from 'shared';
 import { ErrorSummary } from '../form/error-summary';
 import { fieldError } from '../form/field-error';
 import { type FieldCheck, type FieldMap, FormErrors } from '../form/form-errors';
@@ -49,7 +49,8 @@ export class AccountDeletion {
   /** The account to delete: the confirmation names its address. */
   readonly account = input.required<{ readonly email: string }>();
 
-  protected readonly targets = { password: 'account-delete-password' };
+  protected readonly id = idScope('account-deletion');
+  protected readonly targets = { password: this.id('password') };
   protected readonly deleting = signal(false);
   protected readonly password = signal('');
   protected readonly confirmation = signal('');

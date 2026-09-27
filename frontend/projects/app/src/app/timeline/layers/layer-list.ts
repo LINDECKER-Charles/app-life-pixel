@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { EditorStore } from '../../editor/editor-store';
 import { EngineStore } from '../../engine/engine-store';
 import type { LayerId } from '../../engine/engine-types';
@@ -44,6 +45,8 @@ export class LayerList {
   private readonly injector = inject(Injector);
   protected readonly editor = inject(EditorStore);
   private dragIndex: number | null = null;
+
+  protected readonly id = idScope('layer-list');
 
   protected readonly document = this.engine.document;
   protected readonly limits = this.engine.limits;

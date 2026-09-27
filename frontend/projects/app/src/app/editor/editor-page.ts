@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import type { ViewDidEnter, ViewWillLeave } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Canvas } from '../canvas/canvas';
 import { EngineStore } from '../engine/engine-store';
 import { ExportButton } from '../export/export-button';
@@ -32,11 +33,17 @@ import { Shortcuts } from './shortcuts';
 import { AnimationTitle } from './title/animation-title';
 import { EditorWelcome } from './welcome/editor-welcome';
 
+/** One of the inspector's panels: its part of the page's id scope, and its tab's label. */
+interface InspectorPanel {
+  readonly idPart: string;
+  readonly labelKey: string;
+}
+
 /** The inspector's panels, in the order of their tabs on narrower screens (plan C11). */
-const INSPECTOR_TABS: readonly InspectorTab[] = [
-  { panelId: 'inspector-palette-panel', labelKey: 'editor.region.palette' },
-  { panelId: 'inspector-layers-panel', labelKey: 'timeline.layers.heading' },
-  { panelId: 'inspector-playback-panel', labelKey: 'editor.inspector.preview' },
+const INSPECTOR_PANELS: readonly InspectorPanel[] = [
+  { idPart: 'inspector-palette-panel', labelKey: 'editor.region.palette' },
+  { idPart: 'inspector-layers-panel', labelKey: 'timeline.layers.heading' },
+  { idPart: 'inspector-playback-panel', labelKey: 'editor.inspector.preview' },
 ];
 
 /**
@@ -84,12 +91,16 @@ export class EditorPage implements ViewDidEnter, ViewWillLeave {
   private readonly openAnimation = inject(OpenAnimationFlow);
   private isShown = true;
 
+  protected readonly id = idScope('editor-page');
   protected readonly newAnimation = inject(NewAnimationFlow);
-  protected readonly inspectorTabs = INSPECTOR_TABS;
+  /** The inspector's tabs, each controlling a panel of this page. */
+  protected readonly inspectorTabs: readonly InspectorTab[] = INSPECTOR_PANELS.map(
+    ({ idPart, labelKey }) => ({ panelId: this.id(idPart), labelKey }),
+  );
   /** Whether the inspector's panels are tabs, one shown at a time. */
   protected readonly tabbed = inject(InspectorLayout).tabbed;
   /** The panel the tabs show. */
-  protected readonly inspectorPanel = signal(INSPECTOR_TABS[0].panelId);
+  protected readonly inspectorPanel = signal(this.inspectorTabs[0].panelId);
   /** Between 48 and 75 rem, whether the inspector is unfolded beside the stage. */
   protected readonly inspectorOpen = signal(true);
 
@@ -121,12 +132,12 @@ export class EditorPage implements ViewDidEnter, ViewWillLeave {
   }
 
   /** A panel's hidden while its tab is not the selected one. */
-  protected isPanelHidden(panelId: string): boolean {
-    return this.tabbed() && this.inspectorPanel() !== panelId;
+  protected isPanelHidden(panelPart: string): boolean {
+    return this.tabbed() && this.inspectorPanel() !== this.id(panelPart);
   }
 
-  /** What names a panel: its tab when tabbed, its heading otherwise. */
-  protected panelLabel(panelId: string, headingId: string): string {
-    return this.tabbed() ? `${panelId}-tab` : headingId;
+  /** The id of what names a panel: its tab when tabbed (`InspectorTab`), its heading otherwise. */
+  protected panelLabel(panelPart: string, headingPart: string): string {
+    return this.tabbed() ? `${this.id(panelPart)}-tab` : this.id(headingPart);
   }
 }

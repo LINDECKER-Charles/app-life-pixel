@@ -9,7 +9,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { type SupportCategory, SupportApi, type SupportRequestThread } from 'shared';
+import { idScope, type SupportCategory, SupportApi, type SupportRequestThread } from 'shared';
 import { ErrorSummary } from '../account/form/error-summary';
 import { fieldError } from '../account/form/field-error';
 import { type FieldCheck, type FieldMap, FormErrors } from '../account/form/form-errors';
@@ -59,10 +59,11 @@ export class NewSupportRequest {
   protected readonly maxChars = SUPPORT_LIMITS.messageMaxChars;
   protected readonly maxMegabytes = SCREENSHOT_MAX_MEGABYTES;
   protected readonly accept = SCREENSHOT_TYPES.join(',');
+  protected readonly id = idScope('new-support-request');
   protected readonly targets = {
-    category: 'support-category',
-    message: 'support-message',
-    screenshot: 'support-screenshot',
+    category: this.id('category'),
+    message: this.id('message'),
+    screenshot: this.id('screenshot'),
   };
 
   protected readonly category = signal<SupportCategory | undefined>(undefined);

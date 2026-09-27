@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import type { Limits } from '../engine/engine-types';
 import { ExportFlow } from './export-flow';
 import { clampScale, scaleBounds } from './export-options-values';
@@ -16,6 +17,8 @@ export class ExportOptionsForm {
   protected readonly flow = inject(ExportFlow);
 
   readonly limits = input.required<Limits>();
+
+  protected readonly id = idScope('export-options-form');
 
   protected readonly bounds = computed(() => scaleBounds(this.limits()));
   protected readonly tags = computed(() => this.flow.document()?.tags ?? []);

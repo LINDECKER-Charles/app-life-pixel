@@ -15,10 +15,9 @@ describe('PasswordField', () => {
   it('is named by its visible label', async () => {
     const fixture = await openAccountPage(PasswordField, null, INPUTS);
 
-    const label = fixture.nativeElement.querySelector('label') as HTMLLabelElement;
-    expect(label.htmlFor).toBe('test-password');
-    expect(label.textContent?.trim()).toBe('Password');
-    expect(nativeInput(fixture).id).toBe('test-password');
+    const input = nativeInput(fixture);
+    expect(input.labels?.[0]?.textContent?.trim()).toBe('Password');
+    expect(input.id).toBe(INPUTS.fieldId);
   });
 
   it('hides the password by default, and shows it once toggled', async () => {
@@ -52,10 +51,15 @@ describe('PasswordField', () => {
     });
 
     const input = nativeInput(fixture);
+    const host: HTMLElement = fixture.nativeElement;
+    const descriptions = input
+      .getAttribute('aria-describedby')
+      ?.split(' ')
+      .map((id) => host.querySelector(`[id="${id}"]`)?.textContent?.trim());
     expect(input.getAttribute('aria-invalid')).toBe('true');
-    expect(input.getAttribute('aria-describedby')).toBe('test-password-hint test-password-error');
-    expect(fixture.nativeElement.querySelector('#test-password-error')?.textContent).toContain(
+    expect(descriptions).toEqual([
+      INPUTS.hint,
       'The email address or the password is not correct.',
-    );
+    ]);
   });
 });

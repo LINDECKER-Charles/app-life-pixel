@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { idScope } from 'shared';
 import { Icon } from '../../ui/icon/icon';
 import { MenuButton } from '../../ui/menu/menu-button';
 import { ProjectActions } from '../actions/project-actions';
@@ -26,6 +27,8 @@ import { PagedList } from './paged-list';
 export class ProjectList {
   private readonly store = inject(LIBRARY_STORE);
   protected readonly actions = inject(ProjectActions);
+
+  protected readonly id = idScope('project-list');
 
   protected readonly list = new PagedList<Project>((page) => this.store.listProjects(page));
   protected readonly newName = signal('');
