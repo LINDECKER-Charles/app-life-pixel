@@ -47,8 +47,9 @@ These are original vector assets authored for this proposal. They are editable S
 scripts, remote links or embedded fonts, and use fixed pixel paths with crisp edges. Their colours
 are illustration colours rather than application state. Preserve them across themes.
 
-The heart is a proposed design mark, not a replacement of distributed app icons. Before adopting
-it, check existing packaging, store assets and the maintainer's brand choice together.
+The heart is the adopted identity mark (D38). The maintainer's follow-up request to complete the
+application artwork also adopts it for browser, touch and Tauri icons (D39). See
+[the asset inventory](assets.md) for canonical sources, generated formats and provenance.
 
 ### Pip's construction
 

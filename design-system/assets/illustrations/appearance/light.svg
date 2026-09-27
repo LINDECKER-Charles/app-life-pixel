@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 112">
+  <rect
+    x="1"
+    y="1"
+    width="178"
+    height="110"
+    rx="8"
+    fill="#fff8f5"
+    stroke="#a17c8c"
+    stroke-width="2"
+  />
+  <path
+    fill="#ffedf1"
+    d="M2 18h176v22H2zM2 92h176v10a8 8 0 0 1-8 8H10a8 8 0 0 1-8-8z"
+  />
+  <path fill="#735b66" d="M10 9h36v3H10z" />
+  <rect x="142" y="7" width="28" height="7" rx="3" fill="#a93663" />
+  <path fill="#a93663" d="M10 25h8v8h-8z" />
+  <path fill="#a17c8c" d="M26 25h8v8h-8zm16 0h8v8h-8zm16 0h8v8h-8z" />
+  <path fill="#dedee2" d="M10 46h160v40H10z" />
+  <path fill="#fff" d="M68 46h44v40H68z" />
+  <path
+    fill="#ececee"
+    d="
+      M68 46h11v10H68zm22 0h11v10H90zM79 56h11v10H79zm22 0h11v10h-11zM68 66h11v10H68zm22 0h11v10H90z
+      M79 76h11v10H79zm22 0h11v10h-11z
+    "
+  />
+  <path fill="#a93663" d="M80 58h8v4h4v-4h8v12h-4v4h-4v4h-4v-4h-4v-4h-4z" />
+  <rect
+    x="63"
+    y="97"
+    width="14"
+    height="8"
+    rx="2"
+    fill="#fff"
+    stroke="#a93663"
+    stroke-width="2"
+  />
+  <path fill="#ead5dd" d="M83 97h14v8H83zm20 0h14v8h-14z" />
+</svg>

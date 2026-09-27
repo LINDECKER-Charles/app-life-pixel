@@ -125,6 +125,11 @@ fallback must remain complete while custom fonts load. Decorations have empty al
 illustrations receive concise translated descriptions only when they convey additional information.
 Pip does not speak for a real agent, promise support availability or block access to a next step.
 
+The 2026-09-27 asset follow-up (D39) extends the adopted heart to browser, touch and Tauri icons,
+adds context-specific welcome/library/export artwork, and illustrates the existing appearance
+choices and not-found page. [assets.md](assets.md) records sources, provenance and regeneration.
+The earlier header-only icon scope is superseded; all functional scope restrictions remain.
+
 ## Phased rollout
 
 ### 1. Review the isolated system

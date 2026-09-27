@@ -1,11 +1,11 @@
 # Life Pixel design system
 
-**Rose Atelier · 0.1.0 · Design proposal**
+**Rose Atelier · 0.1.0 · Adopted design direction (D38)**
 
 A warm, light-pink creative workspace with a small chibi companion. Soft cream surfaces,
 raspberry actions, rounded typography and crisp pixel details welcome the artist; neutral canvas
-surroundings keep the artwork accurate. This folder is the complete design reference for the
-next UX pass on Life Pixel V1.
+surroundings keep the artwork accurate. This folder records the adopted design direction and
+the reference for further UX work on Life Pixel V1.
 
 ## Open the interactive reference
 
@@ -37,6 +37,7 @@ or download animation exports. These operations remain the real application's re
 | [Content](docs/content.md) | Voice, bilingual microcopy, terminology and runtime translation |
 | [Accessibility](docs/accessibility.md) | Contrast, focus, input alternatives and acceptance |
 | [Adoption](docs/adoption.md) | Code mapping, rollout, ownership and definition of done |
+| [Assets](docs/assets.md) | Production artwork, distributed icons, provenance and regeneration |
 | [Verification](docs/verification.md) | Checks, recorded results and remaining manual review |
 
 ## Source of truth
@@ -44,7 +45,7 @@ or download animation exports. These operations remain the real application's re
 | Path | Role |
 |---|---|
 | `tokens/tokens.css` | Canonical semantic CSS tokens: light, dark, system and forced colours |
-| `assets/` | Original pixel mascot, mark and sprout; locally hosted Nunito and its licence |
+| `assets/` | Pixel identity, illustrations, icon sources and locally hosted Nunito with its licence |
 | `preview/` | Responsive browser reference using those tokens |
 | `../i18n/en.json`, `../i18n/fr.json` | All preview UI copy under `design_system.*` |
 | `scripts/` | Local allowlisted static server and reference verification |
@@ -58,11 +59,12 @@ show the light-theme palette in both themes. All other UI surfaces follow the se
 - **Designed:** visual foundations, component contracts, UX flows and distribution adaptations.
 - **Implemented here:** tokens, original SVG assets, local font and an interactive reference.
 - **Existing V1 audited:** editor, exports, authentication, library, MCP, desktop and admin.
-- **Next adoption work:** apply the system incrementally to Angular/Ionic using
-  [the implementation map](docs/adoption.md). Existing production SCSS and application components
-  are unchanged by this proposal.
+- **Adopted in V1:** shared tokens and components, editor, supporting pages and sober admin styling;
+  [the implementation map](docs/adoption.md) records scope and remaining review.
+- **Asset follow-up (D39):** browser and desktop identity, welcome illustration, library/export
+  mascot poses, theme previews and the not-found illustration; see [Assets](docs/assets.md).
 
-Welcome guidance, illustrated library thumbnails and other UX improvements are explicitly marked
+Additional welcome guidance, illustrated library thumbnails and other UX improvements are marked
 as proposals. Android is a future adaptation. There is no invented V1 billing, gallery, cloud sync,
 team workspace or generative AI service. No architecture decision is silently accepted here.
 
@@ -85,8 +87,8 @@ to view the reference. See [verification](docs/verification.md) for the actual c
 
 ## Versioning
 
-This is a 0.1.0 proposal, ready for review and incremental implementation. The maintainer owns
-acceptance. Update the affected tokens, contracts, reference, both catalogues and verification
+This is the adopted 0.1.0 design direction; the maintainer owns acceptance of further proposals.
+Update the affected tokens, contracts, reference, both catalogues and verification
 evidence together. Record breaking token or interaction changes before migration; do not replace
 an existing production token silently. See [adoption](docs/adoption.md) for release gates.
 
