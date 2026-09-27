@@ -83,26 +83,29 @@ define the remaining acceptance work. Automated checks provide evidence, not cer
 
 ## Application verification
 
-Recorded on 2026-09-27 on the application that adopts Rose Atelier (D38), branch
-`feat/rose-atelier-redesign` at `e1f36e7` plus the final end-to-end and documentation changes.
-Windows 11 Pro, Node 22.23.2, Playwright 1.63.0 with its Chromium; the editor served by
-`npm start` on port 4260 with the real engine (`LP_ENGINE_PREBUILT=1`). This is evidence for the
-redesign, not a WCAG conformance certificate.
+Final results recorded on 2026-09-27 on the application that adopts Rose Atelier (D38), branch
+`feat/rose-atelier-redesign` at `f71e5ac` (the six fixes from the first final battery: the app
+shell at 400 % zoom and large text, the welcome staying clear of the view bar, primary buttons in
+forced colours, the hidden import file inputs, Export disabled with no animation, and the canvas
+redrawing after an operation made outside a gesture). Windows 11 Pro, Node 22.23.2, Playwright
+1.63.0 with its Chromium; the editor served by `npm start` on port 4260 with the real engine
+(`LP_ENGINE_PREBUILT=1`); the dev server had stopped between runs and was restarted identically.
+This is evidence for the redesign, not a WCAG conformance certificate.
 
-### Automated battery
+### Automated battery (final re-run)
 
 | Command | Result |
 | --- | --- |
 | `npm run lint --prefix frontend` | PASS: ESLint on app, shared and admin; Prettier clean |
-| `npm run test:ci --prefix frontend` | PASS: app 576, shared 53, admin 145 tests |
+| `npm run test:ci --prefix frontend` | PASS: app 582, shared 53, admin 145 tests |
 | `npm run test:tools --prefix frontend` | PASS: 43 tests, colour parity with `tokens/tokens.css` included |
 | `npm run build --prefix frontend` | PASS: app and admin, no budget warning |
 | `npm run i18n:check --prefix frontend` | PASS: both catalogues complete |
 | `npm run i18n:check-bundle --prefix frontend` | PASS: no catalogue in 52 scripts |
 | `npm run test:engine --prefix frontend` | PASS: 16 tests in Chromium |
-| `npm run e2e --prefix frontend` | PASS: 10 tests; the accessibility file also passed four times in a row (32) |
+| `npm run e2e --prefix frontend` | PASS: 10 tests; the accessibility file passed within the run |
 | `npm run e2e:visual --prefix frontend` | PASS: 5 tests, screenshots at 1440, 1024, 768 and 390 px, both themes, both languages |
-| `npm run e2e:hosted --prefix frontend` | NOT RUN: ports 8460, 8461, 8463 and 8464 are held by the local stack's `server` and `admin` containers, which the suite needs free |
+| `npm run e2e:hosted --prefix frontend` | NOT RUN: ports 8460, 8461, 8463 and 8464 are held by the local stack's `server` and `admin` containers, which the method forbids stopping |
 | `node design-system/scripts/check.mjs` | PASS: 64 contrast pairs, 146 preview keys, 25 assets |
 | `cmp CLAUDE.md AGENTS.md` | PASS: identical |
 
@@ -120,23 +123,25 @@ Measured by the `visual` project: at 1366 × 768 and 1024 × 768 the canvas stag
 not scroll sideways; every routed page reachable without the hosted stack scrolls to its end at
 390 × 640.
 
-### Review matrix for the editor
+### Review matrix for the editor (final re-check)
 
 Chromium through Playwright, Windows 11, French interface, `http://localhost:4260/editor`.
 Zoom and forced colours are emulated as noted: they approximate, and do not replace, the browser
-setting and Windows contrast themes.
+setting and Windows contrast themes. The six defects recorded in the first final battery
+(`docs/plans/reports/final-failures.md`, zones A–F) were re-checked live in this session, after
+their fix commits (`bd468e1`, `f943f8e`, `0ec6729`, `f71e5ac`); each now passes.
 
 | Review | Viewport and method | Result | Remaining defect |
 | --- | --- | --- | --- |
-| Keyboard | 1280 × 800; Tab, Enter, Escape and the shortcuts only | PASS: the skip link reaches the document bar; create, draw, layers, frames, tags, preview and export by keyboard (e2e); Ctrl+S opens "Sign in to save", focus inside, Escape returns the focus to its origin; "Import image" opens the file picker from Enter | After an image import the canvas shows the new pixels only after the next operation (the frame thumbnail shows them at once) |
-| Zoom 200 % text | 1280 × 800, root font size 200 % | FAIL: the desktop grid keeps its layout (rem media queries do not follow a root style), the rail clips its tools, the stage shrinks to about 110 px and the lower inspector and the timeline are cut off with no page scroll | Recheck with the browser's text-size setting, which moves the rem breakpoints |
-| Zoom 400 % | 320 × 200 CSS px (1280 × 800 at 400 %) | FAIL: the header (133 px) and the footer (116 px) take the whole height; the editor gets 0 px | The shell's header and footer never scroll away |
+| Keyboard | 1280 × 800; Tab, Enter, Escape and the shortcuts only | PASS: the skip link reaches the document bar; create, draw, layers, frames, tags, preview and export by keyboard (e2e); Ctrl+S opens "Sign in to save", focus inside, Escape returns the focus to its origin; "Import image" opens the file picker from Enter; the canvas now redraws on the next paint after an import or an undo/redo made outside a drawing gesture (`canvas.ts` reads the engine state on every publish) | — |
+| Zoom 200 % text | 1280 × 800, root font size 200 %, and the viewport-shrink equivalent (640 × 400) | PASS: the editor's own grid (`.editor`, `overflow-y: auto`) scrolls to its full content in both simulations (checked: `scrollHeight` 2372 px in 537 px at root font size 200 %, `scrollTop` reaches its maximum at 640 × 400) | Root font size is a simulation of the browser's text-size setting, not the setting itself; recheck on a real machine |
+| Zoom 400 % | 320 × 200 CSS px (1280 × 800 at 400 %) | PASS: the editor page is now 200 px tall (was 0 px); `ion-app` scrolls the shell (`max-height: 30rem` rule) and `.editor` scrolls its grid to the bottom (`scrollTop` reaches 745 of 745 px max) | — |
 | 320 px | 320 × 640 | PASS with a reserve: no sideways page scroll; one column scrolls in 391 px under the fixed shell (249 px) | Same shell height |
-| Forced colours | 1280 × 800, `forcedColors: 'active'` | Partial: tools, swatch ring and check, active layer "Active", active frame, focus rings and dialog borders stay visible; the artwork keeps its colours | Primary buttons ("Export", "Back to editing" observed) show a blank label: text in `HighlightText` over the browser's `Canvas` backplate |
+| Forced colours | 1280 × 800, `forcedColors: 'active'` | PASS for "Export": ButtonText (`rgb(0,0,0)`) on ButtonFace (`rgb(255,255,255)`) with a black border, checked live; tools, swatch ring and check, active layer "Active", active frame, focus rings and dialog borders stay visible; the artwork keeps its colours | Outside the app's files: the admin's `.primary` button and both apps' skip link still use HighlightText on Highlight (not re-checked; owned by the admin/app-shell maintainer) |
 | Appearance | 1280 × 800; settings and `prefers-color-scheme` / `prefers-reduced-motion` emulation | PASS: light, dark and system themes apply without reload, inside open Ionic dialogs too; "Reduce" stops the dialogs' 250 ms fade and slide; canvas surround and checkerboard neutral in both themes | — |
 | Pointer and touch | 390 × 844, fine pointer | PASS for 24 px (WCAG 2.5.8); 37 of 53 editor controls are 36 px; the shared 44 px rule under `(pointer: coarse)` was not observed here | Touch device review |
-| Semantics | Accessibility tree snapshots | PASS with a reserve: named regions, one `main`, tabs named, `aria-current` on the active layer | The hidden file inputs of the two import buttons are exposed as extra "Import image" and "Import sprite sheet" buttons, enabled with no animation |
-| Recovery | 1280 × 800 | Partial: failed preview and export states exist and are unit tested | "Export" is enabled with no animation, and its dialog then lists every format as "Could not export" |
+| Semantics | Accessibility tree snapshots | PASS: named regions, one `main`, tabs named, `aria-current` on the active layer; each import control now exposes a single named button ("Importer une image", "Importer une planche de sprites"), its file input `aria-hidden`, checked live | — |
+| Recovery | 1280 × 800 | PASS: "Exporter" is disabled on the welcome (no document), matching "Enregistrer"; failed preview and export states exist and are unit tested | — |
 | Screen reader | — | NOT RUN: NVDA, VoiceOver and TalkBack cannot run in this environment | Human review |
 | Contrast | Script plus axe on rendered screens | PASS: 64 token pairs; no axe contrast violation once animations end | — |
 
@@ -144,5 +149,10 @@ setting and Windows contrast themes.
 
 - NVDA on Windows for the editor, the welcome, the tabs, the view bar status and the dialogs;
   VoiceOver or TalkBack when a mobile surface is targeted.
-- Browser text size at 200 % and Windows contrast themes on a real machine.
-- Touch targets on a coarse pointer, and the hosted journeys once ports 8460–8464 are free.
+- Browser text size at 200 % and Windows contrast themes on a real machine (this session used
+  root-font-size and viewport-shrink simulations, both now passing).
+- Touch targets on a coarse pointer, and the hosted journeys (`e2e:hosted`) once ports
+  8460–8464 are free (the local stack's own `server`/`admin` containers hold them for other
+  purposes; the method forbids stopping them).
+- Forced colours outside the app's files: the admin's primary button and the skip links of both
+  the app and admin shells (same HighlightText-on-Highlight pattern as the fixed "Export" button).
