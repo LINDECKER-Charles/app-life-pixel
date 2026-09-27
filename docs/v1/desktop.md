@@ -125,9 +125,9 @@ picked by platform; the routes hidden on the desktop.
   mount point changes at each launch, the app first copies the sidecar to
   `<data folder>/bin/life-pixel`, when missing or older, and gives that stable path.
 - `settings/agents` (`frontend/projects/app/src/app/mcp/`) shows, with copy buttons, the command
-  `claude mcp add life-pixel -- "<cliPath>" mcp --library "<libraryPath>"` and the equivalent
-  `mcpServers` entry for an MCP client's JSON configuration, and explains what an agent can then
-  do. **Keys**: `mcp.`.
+  `claude mcp add life-pixel -- "<cliPath>" mcp --library "<libraryPath>"`, the same for Codex
+  with `codex mcp add`, and the equivalent `mcpServers` entry for an MCP client's JSON
+  configuration, and explains what an agent can then do. **Keys**: `mcp.`.
 - **Watcher**: `notify-debouncer-full` watches the library folder (300 ms) and emits
   `library-changed` with the project and animation ids concerned. Lists refresh. When the open
   animation changed on disk, the app reloads it if it holds no unsaved work, and otherwise asks:

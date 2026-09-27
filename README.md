@@ -59,9 +59,10 @@ every path below is self-built, from a checkout of this repository, following
 - **CLI**: `cargo build -p life-pixel-cli --release` produces the `life-pixel` binary (`mcp`,
   `list`, `export` on a local library); it also ships as a sidecar inside the desktop bundle.
 - **MCP**: for an agent working locally, `claude mcp add life-pixel -- "<path to life-pixel>" mcp
-  --library "<library path>"` (the desktop app's Settings → Agents page prints this command with
-  the right paths); for the hosted server, once deployed, a personal access token from
-  `settings/tokens` gives the equivalent `claude mcp add --transport http` command — see
+  --library "<library path>"`, or the same arguments after `codex mcp add` for Codex (the desktop
+  app's Settings → Agents page prints both commands with the right paths); for the hosted server,
+  once deployed, a personal access token from `settings/tokens` gives the equivalent
+  `claude mcp add --transport http` and `codex mcp add --url` commands — see
   [docs/mcp.md](docs/mcp.md).
 
 ## Documentation
