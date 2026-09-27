@@ -27,6 +27,8 @@ import { ImportImage } from './import-image';
       type="file"
       accept="image/png"
       tabindex="-1"
+      aria-hidden="true"
+      [disabled]="!engine.document()"
       [attr.aria-label]="'tools.import_image' | transloco"
       (change)="onChange(fileInput)"
     />

@@ -13,21 +13,35 @@ const NEW_ANIMATION = { title: 'Button', width: 8, height: 8, layerName: 'Base' 
 describe('ImportImageButton', () => {
   let fixture: ComponentFixture<ImportImageButton>;
 
-  async function setup(): Promise<void> {
+  async function setup(withAnimation = true): Promise<void> {
     TestBed.configureTestingModule({
       providers: [importProvidersFrom(TranslocoTestingModule.forRoot(I18N_TESTING))],
     });
     await firstValueFrom(TestBed.inject(TranslocoService).load('en'));
-    await TestBed.inject(EngineStore).create(NEW_ANIMATION);
+    if (withAnimation) await TestBed.inject(EngineStore).create(NEW_ANIMATION);
     fixture = TestBed.createComponent(ImportImageButton);
     await fixture.whenStable();
   }
 
-  it('labels the file input for assistive technology', async () => {
+  it('exposes only the button to assistive technology, not the file input', async () => {
     await setup();
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
 
-    expect(input.getAttribute('aria-label')).toBe(en['tools.import_image']);
+    expect(input.getAttribute('aria-hidden')).toBe('true');
+    expect(input.tabIndex).toBe(-1);
+    expect(button.getAttribute('aria-label')).toBe(en['tools.import_image']);
+    expect(button.disabled).toBe(false);
+    expect(input.disabled).toBe(false);
+  });
+
+  it('disables the button and its file input while there is no animation', async () => {
+    await setup(false);
+    const input: HTMLInputElement = fixture.nativeElement.querySelector('input[type="file"]');
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    expect(button.disabled).toBe(true);
+    expect(input.disabled).toBe(true);
   });
 
   it('opens the file picker from the button', async () => {

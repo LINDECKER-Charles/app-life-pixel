@@ -28,6 +28,8 @@ import { ImportSpriteSheetFlow } from './import-sprite-sheet-flow';
       type="file"
       accept="image/png"
       tabindex="-1"
+      aria-hidden="true"
+      [disabled]="!engine.document()"
       [attr.aria-label]="'tools.import_sprite_sheet' | transloco"
       (change)="onChange(fileInput)"
     />
