@@ -1,6 +1,7 @@
 //! The hosted MCP endpoint over the local stack (A3): the bearer token and its failures, the
 //! scopes, the `mcp` rate limit, the daily ceiling and its reset at midnight UTC, the signed
-//! links of `export`, and the metrics. Behind the `stack-tests` feature.
+//! links of `export`, the metrics, and the protocol revisions it offers. Behind the `stack-tests`
+//! feature.
 
 #![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
 
@@ -12,6 +13,8 @@ mod ceiling;
 mod links;
 #[path = "mcp_api/metrics.rs"]
 mod metrics;
+#[path = "mcp_api/negotiation.rs"]
+mod negotiation;
 #[path = "common/mod.rs"]
 mod router;
 #[path = "common/stack.rs"]

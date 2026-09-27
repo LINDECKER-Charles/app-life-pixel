@@ -1,6 +1,7 @@
 //! The hosted MCP server: the tools of `life-pixel-mcp`, each call counted against the daily
 //! ceiling first, then measured and recorded as `mcp_tool_called`.
 
+use std::borrow::Cow;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -10,7 +11,7 @@ use life_pixel_service::ports::{EventSink, ProductEvent};
 use life_pixel_service::{AccountId, CodedError};
 use rmcp::model::{
     CallToolRequestParams, CallToolResponse, CallToolResult, ContentBlock,
-    ListResourceTemplatesResult, ListToolsResult, PaginatedRequestParams,
+    ListResourceTemplatesResult, ListToolsResult, PaginatedRequestParams, ProtocolVersion,
     ReadResourceRequestParams, ReadResourceResponse, ServerConfig, Tool,
 };
 use rmcp::service::RequestContext;
@@ -81,6 +82,10 @@ impl HostedMcpHandler {
 impl ServerHandler for HostedMcpHandler {
     fn get_info(&self) -> ServerConfig {
         self.tools.get_info()
+    }
+
+    fn supported_protocol_versions(&self) -> Cow<'static, [ProtocolVersion]> {
+        self.tools.supported_protocol_versions()
     }
 
     async fn list_tools(
