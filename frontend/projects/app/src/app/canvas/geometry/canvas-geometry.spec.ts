@@ -2,6 +2,7 @@ import {
   clampZoom,
   fitZoom,
   GRID_MIN_ZOOM,
+  isInside,
   onionSkinAlpha,
   originFor,
   pixelFromClient,
@@ -100,5 +101,16 @@ describe('onionSkinAlpha', () => {
     expect(onionSkinAlpha(1)).toBeCloseTo(0.3);
     expect(onionSkinAlpha(2)).toBeCloseTo(0.15);
     expect(onionSkinAlpha(3)).toBeCloseTo(0.075);
+  });
+});
+
+describe('isInside', () => {
+  it('holds for every pixel of the content, and for none around it', () => {
+    const content = { width: 4, height: 2 };
+
+    expect(isInside({ x: 0, y: 0 }, content)).toBe(true);
+    expect(isInside({ x: 3, y: 1 }, content)).toBe(true);
+    expect(isInside({ x: 4, y: 1 }, content)).toBe(false);
+    expect(isInside({ x: 0, y: -1 }, content)).toBe(false);
   });
 });

@@ -67,6 +67,11 @@ export function zoomAroundPoint(client: Point, viewport: Viewport, nextZoom: num
   };
 }
 
+/** Whether a pixel coordinate lies within the content. */
+export function isInside(pixel: Point, content: Size): boolean {
+  return pixel.x >= 0 && pixel.y >= 0 && pixel.x < content.width && pixel.y < content.height;
+}
+
 export function shouldShowGrid(zoom: number): boolean {
   return zoom >= GRID_MIN_ZOOM;
 }

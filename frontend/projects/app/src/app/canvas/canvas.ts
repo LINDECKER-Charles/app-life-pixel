@@ -19,6 +19,7 @@ import { EDITOR_ENGINE } from '../engine/editor-engine';
 import { EngineStore } from '../engine/engine-store';
 import type { Point, RenderedFrame } from '../engine/engine-types';
 import {
+  isInside,
   originFor,
   pixelFromClient,
   shouldShowGrid,
@@ -30,6 +31,7 @@ import { CanvasInteraction } from './gesture/canvas-interaction';
 import { CanvasViewport } from './gesture/canvas-viewport';
 import { loadActiveFrame, loadOnionSkin, type FrameList } from './render/canvas-frame-loader';
 import { drawScene, type OnionSkinFrame } from './render/canvas-renderer';
+import { ViewBar } from './view-bar/view-bar';
 
 /** How far Shift with the arrows pans the view, in CSS pixels (editor.md, U2). */
 const PAN_STEP_PX = 40;
@@ -44,11 +46,12 @@ const ARROW_DELTAS: Readonly<Record<string, Point>> = {
  * The editor's drawing surface (editor.md, U2): renders the active frame with its onion skin,
  * checkerboard and grid, and turns pointer and keyboard input into operations through
  * `CanvasInteraction` and `CanvasViewport`. Fills U1's stub in place, reading `EditorStore` and
- * `EngineStore` alone.
+ * `EngineStore` alone. The view bar underneath shares its viewport, so that its buttons and the
+ * zoom shortcuts are the same actions.
  */
 @Component({
   selector: 'lp-canvas',
-  imports: [TranslocoPipe],
+  imports: [TranslocoPipe, ViewBar],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './canvas.html',
   styleUrl: './canvas.scss',
@@ -65,7 +68,7 @@ export class Canvas implements AfterViewInit, OnDestroy {
   protected readonly viewRef = viewChild.required<ElementRef<HTMLCanvasElement>>('view');
 
   private readonly interaction = new CanvasInteraction();
-  private readonly viewport = new CanvasViewport({
+  protected readonly viewport = new CanvasViewport({
     getViewport: () => this.currentViewport(),
     setZoom: (zoom) => this.store.zoom.set(zoom),
     setPan: (pan) => this.store.pan.set(pan),
@@ -88,6 +91,16 @@ export class Canvas implements AfterViewInit, OnDestroy {
   /** Shows the keyboard cursor only while the workspace itself holds the focus. */
   protected readonly focused = signal(false);
   protected readonly cursor = this.interaction.cursor;
+  /** The pixel under the pointer, while it hovers the view. */
+  private readonly hovered = signal<Point | null>(null, {
+    equal: (a, b) => a?.x === b?.x && a?.y === b?.y,
+  });
+  /** What the view bar shows: the pixel under the pointer, else the focused keyboard cursor. */
+  protected readonly position = computed<Point | null>(() => {
+    const content = this.contentSize();
+    const pixel = this.hovered() ?? (this.focused() ? this.cursor() : null);
+    return content && pixel && isInside(pixel, content) ? pixel : null;
+  });
   protected readonly showGrid = computed(
     () => this.store.showGrid() && shouldShowGrid(this.store.zoom()),
   );
@@ -259,7 +272,13 @@ export class Canvas implements AfterViewInit, OnDestroy {
       this.viewport.updatePan(event.pointerId, { x: event.clientX, y: event.clientY });
       return;
     }
-    this.interaction.pointerMove(event.pointerId, this.pixelFromEvent(event), event.shiftKey);
+    const pixel = this.pixelFromEvent(event);
+    this.hovered.set(pixel);
+    this.interaction.pointerMove(event.pointerId, pixel, event.shiftKey);
+  }
+
+  protected onPointerLeave(): void {
+    this.hovered.set(null);
   }
 
   protected onPointerUp(event: PointerEvent): void {

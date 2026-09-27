@@ -1,22 +1,32 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EngineStore } from '../../engine/engine-store';
+import { Icon } from '../../ui/icon/icon';
+import { Tooltip } from '../../ui/tooltip/tooltip';
 import { ImportImage } from './import-image';
 
 /** "Import image": a hidden file input behind a button, and the size error, if any. */
 @Component({
   selector: 'lp-import-image-button',
-  imports: [TranslocoPipe],
+  imports: [Icon, Tooltip, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button type="button" [disabled]="!engine.document()" (click)="fileInput.click()">
-      {{ 'tools.import_image' | transloco }}
+    <button
+      type="button"
+      class="lp-icon-button"
+      [attr.aria-label]="'tools.import_image' | transloco"
+      [disabled]="!engine.document()"
+      [lpTooltip]="'tools.import_image' | transloco"
+      (click)="fileInput.click()"
+    >
+      <lp-icon name="import-image" size="large" />
     </button>
     <input
       #fileInput
       class="lp-visually-hidden"
       type="file"
       accept="image/png"
+      tabindex="-1"
       [attr.aria-label]="'tools.import_image' | transloco"
       (change)="onChange(fileInput)"
     />
@@ -25,22 +35,12 @@ import { ImportImage } from './import-image';
     }
   `,
   styles: `
-    button {
-      padding: var(--lp-space-2) var(--lp-space-3);
-      font: inherit;
-      font-size: var(--lp-font-size-small);
-      color: var(--lp-color-text);
-      background: transparent;
-      border: 1px solid var(--lp-color-border);
-      border-radius: var(--lp-radius-medium);
-      cursor: pointer;
-
-      &:disabled {
-        cursor: not-allowed;
-        opacity: 0.6;
-      }
+    /* The button is one cell of the tool rail's grid; an error spans the whole row under it. */
+    :host {
+      display: contents;
     }
     .hint {
+      grid-column: 1 / -1;
       margin: var(--lp-space-1) 0 0;
       font-size: var(--lp-font-size-small);
       color: var(--lp-color-danger);

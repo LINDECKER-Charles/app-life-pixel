@@ -33,53 +33,98 @@ describe('ToolBar', () => {
     await engine.create(NEW_ANIMATION);
     document.addEventListener('keydown', handle);
     fixture = TestBed.createComponent(ToolBar);
+    document.body.append(fixture.nativeElement); // so that its buttons can take the focus
     await fixture.whenStable();
   }
 
-  function tools(): HTMLButtonElement[] {
-    return [...fixture.nativeElement.querySelectorAll('.tool')];
+  function button(name: string): HTMLButtonElement {
+    const found = [...fixture.nativeElement.querySelectorAll('button')].find(
+      (candidate: HTMLButtonElement) => candidate.getAttribute('aria-label') === name,
+    );
+    if (!found) throw new Error(`No button named ${name}`);
+    return found;
+  }
+
+  function pressed(): string[] {
+    return [...fixture.nativeElement.querySelectorAll('[aria-pressed="true"]')].map(
+      (element: Element) => element.getAttribute('aria-label') ?? '',
+    );
+  }
+
+  function tooltipOf(control: HTMLElement): HTMLElement | null {
+    const id = control.getAttribute('aria-describedby');
+    return id ? document.getElementById(id) : null;
+  }
+
+  /** Focuses a control as Tab does, which makes it `:focus-visible` to jsdom too. */
+  function tabTo(control: HTMLElement): void {
+    document.body.addEventListener('keydown', () => control.focus(), { once: true });
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
   }
 
   afterEach(() => {
     document.removeEventListener('keydown', handle);
+    fixture.destroy();
     document.body.replaceChildren();
   });
 
-  it('renders one aria-pressed button per tool, with the shortcut in its tooltip', async () => {
+  it('names each icon button by its tool, the pencil pressed first', async () => {
     await setup();
 
-    const pencil = tools().find((button) => button.getAttribute('aria-pressed') === 'true');
-    expect(pencil?.title).toContain('(B)');
-    expect(tools()).toHaveLength(7); // six tools plus the rectangle-filled switch
+    for (const name of ['Pencil', 'Eraser', 'Fill', 'Line', 'Rectangle', 'Select and move']) {
+      expect(button(name).querySelector('lp-icon')).not.toBeNull();
+    }
+    expect(pressed()).toEqual(['Pencil']);
   });
 
-  it('selects a tool on click, updating aria-pressed', async () => {
+  it('exposes the selected tool by aria-pressed, from a click or a shortcut', async () => {
     await setup();
-    const line = tools().find((button) => button.title.includes('(L)'));
 
-    line?.click();
+    button('Line').click();
     fixture.detectChanges();
-
     expect(TestBed.inject(EditorStore).tool()).toBe('line');
-    expect(line?.getAttribute('aria-pressed')).toBe('true');
+    expect(pressed()).toEqual(['Line']);
+
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'm', bubbles: true }));
+    fixture.detectChanges();
+    expect(pressed()).toEqual(['Select and move']);
   });
 
-  it('toggles the rectangle filled/outlined switch', async () => {
+  it('shows a tooltip with the shortcut on keyboard focus and on hover', async () => {
     await setup();
-    const filled = tools().find((button) => button.title.includes('Shift+R'));
+    const filled = button('Filled rectangle');
+    const line = button('Line');
 
-    filled?.click();
+    tabTo(filled);
+    expect(tooltipOf(filled)?.textContent).toContain('Filled rectangle');
+    expect(tooltipOf(filled)?.textContent).toContain('Shift+R');
+    filled.blur();
+
+    line.dispatchEvent(new PointerEvent('pointerenter'));
+    expect(tooltipOf(line)?.textContent).toContain('Line');
+    expect(tooltipOf(line)?.querySelector('kbd')?.textContent).toBe('L');
+    line.dispatchEvent(new PointerEvent('pointerdown'));
+    expect(tooltipOf(line)).toBeNull();
+  });
+
+  it('toggles the filled switch beside the rectangle', async () => {
+    await setup();
+    const rectangle = button('Rectangle');
+    const filled = button('Filled rectangle');
+
+    filled.click();
     fixture.detectChanges();
 
+    expect(rectangle.nextElementSibling).toBe(filled);
     expect(TestBed.inject(EditorStore).rectangleFilled()).toBe(true);
-    expect(filled?.getAttribute('aria-pressed')).toBe('true');
+    expect(filled.getAttribute('aria-pressed')).toBe('true');
   });
 
-  it('binds undo and redo to canUndo and canRedo', async () => {
+  it('binds undo and redo, side by side, to canUndo and canRedo', async () => {
     await setup();
-    const [undo, redo] = fixture.nativeElement
-      .querySelectorAll('.group')[1]
-      .querySelectorAll('button');
+    const undo = button('Undo');
+    const redo = button('Redo');
+    expect(undo.nextElementSibling).toBe(redo);
     expect(undo.disabled).toBe(true);
     expect(redo.disabled).toBe(true);
 

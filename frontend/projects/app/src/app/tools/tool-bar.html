@@ -1,60 +1,75 @@
-<div class="group">
+<div class="group" role="group" [attr.aria-label]="'tools.group.drawing' | transloco">
   @for (definition of tools; track definition.tool) {
     <button
       type="button"
-      class="tool"
+      class="lp-icon-button tool"
+      [attr.aria-label]="definition.labelKey | transloco"
       [attr.aria-pressed]="tool() === definition.tool"
       [attr.aria-keyshortcuts]="definition.shortcutKey"
-      [title]="
-        (definition.labelKey | transloco) + ' (' + definition.shortcutKey.toUpperCase() + ')'
-      "
+      [lpTooltip]="definition.labelKey | transloco"
+      [lpTooltipShortcut]="definition.shortcut"
       (click)="selectTool(definition.tool)"
     >
-      {{ definition.labelKey | transloco }}
+      <lp-icon [name]="definition.icon" size="large" />
     </button>
+    @if (definition.tool === 'rectangle') {
+      <!-- The rectangle's own switch, right after it: filled or outlined. -->
+      <button
+        type="button"
+        class="lp-icon-button tool filled"
+        [attr.aria-label]="'tools.shortcut.rectangle_filled' | transloco"
+        [attr.aria-pressed]="rectangleFilled()"
+        aria-keyshortcuts="Shift+R"
+        [lpTooltip]="'tools.shortcut.rectangle_filled' | transloco"
+        [lpTooltipShortcut]="shortcut.filled"
+        (click)="toggleFilled()"
+      >
+        <lp-icon name="rectangle-filled" size="large" />
+      </button>
+    }
   }
-  <button
-    type="button"
-    class="tool"
-    [attr.aria-pressed]="rectangleFilled()"
-    aria-keyshortcuts="Shift+R"
-    [title]="('tools.rectangle_filled' | transloco) + ' (Shift+R)'"
-    (click)="toggleFilled()"
-  >
-    {{ 'tools.rectangle_filled' | transloco }}
-  </button>
 </div>
-<div class="group">
+<div class="group" role="group" [attr.aria-label]="'tools.group.history' | transloco">
   <button
     type="button"
+    class="lp-icon-button"
+    [attr.aria-label]="'tools.undo' | transloco"
     [disabled]="!engine.state().canUndo"
-    aria-keyshortcuts="Control+Z"
-    [title]="('tools.undo' | transloco) + ' (Ctrl/⌘+Z)'"
+    aria-keyshortcuts="Control+Z Meta+Z"
+    [lpTooltip]="'tools.undo' | transloco"
+    [lpTooltipShortcut]="shortcut.undo"
     (click)="engine.undo()"
   >
-    {{ 'tools.undo' | transloco }}
+    <lp-icon name="undo" size="large" />
   </button>
   <button
     type="button"
+    class="lp-icon-button"
+    [attr.aria-label]="'tools.redo' | transloco"
     [disabled]="!engine.state().canRedo"
-    aria-keyshortcuts="Control+Shift+Z"
-    [title]="('tools.redo' | transloco) + ' (Ctrl/⌘+Shift+Z)'"
+    aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+    [lpTooltip]="'tools.redo' | transloco"
+    [lpTooltipShortcut]="shortcut.redo"
     (click)="engine.redo()"
   >
-    {{ 'tools.redo' | transloco }}
+    <lp-icon name="redo" size="large" />
   </button>
 </div>
-<div class="group">
+<div class="group" role="group" [attr.aria-label]="'tools.group.import' | transloco">
   <lp-import-image-button />
   <lp-import-sprite-sheet-button />
 </div>
-<button
-  type="button"
-  class="help"
-  aria-keyshortcuts="?"
-  [title]="('tools.shortcuts_button' | transloco) + ' (?)'"
-  (click)="help.open()"
->
-  {{ 'tools.shortcuts_button' | transloco }}
-</button>
+<div class="group">
+  <button
+    type="button"
+    class="lp-icon-button"
+    [attr.aria-label]="'tools.shortcuts_button' | transloco"
+    aria-keyshortcuts="?"
+    [lpTooltip]="'tools.shortcuts_button' | transloco"
+    [lpTooltipShortcut]="shortcut.help"
+    (click)="help.open()"
+  >
+    <lp-icon name="help" size="large" />
+  </button>
+</div>
 <lp-shortcuts-help-dialog />

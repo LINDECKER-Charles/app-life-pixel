@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { EngineStore } from '../engine/engine-store';
-import { EditorStore } from './editor-store';
+import { EditorStore, MAX_ONION_SKIN_FRAMES } from './editor-store';
 
 const NEW_ANIMATION = { title: 'Store', width: 16, height: 16, layerName: 'Base' };
 
@@ -93,5 +93,28 @@ describe('EditorStore', () => {
     expect(store.selection()).toBeNull();
     expect(store.activeLayer()).toBe(ids(engine.document()?.layers)[0]);
     expect(store.activeFrame()).toBe(ids(engine.document()?.frames)[0]);
+  });
+
+  it('toggles the grid and the onion skin, keeping the onion skin frame counts', async () => {
+    const { store } = await setup();
+    const grid = store.showGrid();
+
+    store.toggleGrid();
+    store.toggleOnionSkin();
+
+    expect(store.showGrid()).toBe(!grid);
+    expect(store.onionSkin()).toEqual({ enabled: true, before: 1, after: 1 });
+    store.toggleGrid();
+    expect(store.showGrid()).toBe(grid);
+  });
+
+  it('keeps the onion skin frame counts between 0 and the maximum', async () => {
+    const { store } = await setup();
+
+    store.setOnionSkinRange({ before: -2, after: 99 });
+    expect(store.onionSkin()).toMatchObject({ before: 0, after: MAX_ONION_SKIN_FRAMES });
+
+    store.setOnionSkinRange({ before: 2, after: Number.NaN });
+    expect(store.onionSkin()).toMatchObject({ before: 2, after: 0 });
   });
 });
