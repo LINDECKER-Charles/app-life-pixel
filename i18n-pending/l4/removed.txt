@@ -1,2 +1,0 @@
-# The filled switch is named "Filled rectangle" (tools.shortcut.rectangle_filled) in the icon rail.
-tools.rectangle_filled
