@@ -113,7 +113,11 @@ What `compose.deploy.yaml` must declare:
 
 Services per environment: `server` (image `app`), `admin` (image `admin`), `postgres` with a
 named volume. Object storage is an external S3-compatible bucket, one per environment (D16), on
-Scaleway Object Storage in Paris (D35).
+Scaleway Object Storage in Paris (D35). Until an environment's bucket exists, its `.env` sets
+`LP_STORAGE_URL=file:///var/lib/life-pixel`, the self-hosting mode: the documents then live in the
+`documents` volume that `compose.deploy.yaml` mounts on `server`, which stays empty once the
+environment stores to its bucket. Staging runs so until Scaleway is set up, with its email
+deferred too: `LP_SMTP_URL` points nowhere, and the server only logs the emails it cannot send.
 
 ## Backups — required before production
 
