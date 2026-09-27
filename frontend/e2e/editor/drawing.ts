@@ -35,6 +35,13 @@ export const FILL_AT: Pixel = { x: 10, y: 10 };
 /** Frame 2: one green pencil dot on an empty frame. */
 export const DOT: Pixel = { x: 8, y: 8 };
 
+/**
+ * The layer a new animation starts with, and the one “Add layer” puts above it: frame 2's dot goes
+ * on the latter, chosen in the inspector, and the export composites both the same.
+ */
+export const FIRST_LAYER = 'Layer 1';
+export const NEW_LAYER = 'Layer';
+
 /** Frame 1 is `idle`, looping; frame 2 is `blink`, played once. */
 export const DURATIONS_MS = [200, 300] as const;
 export const IDLE_TAG = 'idle';

@@ -122,6 +122,21 @@ export class EditorPage {
     return this.page.getByRole('button', { name: `Edit tag “${name}”` });
   }
 
+  /**
+   * A layer's row button, which makes it the layer drawn on: its name, then “Active” or
+   * “Hidden” when they apply (editor.md, U2).
+   */
+  layer(name: string): Locator {
+    return this.page
+      .getByRole('region', { name: 'Layers' })
+      .getByRole('button', { name: new RegExp(`^${name}( Active| Hidden)*$`) });
+  }
+
+  /** A reading of the view bar under the canvas: the frame, the layer or the tool in use. */
+  viewStatus(text: string): Locator {
+    return this.page.getByRole('region', { name: 'Canvas' }).getByText(text, { exact: true });
+  }
+
   exportRow(format: string): Locator {
     return this.page
       .getByRole('table', { name: 'Every export format, with its size' })
@@ -161,6 +176,22 @@ export class EditorPage {
   async click(pixel: Pixel): Promise<void> {
     const point = await this.pointAt(pixel);
     await this.page.mouse.click(point.x, point.y);
+  }
+
+  // --- The inspector's playback preview. ---
+
+  /** The preview plays the animation: its button pressed, and no placeholder over it. */
+  async expectPreviewPlaying(): Promise<void> {
+    await expect(this.button('Stop preview')).toHaveAttribute('aria-pressed', 'true');
+    for (const placeholder of ['Preparing the preview…', 'No preview']) {
+      await expect(this.page.getByText(placeholder, { exact: true })).toBeHidden();
+    }
+    await expect(this.page.getByText(/^Could not prepare the preview\./)).toBeHidden();
+  }
+
+  /** The preview stopped: its button offers to play again. */
+  async expectPreviewStopped(): Promise<void> {
+    await expect(this.button('Play preview')).toHaveAttribute('aria-pressed', 'false');
   }
 
   // --- The export dialog. ---

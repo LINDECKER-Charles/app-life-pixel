@@ -5,19 +5,27 @@ import {
   DOT,
   DURATIONS_MS,
   FILL_AT,
+  FIRST_LAYER,
   IDLE_TAG,
   LINE,
+  NEW_LAYER,
   PENCIL_STROKE,
 } from './drawing';
 import { EditorPage } from './editor-page';
 import { expectPlayback, PlayerPage } from './player-page';
 
-// M2's critical path (editor.md, U6): draw, animate, export, then play the export where a site
-// would, with the pointer.
+// M2's critical path (editor.md, U6), with the pointer: from the welcome of a first visit, create,
+// draw two frames — the second on a layer chosen in the inspector —, animate, play the preview,
+// export, then play the export where a site would.
 test('draws, animates, exports and plays an animation', async ({ page, browser }) => {
   const editor = new EditorPage(page);
-  await editor.open();
-  await editor.create();
+  await editor.goto();
+
+  await test.step('creates the animation from the welcome', async () => {
+    await editor.button('Create animation').click();
+    await editor.expectNewDialog();
+    await editor.create();
+  });
 
   await test.step('draws frame 1 with the pencil, the line and the fill', async () => {
     await expect(editor.canvas).toBeVisible();
@@ -34,11 +42,18 @@ test('draws, animates, exports and plays an animation', async ({ page, browser }
     await expect(editor.button('Undo')).toBeEnabled();
   });
 
-  await test.step('adds frame 2 and draws on it', async () => {
+  await test.step('adds frame 2 and a layer, and draws on that layer', async () => {
     await editor.button('Add frame').click();
     await expect(editor.frameButton(2)).toBeVisible();
     await editor.frameButton(2).click();
     await expect(editor.frameButton(2)).toHaveAttribute('aria-pressed', 'true');
+    await expect(editor.viewStatus('Frame 2 of 2')).toBeVisible();
+    await editor.button('Add layer').click();
+    await expect(editor.layer(FIRST_LAYER)).toHaveAttribute('aria-current', 'true');
+    await editor.layer(NEW_LAYER).click();
+    await expect(editor.layer(NEW_LAYER)).toHaveAttribute('aria-current', 'true');
+    await expect(editor.layer(FIRST_LAYER)).not.toHaveAttribute('aria-current', 'true');
+    await expect(editor.viewStatus(`Layer: ${NEW_LAYER}`)).toBeVisible();
     await editor.tool('Pencil').click();
     await editor.swatch(COLOR.green.index).click();
     await editor.click(DOT);
@@ -74,6 +89,13 @@ test('draws, animates, exports and plays an animation', async ({ page, browser }
     await editor.button('Redo').click();
     await expect(editor.tagBar(BLINK_TAG)).toBeVisible();
     await expect(editor.button('Redo')).toBeDisabled();
+  });
+
+  await test.step('plays the preview in the inspector, then stops it', async () => {
+    await editor.button('Play preview').click();
+    await editor.expectPreviewPlaying();
+    await editor.button('Stop preview').click();
+    await editor.expectPreviewStopped();
   });
 
   const files = await test.step('exports: five formats with their sizes, then WASM', async () => {

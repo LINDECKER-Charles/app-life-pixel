@@ -5,8 +5,10 @@ import {
   DOT,
   DURATIONS_MS,
   FILL_AT,
+  FIRST_LAYER,
   IDLE_TAG,
   LINE,
+  NEW_LAYER,
   PENCIL_STROKE,
   SIZE,
   TITLE,
@@ -72,8 +74,9 @@ async function addTag(editor: EditorPage, frame: number, name: string): Promise<
   await expect(editor.button('Save')).toBeEnabled();
 }
 
-// The same drawing as the pointer journey, with the keyboard alone (editor.md, U6): every control
-// reached with Tab, every tool and colour by its shortcut, every pixel with the arrows and Enter.
+// The same journey as with the pointer, with the keyboard alone (editor.md, U6): every control
+// reached with Tab, every tool, colour and the preview by its shortcut, every pixel with the arrows
+// and Enter.
 test('draws the same animation with the keyboard alone', async ({ page, browser }) => {
   const editor = new EditorPage(page);
   const cursor = new KeyboardCursor(page);
@@ -110,12 +113,19 @@ test('draws the same animation with the keyboard alone', async ({ page, browser 
     await expect(editor.button('Undo')).toBeEnabled();
   });
 
-  await test.step('adds frame 2 and draws on it', async () => {
+  await test.step('adds frame 2 and a layer, and draws on that layer', async () => {
     await tabTo(page, editor.button('Add frame'));
     await page.keyboard.press('Enter');
     await expect(editor.frameButton(2)).toBeVisible();
     await page.keyboard.press('.');
     await expect(editor.frameButton(2)).toHaveAttribute('aria-pressed', 'true');
+    await tabTo(page, editor.button('Add layer'));
+    await page.keyboard.press('Enter');
+    await tabTo(page, editor.layer(NEW_LAYER));
+    await page.keyboard.press('Enter');
+    await expect(editor.layer(NEW_LAYER)).toHaveAttribute('aria-current', 'true');
+    await expect(editor.layer(FIRST_LAYER)).not.toHaveAttribute('aria-current', 'true');
+    await expect(editor.viewStatus(`Layer: ${NEW_LAYER}`)).toBeVisible();
     await tabTo(page, editor.canvas, true);
     await page.keyboard.press('b');
     await stepColor(editor, COLOR.blue.index, COLOR.green.index);
@@ -150,6 +160,14 @@ test('draws the same animation with the keyboard alone', async ({ page, browser 
     await expect(editor.tagBar(BLINK_TAG)).toBeHidden();
     await page.keyboard.press('ControlOrMeta+Shift+z');
     await expect(editor.tagBar(BLINK_TAG)).toBeVisible();
+  });
+
+  await test.step('plays the preview with its shortcut, then stops it from its button', async () => {
+    await page.keyboard.press('p');
+    await editor.expectPreviewPlaying();
+    await tabTo(page, editor.button('Stop preview'));
+    await page.keyboard.press('Enter');
+    await editor.expectPreviewStopped();
   });
 
   const files = await test.step('exports: five formats with their sizes, then WASM', async () => {

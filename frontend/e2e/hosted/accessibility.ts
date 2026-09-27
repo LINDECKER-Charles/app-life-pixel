@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { finiteAnimationsEnded } from '../editor/animations';
 
 /** WCAG 2.2 AA, the target of AGENTS.md, and every level below it. */
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
@@ -12,15 +13,7 @@ const BLOCKING_IMPACTS = new Set(['serious', 'critical']);
 export async function expectAccessible(page: Page, screen: string): Promise<void> {
   await test.step(`axe: ${screen}`, async () => {
     // A page or a dialog fading in has the contrast of its opacity: axe waits for its end.
-    await page.waitForFunction(() =>
-      document
-        .getAnimations()
-        .every(
-          (animation) =>
-            animation.playState !== 'running' ||
-            animation.effect?.getTiming().iterations === Infinity,
-        ),
-    );
+    await page.waitForFunction(finiteAnimationsEnded);
     const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
     const violations = results.violations
       .filter((violation) => BLOCKING_IMPACTS.has(violation.impact ?? ''))
