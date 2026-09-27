@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { needsVerification } from './verification-scope.mjs';
+import { CODEQL_LANGUAGES, codeqlLanguagesFor, needsVerification } from './verification-scope.mjs';
 
 describe('needsVerification', () => {
   it('skips documentation: docs/, and Markdown anywhere else', () => {
@@ -31,5 +31,30 @@ describe('needsVerification', () => {
     ]) {
       assert.equal(needsVerification(path), true, path);
     }
+  });
+});
+
+describe('codeqlLanguagesFor', () => {
+  it('names each language whose sources changed, once, in a stable order', () => {
+    const paths = [
+      'frontend/projects/app/src/main.ts',
+      'crates/core/src/limits.rs',
+      '.github/workflows/ci.yml',
+      'crates/core/src/model.rs',
+    ];
+
+    assert.deepEqual(codeqlLanguagesFor(paths), CODEQL_LANGUAGES);
+  });
+
+  it('counts the manifests of Rust and the templates of the front end as sources', () => {
+    assert.deepEqual(codeqlLanguagesFor(['crates/server/Cargo.toml']), ['rust']);
+    assert.deepEqual(codeqlLanguagesFor(['Cargo.lock']), ['rust']);
+    assert.deepEqual(codeqlLanguagesFor(['frontend/projects/app/src/app/app.html']), [
+      'javascript-typescript',
+    ]);
+  });
+
+  it('names none for a change no analysis reads', () => {
+    assert.deepEqual(codeqlLanguagesFor(['docs/devops.md', 'i18n/fr.json', 'compose.yaml']), []);
   });
 });
