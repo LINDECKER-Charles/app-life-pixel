@@ -44,11 +44,13 @@ class Journey {
     this.#screen = new Screen(session.driver);
   }
 
-  async startsOnANewAnimation(): Promise<void> {
-    await this.#screen.find('textbox', 'Title', { timeoutMs: APP_START_TIMEOUT_MS });
+  /** A first start has no document: the stage shows the welcome and its "Create animation". */
+  async startsOnTheWelcome(): Promise<void> {
+    await this.#screen.find('button', 'Create animation', { timeoutMs: APP_START_TIMEOUT_MS });
   }
 
   async createsTheAnimation(): Promise<void> {
+    await this.#screen.act('button', 'Create animation', (button) => button.click());
     await this.#screen.type('textbox', 'Title', TITLE);
     await this.#screen.type('spinbutton', 'Width', String(SIZE));
     await this.#screen.type('spinbutton', 'Height', String(SIZE));
@@ -194,7 +196,7 @@ void test('draws, saves, finds and exports an animation in the desktop app', asy
   const session = await DesktopSession.start(build.application);
   const journey = new Journey(session);
   try {
-    await step(t, 'the app starts on a new animation', () => journey.startsOnANewAnimation());
+    await step(t, 'the app starts on the welcome', () => journey.startsOnTheWelcome());
     await step(t, 'creates the animation', () => journey.createsTheAnimation());
     await step(t, 'draws with the keyboard', () => journey.drawsWithTheKeyboard());
     await step(t, 'saves it into a new project', () => journey.savesIntoANewProject());
