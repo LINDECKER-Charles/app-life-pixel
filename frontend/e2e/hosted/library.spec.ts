@@ -48,6 +48,7 @@ test('the library searches, renames, duplicates and deletes', async ({ page, per
     await expect(library.alert('Delete this animation?')).toBeVisible();
     await expectAccessible(page, 'the deletion confirmation');
     await library.alert('Delete this animation?').getByRole('button', { name: 'Cancel' }).click();
+    await expect(library.alert('Delete this animation?')).toBeHidden();
     await library.delete('Copy of Run cycle');
     await expect(library.animation('Copy of Run cycle')).toBeHidden();
   });
