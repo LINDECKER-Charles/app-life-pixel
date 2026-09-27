@@ -107,12 +107,17 @@ jobs:
       # D32: the Windows signing service is chosen at M5; until then this stays empty and the
       # Windows installer builds unsigned. `signCommand` runs whichever CLI the chosen service
       # needs, so both a cloud HSM and Azure Trusted Signing fit without a code change.
+      # The secret is checked in the script: a step's own `env` is not set yet when its `if` runs.
       - name: Configure the Windows signing command
-        if: matrix.os == 'windows-latest' && env.WINDOWS_SIGN_COMMAND != ''
+        if: matrix.os == 'windows-latest'
         shell: bash
         env:
           WINDOWS_SIGN_COMMAND: ${{ secrets.WINDOWS_SIGN_COMMAND }}
         run: |
+          if [ -z "$WINDOWS_SIGN_COMMAND" ]; then
+            echo "No WINDOWS_SIGN_COMMAND: the Windows installer builds unsigned."
+            exit 0
+          fi
           jq --arg cmd "$WINDOWS_SIGN_COMMAND" '.bundle.windows.signCommand = $cmd' \
             tauri/release.conf.json > tauri/release.conf.json.tmp
           mv tauri/release.conf.json.tmp tauri/release.conf.json
