@@ -53,6 +53,10 @@ jobs:
         uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
           fail-on-severity: moderate
+          # As deny.toml's ignores: advisories Tauri 2 pulls in on Linux, with no upgrade yet.
+          # GHSA-wrw7-89jp-8q8g: glib 0.18's VariantStrIter, unsound, through gtk-rs — fixed in
+          # glib 0.20, which Tauri's gtk 0.18 cannot take; nothing here iterates a GVariant.
+          allow-ghsas: GHSA-wrw7-89jp-8q8g
 
   # F2: the dependency policy of deny.toml — advisories, licences, bans, sources.
   cargo-deny:
