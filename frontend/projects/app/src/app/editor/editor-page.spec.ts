@@ -88,7 +88,11 @@ describe('EditorPage', () => {
     return fixture;
   }
 
-  afterEach(() => document.body.replaceChildren());
+  afterEach(() => {
+    document.body.replaceChildren();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
 
   it('lays out the document bar, the rail, the stage, the inspector and the timeline', async () => {
     await configure();
@@ -110,6 +114,28 @@ describe('EditorPage', () => {
     expect(root.querySelector('.stage lp-editor-welcome')).not.toBeNull();
     expect(root.querySelector('.stage lp-canvas')?.hasAttribute('inert')).toBe(true);
     expect(TestBed.inject(NewAnimationFlow).isOpen()).toBe(false);
+  });
+
+  it('keeps the welcome clear of the view bar under the canvas', async () => {
+    // Sizes are measured in a real browser only: the bar's height stands for its measure here.
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        readonly observe = vi.fn();
+        readonly disconnect = vi.fn();
+      },
+    );
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return this.localName === 'lp-view-bar' ? 75 : 0;
+    });
+    await configure();
+    const fixture = await open();
+    const root = fixture.nativeElement as HTMLElement;
+
+    const welcome = root.querySelector<HTMLElement>('.stage lp-editor-welcome');
+    expect(welcome?.style.marginBlockEnd).toBe('75px');
   });
 
   it('hides the welcome once an animation is created', async () => {

@@ -24,3 +24,17 @@
   flex: 1;
   min-height: 0;
 }
+
+// A short window — a phone on its side, a 400 % zoom — would leave the page no room under the
+// header and above the footer: the shell scrolls instead, and the page keeps the window's height.
+@media (max-height: 30rem) {
+  ion-app {
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .outlet {
+    flex: none;
+    min-height: 100dvh;
+  }
+}

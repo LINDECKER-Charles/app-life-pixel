@@ -4,7 +4,9 @@
 // way first. The layout adapts to the width (C11, foundations.md, "Responsive composition"):
 // below 75 rem the inspector turns to tabs (InspectorLayout) and may fold away; below 48 rem the
 // regions follow one another in the document's order, and the page scrolls — but for the rail,
-// which shows under the stage so that the canvas comes first.
+// which shows under the stage so that the canvas comes first. The breakpoints query the page's own
+// width in rem, so that they follow a larger root text size too; whatever still overflows — a
+// short window, large text — scrolls within the editor rather than out of reach.
 $narrow-max-width: 47.99rem;
 $medium-min-width: 48rem;
 $medium-max-width: 74.99rem;
@@ -20,12 +22,14 @@ $stage-column: minmax(16rem, 1fr);
 :host {
   display: flex;
   flex-direction: column;
+  container: editor / inline-size;
 }
 
 .editor {
   display: grid;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
   gap: var(--lp-space-2);
   padding: var(--lp-space-2);
   // The rail takes its content's width up to a bound, and shrinks before the stage does.
@@ -36,8 +40,7 @@ $stage-column: minmax(16rem, 1fr);
     'rail stage inspector'
     'timeline timeline inspector';
 
-  @media (max-width: $narrow-max-width) {
-    overflow-y: auto;
+  @container editor (max-width: #{$narrow-max-width}) {
     grid-template-columns: minmax(0, 1fr);
     // `max-content`, not `auto`: the timeline scrolls, and an `auto` row would squeeze it to nothing.
     grid-template-rows: auto $narrow-stage-height max-content max-content max-content;
@@ -165,7 +168,7 @@ $stage-column: minmax(16rem, 1fr);
   display: none;
 }
 
-@media (min-width: $medium-min-width) and (max-width: $medium-max-width) {
+@container editor (min-width: #{$medium-min-width}) and (max-width: #{$medium-max-width}) {
   .inspector-toggle {
     display: inline-flex;
   }
@@ -184,7 +187,7 @@ $stage-column: minmax(16rem, 1fr);
 }
 
 // One after another, each region takes its content's height and the page scrolls instead.
-@media (max-width: $narrow-max-width) {
+@container editor (max-width: #{$narrow-max-width}) {
   .docbar {
     padding: var(--lp-space-2);
   }
