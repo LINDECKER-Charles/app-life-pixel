@@ -156,3 +156,35 @@ their fix commits (`bd468e1`, `f943f8e`, `0ec6729`, `f71e5ac`); each now passes.
   purposes; the method forbids stopping them).
 - Forced colours outside the app's files: the admin's primary button and the skip links of both
   the app and admin shells (same HighlightText-on-Highlight pattern as the fixed "Export" button).
+
+## Artwork completion (D39, 2026-09-27)
+
+The [asset inventory](assets.md) records the added images, canonical sources and generation prompt.
+This pass adds browser/touch/desktop icons, welcome artwork, library and export Pip variants,
+theme previews and a not-found illustration. It also improves welcome and library reflow.
+
+| Check | Observed result |
+| --- | --- |
+| `npm run lint --prefix frontend` | PASS: app/shared/admin ESLint and Prettier; generated visual output is excluded from formatting |
+| `npm run test:ci --prefix frontend` | PASS: 583 app, 53 shared, 145 admin tests; 13 supporting-page tests also re-run after the final layout edits |
+| `npm run test:tools --prefix frontend` | PASS: 43 tests, including complete asset copying and token parity |
+| `npm run build --prefix frontend` | PASS: production app and admin, no budget warning |
+| `npm run i18n:check --prefix frontend` | PASS: both catalogues complete; no UI copy added |
+| `npm run i18n:check-bundle --prefix frontend` | PASS: catalogues remain outside the application scripts |
+| `npm run e2e --prefix frontend` | PASS: 10 tests, including pointer/keyboard drawing, export/player and axe checks; settings axe re-run after the mobile refinement |
+| `npm run e2e:visual --prefix frontend` | PASS: 14 tests, four widths, both languages and both themes; 80 additional library/export captures |
+| `node design-system/scripts/check.mjs` | PASS: 64 contrast pairs, 146 preview keys, 25 reference asset links |
+| Icon decoding and dimensions | PASS: SVG, PNG, ICO and ICNS; web 16/32/48 and touch 180; desktop through 1024 px |
+| `cargo xtask build-desktop --debug` | BLOCKED at executable replacement: Windows denies removal of `target/debug/life-pixel-desktop.exe`, held by the running Life Pixel process. Sidecar, frontend and desktop library compiled; full desktop binary build is not verified |
+| Instruction parity and whitespace | PASS: `AGENTS.md` and `CLAUDE.md` have identical SHA-256 hashes; `git diff --check` clean |
+
+Reviewed real Chromium captures for welcome, library/project states, settings, not-found and export
+completion at 1440, 1024, 768 and 390 px, across English/French and light/dark. At 390 × 844 the
+French welcome fits its scroll region with the full guest notice visible. All 64 library captures
+and 16 export-success captures report zero broken images, no horizontal page overflow and no
+uncaught page errors. Library routes use synthetic API fixtures; this is frontend evidence, not a
+hosted backend test. Screenshots wait for image decoding, fonts and finite Ionic animations.
+
+The native desktop application was left running. Icon files were decoded and inspected, but the
+installed application, macOS bundle and operating-system icon caches were not reviewed in this pass.
+Existing screen-reader, touch-device and hosted-backend review limitations above remain applicable.
