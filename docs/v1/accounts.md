@@ -227,19 +227,29 @@ export const LIBRARY_STORE = new InjectionToken<LibraryStore>('LibraryStore');
   Failures reject with `{ code, params }`.
 - `CurrentAnimation` (`current-animation.ts`) knows whether the editor holds a saved animation —
   its id, version and project — or unsaved work.
-- **Pages**: the library lists projects with their counts, and animations across projects with a
-  search field; create, rename, duplicate and delete projects; for animations: open
-  (`/editor/:animationId`), rename, move, duplicate, delete, each with a confirmation when it
-  destroys. Lists load 50 at a time with a "Load more" button. Duplicate names are built by the
-  client from translated keys (`library.copy_of`).
+- **Pages** (`pages/`, on the page template of D38: `ion-content`, one `h1`, no nested `main`):
+  the library's header says what it holds and offers "Create an animation"; it lists projects with
+  their counts, and animations across projects with a search field. Each row is compact: the
+  title, a link that opens it (`/editor/:animationId`), its size and frame count, an "Actions for
+  …" menu — Rename, Move, Duplicate for an animation; Rename, Duplicate for a project — and
+  Delete, apart, which asks for a confirmation naming what is lost. A list says each of its states
+  apart (`lists/list-status.ts`): loading its first page; a failure to read it, an error with
+  Retry, never an empty list; an action that failed, with Dismiss; no saved animation yet, an empty
+  state with Pip; no animation matching the search, without Pip, with "Clear the search". Lists
+  load 50 at a time with a "Load more" button. Duplicate names are built by the client from
+  translated keys (`library.copy_of`).
 - **Saving** (Ctrl/⌘ `S`, and the Save button of the editor's header):
   - a visitor is asked to sign in or sign up; once signed in, saving goes on;
   - unsaved work asks for a project — pick one or create one — then `createAnimation`;
   - a saved animation calls `saveDocument` with its version;
-  - `document.version_conflict` offers: reload the saved version, overwrite it — read the current
-    version, then save —, or save a copy;
-  - `quota.storage_exceeded` shows the usage, the limit and a link to the library;
-  - success calls `engine.markSaved()`; failure keeps the work and says why.
+  - `document.version_conflict` offers, each with its consequence written under it: save a copy
+    (recommended, and first), reload the saved version — the edits are lost —, or overwrite it —
+    the changes saved elsewhere are lost; it reads the current version, then saves. Nothing
+    destructive is preselected or focused first;
+  - `quota.storage_exceeded` says the work is still open, shows the usage read from `usage()` and
+    the limit — or that the usage is unavailable, never an invented zero — and links the library;
+  - success calls `engine.markSaved()`; failure keeps the work open and says why, with the editor's
+    save state at "Could not save" (editor.md, U1).
 - Opening another animation while there is unsaved work asks first.
 - **Keys**: `library.`.
 

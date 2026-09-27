@@ -340,19 +340,27 @@ oversized file is refused; every shortcut, and none while typing in a field.
 
 `export/`: `lp-export-button` and the dialog it opens (also Ctrl/⌘ `E`).
 
-- **Formats**: WASM, GIF, APNG, sprite sheet, PNG frames. When the dialog opens, the engine exports
-  each in turn; every row shows the raw size and the gzip size — measured with `CompressionStream`
-  —, formatted with `Intl`, and the lightest is marked. Options: the tag (all frames or one tag),
-  and the scale for the raster formats, bounded by the limits.
+- **Dialog** (Rose Atelier's anatomy, `design-system/docs/components.md`): the title, a context
+  line (the animation's title, its size in px and its frame count), the scrolling content, a note
+  that exporting creates files and does not save the animation, an inline failure, then "Back to
+  editing".
+- **Formats**: WASM, GIF, APNG, sprite sheet, PNG frames, each with a line on what it is for. When
+  the dialog opens, the engine exports each in turn; a row says "Exporting…", then its raw size and
+  its gzip size — measured with `CompressionStream` —, formatted with `Intl`, or "Could not
+  export"; the lightest says "Smallest" in words. Options: the tag (all frames or one tag), and the
+  scale for the raster formats, bounded by the limits.
 - **Download**: through `ExportSaver` (`export/export-saver.ts`): the web implementation downloads
   each file from a `Blob`; T2 adds the desktop one. WASM gives two files: `<stem>.wasm` and
-  `life-pixel.js`, the loader. After a download, the dialog calls the `EXPORT_OBSERVER` token
+  `life-pixel.js`, the loader. The row's button says "Downloading…" meanwhile; a success is
+  announced in a status with Pip, small, beside it; a failure says the format, that the animation is
+  unchanged, and to try again — without Pip. After a download, the dialog calls the `EXPORT_OBSERVER` token
   (`export/export-observer.ts`) with the format and the size; its default does nothing, and H13
   provides the hosted one, which records the product event.
 - **Snippets**: a framework picker, the animation's URL (`/assets/<stem>.wasm` by default), the
   loader's (`/assets/life-pixel.js`), the tag and the alternative text (the title by default); the
-  code comes from `engine.snippet`, with a copy button and a translated hint on where each file
-  goes (`export.snippet.hint.<framework>`).
+  code comes from `engine.snippet`, with a copy button that says "Copied", or that copying failed
+  and to select the code, and a translated hint on where each file goes
+  (`export.snippet.hint.<framework>`).
 - **Keys**: `export.`.
 
 **Tests**: every format listed with its sizes; options re-export; downloads go through
@@ -418,12 +426,22 @@ browser, through Vitest's browser mode (`test:engine`); recovery after a forced 
 
 `frontend/e2e/editor/`, Playwright project `editor`, `npm run e2e`; the web server is `npm start`.
 
-- **Journey**: open `/editor`; draw with the pencil, the line and the fill; add a frame and draw on
-  it; set durations; tag the second frame `blink`, played once; undo and redo; open the export
-  dialog and see the five formats with their sizes; download the WASM export and the loader; play
-  them in a page served through `page.route`, and read back, with `getImageData`, the pixels drawn
-  on each frame, and `tagend` after `blink`.
-- **Keyboard**: the same drawing done with the keyboard alone.
-- **Accessibility**: `@axe-core/playwright` on the editor, the export dialog, the settings and the
-  shortcuts dialog, with no serious or critical violation.
+- **Journey**: open `/editor` for a first visit and see the welcome; "Create animation", create a
+  16 × 16 animation; draw with the pencil, the line and the fill; add a frame, then a layer, choose
+  that layer in the inspector (`aria-current`, "Layer: Layer" in the view bar) and draw on it; set
+  durations; tag the first frame `idle` and the second `blink`, played once; undo and redo; play
+  the preview in the inspector, then stop it; open the export dialog and see the five formats with
+  their sizes; download the WASM export and the loader; play them in a page served through
+  `page.route`, and read back, with `getImageData`, the pixels drawn on each frame, and `tagend`
+  after `blink`.
+- **Keyboard**: the same journey with the keyboard alone: every control reached with Tab, tools,
+  colours, frames and the preview by their shortcuts, pixels with the arrows and Enter, the layer
+  chosen with Enter on its name.
+- **Accessibility**: `@axe-core/playwright` (WCAG 2.2 AA tags) on the welcome, the editor, the
+  export dialog, the shortcuts dialog and the settings, then at 390 pixels on the welcome, the
+  editor with each inspector tab — Palette, Layers, Preview — and the export dialog, with no
+  serious or critical violation. axe runs once the page's finite animations have ended, so that a
+  dialog fading in is not measured at part of its opacity. The hosted suite (`e2e/hosted/`) runs
+  axe on the library, its dialogs and the account pages.
+- **Locators**: roles and accessible names only (`e2e/editor/editor-page.ts`), never a CSS class.
 - A passing U6 means M2 is done.
