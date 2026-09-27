@@ -1,0 +1,11 @@
+/* A project's page: the way back to the library above its title. */
+
+.back {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  align-self: flex-start;
+  min-height: var(--lp-control-height-compact);
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+}

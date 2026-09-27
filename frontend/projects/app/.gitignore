@@ -1,0 +1,3 @@
+# The engine, built from crates/editor-wasm by `cargo xtask build-editor` (tools/prebuild.mjs).
+/src/app/engine/wasm/generated/
+/public/engine/

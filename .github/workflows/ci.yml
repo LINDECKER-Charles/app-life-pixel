@@ -1,0 +1,87 @@
+name: CI
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev, main]
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    uses: ./.github/workflows/_verify.yml
+    permissions:
+      contents: read
+
+  # H14: delivery, on pushes only, once `verify` is green (devops.md, "Branches and promotion").
+  # A push to `dev` fast-forwards `test` to it, builds the images once and deploys them to
+  # staging; a push to `main` retags those images :prod and deploys them to production.
+  promote-test:
+    name: Promote to test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ssh-key: ${{ secrets.PROMOTION_DEPLOY_KEY }}
+          fetch-depth: 0
+      # Without --force: the push fails unless `test` fast-forwards to this commit.
+      - name: Fast-forward test
+        run: git push origin "$GITHUB_SHA:refs/heads/test"
+  build:
+    needs: promote-test
+    uses: ./.github/workflows/_build.yml
+    with:
+      sha: ${{ github.sha }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+  deploy-staging:
+    needs: build
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: staging
+      sha: ${{ github.sha }}
+    # Staging's secrets alone: never `inherit`, which hands every secret to the runner.
+    secrets:
+      ssh_key: ${{ secrets.STAGING_SSH_KEY }}
+      host: ${{ secrets.STAGING_HOST }}
+      ssh_user: ${{ secrets.STAGING_SSH_USER }}
+      deploy_path: ${{ secrets.STAGING_PATH }}
+      env_file: ${{ secrets.ENV_STAGING }}
+      known_hosts: ${{ secrets.STAGING_KNOWN_HOSTS }}
+    permissions:
+      contents: read
+      packages: read
+  promote-images:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    uses: ./.github/workflows/_promote.yml
+    with:
+      sha: ${{ github.sha }}
+    permissions:
+      packages: write
+  deploy-production:
+    needs: promote-images
+    uses: ./.github/workflows/_deploy.yml
+    with:
+      environment: production
+      sha: ${{ github.sha }}
+    # Production's secrets alone, as staging's above.
+    secrets:
+      ssh_key: ${{ secrets.PROD_SSH_KEY }}
+      host: ${{ secrets.PROD_HOST }}
+      ssh_user: ${{ secrets.PROD_SSH_USER }}
+      deploy_path: ${{ secrets.PROD_PATH }}
+      env_file: ${{ secrets.ENV_PROD }}
+      known_hosts: ${{ secrets.PROD_KNOWN_HOSTS }}
+    permissions:
+      contents: read
+      packages: read

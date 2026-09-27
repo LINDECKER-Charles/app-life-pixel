@@ -1,0 +1,43 @@
+.snippet {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+}
+
+.heading {
+  margin: 0;
+  font-size: var(--lp-font-size-body);
+  font-weight: var(--lp-font-weight-bold);
+}
+
+// Two fields a row where they fit; the alternative text takes the whole row.
+.fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: var(--lp-space-3) var(--lp-space-4);
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+// A neutral monospace surface, selectable and scrollable by keyboard.
+.code {
+  max-height: 16rem;
+  padding: var(--lp-space-3);
+  margin: 0;
+  overflow: auto;
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  user-select: text;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-medium);
+}
+
+.copy {
+  display: flex;
+}

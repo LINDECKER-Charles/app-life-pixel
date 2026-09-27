@@ -1,0 +1,27 @@
+<section class="welcome-card lp-card" [attr.aria-labelledby]="id('title')">
+  <img
+    class="illustration"
+    src="/design-system/illustrations/pip-atelier.webp"
+    alt=""
+    width="768"
+    height="576"
+    fetchpriority="high"
+  />
+  <h2 [id]="id('title')">{{ 'editor.welcome.title' | transloco }}</h2>
+  <p class="description">{{ 'editor.welcome.description' | transloco }}</p>
+  <div class="actions">
+    <button type="button" class="lp-button lp-button--primary" (click)="flow.start()">
+      <lp-icon name="plus" />
+      {{ 'editor.welcome.create' | transloco }}
+    </button>
+  </div>
+  @if (!access.signedIn()) {
+    <div class="notice">
+      <lp-icon name="info" size="small" />
+      <p>
+        {{ 'editor.welcome.guest_notice' | transloco }}
+        {{ 'editor.welcome.guest_loss' | transloco }}
+      </p>
+    </div>
+  }
+</section>

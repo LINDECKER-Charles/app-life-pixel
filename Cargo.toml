@@ -1,0 +1,108 @@
+[workspace]
+members = ["crates/*", "tauri", "xtask"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+publish = false
+repository = "https://github.com/LINDECKER-Charles/app-life-pixel"
+
+[workspace.dependencies]
+# One line per dependency, sorted. Each task adds those it uses.
+anyhow = "1.0.104"
+argon2 = "0.6.0"
+async-trait = "0.1.92"
+axum = "0.8.9"
+base64 = "0.23.1"
+brotli = "9.0.0"
+bytes = "1.12.1"
+cargo_metadata = "0.23.1"
+chacha20poly1305 = { version = "0.11.0", default-features = false }
+clap = { version = "4.6.7", features = ["derive"] }
+dirs = "7.0.0"
+dotenvy = "0.15.7"
+fd-lock = "4.0.4"
+flate2 = "1.1.10"
+futures-util = { version = "0.3.34", default-features = false }
+gif = { version = "0.14.2", default-features = false, features = ["std"] }
+governor = "0.10.4"
+hmac = "0.13.0"
+image = { version = "0.25.10", default-features = false }
+ipnet = "2.12.2"
+lettre = { version = "0.11.23", default-features = false }
+life-pixel-compiler = { path = "crates/compiler" }
+life-pixel-core = { path = "crates/core" }
+life-pixel-format = { path = "crates/format" }
+life-pixel-mcp = { path = "crates/mcp" }
+life-pixel-service = { path = "crates/service" }
+metrics = "0.24.6"
+metrics-exporter-prometheus = { version = "0.18.3", default-features = false }
+notify-debouncer-full = "0.7.0"
+object_store = { version = "0.14.2", default-features = false }
+opentelemetry = { version = "0.33.0", default-features = false }
+opentelemetry-otlp = { version = "0.33.0", default-features = false }
+opentelemetry_sdk = { version = "0.33.0", default-features = false }
+png = { version = "0.18.1", default-features = false }
+rand = "0.9.5"
+reqwest = { version = "0.13.5", default-features = false }
+rmcp = { version = "3.4.1", default-features = false }
+rpassword = "7.5.4"
+schemars = "1.2.2"
+semver = "1.0.28"
+serde = { version = "1.0.229", features = ["derive"] }
+serde-wasm-bindgen = "0.6.5"
+serde_bytes = "0.11.19"
+serde_json = "1.0.151"
+sha1 = "0.11.0"
+sha2 = "0.11.0"
+sqlx = { version = "0.9.0", default-features = false }
+subtle = "2.6.1"
+tauri = "2.11.6"
+tauri-build = "2.6.3"
+tauri-plugin-dialog = "2.7.3"
+tauri-plugin-updater = "2.12.0"
+tempfile = "3.27.0"
+thiserror = "2.0.21"
+time = "0.3.55"
+tokio = "1.53.1"
+tokio-util = { version = "0.7.19", default-features = false }
+tower = "0.5.3"
+tower-http = "0.6.11"
+tracing = "0.1.44"
+tracing-opentelemetry = { version = "0.34.0", default-features = false }
+tracing-subscriber = { version = "0.3.23", default-features = false }
+url = "2.5.8"
+utoipa = "6.0.0"
+utoipa-axum = "0.3.0"
+uuid = "1.26.1"
+wasm-bindgen = "0.2.129"
+wasmi = { version = "2.0.0", default-features = false, features = ["std", "validate"] }
+zip = { version = "8.6.0", default-features = false }
+
+[workspace.lints.rust]
+missing_docs = "warn"
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+cognitive_complexity = "warn"
+expect_used = "warn"
+too_many_arguments = "warn"
+too_many_lines = "warn"
+unwrap_used = "warn"
+
+# Argon2id hashes 19 MiB twice: unoptimised, the accounts tests would spend seconds per password.
+[profile.dev.package.argon2]
+opt-level = 3
+
+[profile.dev.package.blake2]
+opt-level = 3
+
+[profile.player]
+inherits = "release"
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,115 @@
+<div class="group" role="group" [attr.aria-label]="'canvas.view.zoom' | transloco">
+  <button
+    type="button"
+    class="lp-icon-button lp-button--compact"
+    [attr.aria-label]="'canvas.shortcut.zoom_out' | transloco"
+    aria-keyshortcuts="-"
+    [lpTooltip]="'canvas.shortcut.zoom_out' | transloco"
+    lpTooltipShortcut="-"
+    lpTooltipPlacement="top"
+    (click)="viewport().zoomBy(-1)"
+  >
+    <lp-icon name="zoom-out" />
+  </button>
+  <output class="zoom" [attr.aria-label]="'canvas.view.zoom' | transloco">
+    {{ 'canvas.view.zoom_value' | transloco: { percent: zoomPercent() } }}
+  </output>
+  <button
+    type="button"
+    class="lp-icon-button lp-button--compact"
+    [attr.aria-label]="'canvas.shortcut.zoom_in' | transloco"
+    aria-keyshortcuts="+"
+    [lpTooltip]="'canvas.shortcut.zoom_in' | transloco"
+    lpTooltipShortcut="+"
+    lpTooltipPlacement="top"
+    (click)="viewport().zoomBy(1)"
+  >
+    <lp-icon name="zoom-in" />
+  </button>
+  <button
+    type="button"
+    class="lp-icon-button lp-button--compact"
+    [attr.aria-label]="'canvas.shortcut.zoom_fit' | transloco"
+    aria-keyshortcuts="0"
+    [lpTooltip]="'canvas.shortcut.zoom_fit' | transloco"
+    lpTooltipShortcut="0"
+    lpTooltipPlacement="top"
+    (click)="viewport().zoomFit()"
+  >
+    <lp-icon name="fit" />
+  </button>
+</div>
+<div class="group">
+  <button
+    type="button"
+    class="lp-icon-button lp-button--compact"
+    [attr.aria-label]="'canvas.view.grid' | transloco"
+    [attr.aria-pressed]="store.showGrid()"
+    aria-keyshortcuts="Shift+G"
+    [lpTooltip]="'canvas.view.grid' | transloco"
+    [lpTooltipShortcut]="shortcut.grid"
+    lpTooltipPlacement="top"
+    (click)="store.toggleGrid()"
+  >
+    <lp-icon name="grid" />
+  </button>
+</div>
+<div class="group" role="group" [attr.aria-label]="'canvas.view.onion_skin' | transloco">
+  <button
+    type="button"
+    class="lp-icon-button lp-button--compact"
+    [attr.aria-label]="'canvas.view.onion_skin' | transloco"
+    [attr.aria-pressed]="store.onionSkin().enabled"
+    aria-keyshortcuts="O"
+    [lpTooltip]="'canvas.view.onion_skin' | transloco"
+    [lpTooltipShortcut]="shortcut.onionSkin"
+    lpTooltipPlacement="top"
+    (click)="store.toggleOnionSkin()"
+  >
+    <lp-icon name="onion-skin" />
+  </button>
+  <label class="count">
+    <span>{{ 'canvas.view.onion_before' | transloco }}</span>
+    <select
+      #before
+      class="lp-input lp-input--compact"
+      [value]="store.onionSkin().before"
+      (change)="setRange(+before.value, store.onionSkin().after)"
+    >
+      @for (count of counts; track count) {
+        <option [value]="count" [selected]="count === store.onionSkin().before">{{ count }}</option>
+      }
+    </select>
+  </label>
+  <label class="count">
+    <span>{{ 'canvas.view.onion_after' | transloco }}</span>
+    <select
+      #after
+      class="lp-input lp-input--compact"
+      [value]="store.onionSkin().after"
+      (change)="setRange(store.onionSkin().before, +after.value)"
+    >
+      @for (count of counts; track count) {
+        <option [value]="count" [selected]="count === store.onionSkin().after">{{ count }}</option>
+      }
+    </select>
+  </label>
+</div>
+<p class="status">
+  <span class="position">
+    @if (position(); as point) {
+      {{ 'canvas.view.position' | transloco: point }}
+    } @else {
+      {{ 'canvas.view.position_none' | transloco }}
+    }
+  </span>
+  @if (frame(); as frame) {
+    <span>{{ 'canvas.view.frame' | transloco: frame }}</span>
+  }
+  @if (layerName(); as name) {
+    <span class="layer">{{ 'canvas.view.layer' | transloco: { name } }}</span>
+  }
+  @if (toolLabelKey(); as key) {
+    <span>{{ key | transloco }}</span>
+  }
+</p>

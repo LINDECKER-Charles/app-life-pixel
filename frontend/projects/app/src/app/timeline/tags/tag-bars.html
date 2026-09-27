@@ -1,0 +1,36 @@
+@if (document(); as document) {
+  <div class="head">
+    <button
+      type="button"
+      class="lp-button lp-button--quiet lp-button--compact"
+      [disabled]="editor.frameSelection() === null"
+      (click)="addTag()"
+    >
+      <lp-icon name="tag" size="small" />
+      {{ 'timeline.tags.add' | transloco }}
+    </button>
+  </div>
+  <div class="track" [style.--lp-frame-count]="frameCount()">
+    @for (tag of document.tags; track tag.name; let index = $index) {
+      <button
+        type="button"
+        class="bar"
+        [style.grid-column]="columnsOf(tag)"
+        [attr.aria-label]="'timeline.tags.edit' | transloco: { name: tag.name }"
+        [attr.aria-describedby]="id('summary-' + index)"
+        (click)="edit(tag)"
+      >
+        <span class="bar-name">{{ tag.name }}</span>
+        @if (tag.loop === 'once') {
+          <span class="bar-once">{{ 'timeline.tags.once' | transloco }}</span>
+        }
+      </button>
+      <span [id]="id('summary-' + index)" class="lp-visually-hidden">
+        {{
+          'timeline.tags.summary'
+            | transloco: { first: tag.first + 1, last: tag.last + 1, loop: tag.loop }
+        }}
+      </span>
+    }
+  </div>
+}

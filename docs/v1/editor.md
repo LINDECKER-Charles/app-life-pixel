@@ -144,14 +144,61 @@ export interface EditorEngine {
 | `settings/agents` | local MCP setup, desktop only | T3 |
 | `**` | not found | U1 |
 
-- **Editor page** (`editor/editor-page.ts`): a grid of regions filled by `<lp-tool-bar>`,
-  `<lp-palette-panel>`, `<lp-canvas>`, `<lp-timeline>` and `<lp-export-button>`. U1 creates each as
-  an empty stub in the folder of the task that fills it (`tools/`, `palette/`, `canvas/`,
-  `timeline/`, `export/`), so that the page never changes afterwards. The page's header holds the
-  animation's title, editable in place (`setTitle`), and a "New" action. With no document — a
-  first visit, or "New" —, a dialog asks for the title and the size, 32 × 32 by default and bounded
-  by the limits, then creates the animation with the translated default layer name; "New" asks
-  first when there is unsaved work.
+- **Editor page** (`editor/editor-page.ts`), laid out after Rose Atelier (D38,
+  `design-system/docs/journeys.md` §2) as a grid of named areas:
+  - `docbar`, the document bar: the animation's title, editable in place (`setTitle`), the save
+    state (`library/save/state/`, see below), the opening status of a saved animation, then New,
+    Save and Export — Export the primary action. All three are native buttons.
+  - `rail`: `<lp-tool-bar>`.
+  - `stage`: `<lp-canvas>`, with its view bar (U2), on the neutral canvas surround. It takes the
+    height left, never less than half the window (`50dvh`): at 1366 × 768 and 1024 × 768 it
+    measures 405 pixels, and a 32 × 32 animation at zoom 8 is seen whole.
+  - `timeline`, up to 11 rem under the rail and the stage: `<lp-timeline>`, the tags over the
+    frame strip and its durations. It gives way to the stage first, and scrolls within itself.
+  - `inspector`, 17 rem wide on the right: Palette (`<lp-palette-panel>`), Layers
+    (`<lp-layer-list>`) and the playback preview (`<lp-playback-preview>`), each under its heading.
+
+  The layout adapts to the window's width (plan C11, `design-system/docs/foundations.md`,
+  "Responsive composition"), with media queries in literal rem:
+  - **From 75 rem**: the areas above, every panel open.
+  - **Below 75 rem**: the inspector shows one panel at a time behind the tabs Palette, Layers and
+    Preview (`editor/inspector-tabs/`, the `tablist` pattern of
+    `design-system/docs/components.md`): Left and Right Arrow move to the previous and next tab,
+    wrapping around, Home and End to the first and last; the focused tab is selected at once, and
+    only the selected one is in the Tab sequence. `InspectorLayout` follows the width through
+    `matchMedia` and turns the sections into tab panels, named by their tab; all the rest adapts
+    in CSS.
+  - **From 48 to 75 rem**: the inspector stays on the right, and the Panels button of the
+    document bar (`aria-expanded`, `aria-controls`) folds it away to widen the stage, or unfolds
+    it.
+  - **Below 48 rem**: one column that scrolls: the document bar, the stage (at least 24 rem, 60 %
+    of the window's height), the rail as rows of buttons that wrap, the frame strip — its commands
+    in a row above the frames — and the tabbed inspector. The rail shows under the stage but
+    comes before it in the focus order. At 320 pixels, nothing but the canvas and the frame
+    strip scrolls sideways (measured by the `visual` project).
+
+  The canvas and the panels are never rebuilt when the layout changes — hidden panels keep their
+  place —, and the view, the selection, the active colour, layer and frame, and the history live
+  in `EditorStore` and `EngineStore`: a change of width, even during a stroke, keeps them all.
+  Each feature fills its component in its own folder (`tools/`, `palette/`, `canvas/`,
+  `timeline/`, `export/`, `library/`), so that the page never changes afterwards.
+- **First visit** (`editor/welcome/`): with no document and no saved animation to open, the stage
+  shows a welcome instead of the canvas, which it makes inert: what can be made, Pip, and one
+  action, "Create animation". A visitor also reads that drawing and exporting need no account and
+  that unsaved work is lost when the page closes or reloads (D37); a signed-in person or the desktop
+  does not. Nothing opens on its own. "Create animation" or "New" opens the new-animation dialog:
+  the title, its default selected and focused, then the width and height in pixels ("px"), 32 × 32
+  by default, each field saying the engine's limits and, when a value falls outside them, why,
+  next to it and keeping what was typed. It creates the animation with the translated default
+  layer name, and the welcome gives way to the canvas; "New" asks first when there is unsaved work.
+- **Save state** (`library/save/state/save-state.ts`), a pure function of `SaveFlow.status`,
+  `EngineStore.hasUnsavedWork` and `CurrentAnimation`, shown as a pill in a live region beside the
+  title: "Not saved" for work the library does not hold, "Unsaved changes" for a saved animation
+  changed since, "Saving…" while a write runs, "Saved" for a saved animation unchanged since it was
+  written or opened — never before the write succeeded —, "Could not save" once a write failed.
+  `SaveFlow` keeps `failed` until the next attempt or the next change to the work; the work stays
+  open and the failure's reason is said in the save dialog, as before. Saving is explicit: nothing
+  claims autosave.
 - **EditorStore** (`editor/editor-store.ts`), the editor's UI state as signals, shared by U2 to U5:
   `tool` (`pencil`, `eraser`, `fill`, `line`, `rectangle`, `select`), `rectangleFilled`,
   `colorIndex`, `activeLayer`, `activeFrame`, `frameSelection` (a range, for tags), `zoom`, `pan`,
@@ -165,11 +212,16 @@ export interface EditorEngine {
   `PreferencesStore` (`settings/preferences-store.ts`), whose web implementation keeps them for the
   page (D37); H7 saves a signed-in person's language in the account, T2 the desktop's choices in
   its settings file.
-- **Design tokens** (`projects/shared/src/styles/`): CSS custom properties `--lp-color-*`,
-  `--lp-space-*`, `--lp-radius-*`, `--lp-font-*`, mapped onto Ionic's variables, with a dark set
-  under `prefers-color-scheme: dark` and the manual theme; contrast AA in both. `:focus-visible`
-  draws a 2-pixel outline in `--lp-color-focus`. Reduced motion shortens every animation and
-  transition to nothing and turns Ionic's animations off.
+- **Design tokens** (`projects/shared/src/styles/`): the Rose Atelier values of
+  `design-system/tokens/tokens.css` (D38) under the production names — CSS custom properties
+  `--lp-color-*`, `--lp-shadow-*`, `--lp-space-*`, `--lp-radius-*`, `--lp-font-*`, `--lp-z-*`,
+  `--lp-duration-*`, `--lp-control-height*` — mapped onto Ionic's variables, with a dark set under
+  `prefers-color-scheme: dark` and the manual theme, and system colours under forced colours;
+  contrast AA in both. `tools/design-tokens/token-parity.test.mjs` keeps each colour equal to its
+  design-system role. The app uses the bundled Nunito face, copied from `design-system/assets/` by
+  `tools/copy-design-assets.mjs`; the admin console keeps the system stack. `:focus-visible` draws
+  a 3-pixel outline in `--lp-color-focus` at a 3-pixel offset. Reduced motion shortens every
+  animation and transition to nothing, zeroes the duration tokens and turns Ionic's animations off.
 - **Unsaved work**: while `hasUnsavedWork`, a `beforeunload` handler asks before the page is left or
   reloaded; nothing is kept in the browser (D37).
 - **Keys**: `shell.`, `settings.`, `editor.`, `not_found.`.
@@ -201,56 +253,73 @@ shell, the settings and the not-found page.
   is one undo step.
 - **Zoom and pan**: zoom 1 to 64; Ctrl or ⌘ with the wheel, pinch, `+` and `-` zoom around the
   pointer; `0` fits the largest integer zoom into the view. Space with a drag, the middle button, or
-  Shift with the arrows pan.
+  Shift with the arrows pan. A new animation opens centred at zoom 8.
+- **View bar** (`canvas/view-bar/`) under the drawing surface: zoom −, + and fit around the zoom in
+  %, grid and onion skin switches, onion skin before/after counts (0 to 3), the pixel under the
+  pointer or the keyboard cursor, frame N of M, the layer and the tool. Its buttons go through the
+  same viewport and `EditorStore` methods as `+`, `-`, `0`, Shift `G` and `O`.
 - **Keyboard**: the canvas is focusable (`role="application"`, a translated label). The arrows move
-  a pixel cursor; Enter or Space applies the tool there — line, rectangle and select take a first
-  press for the start and a second for the end; Alt with the arrows moves the selection one pixel.
-  A polite live region announces the cursor's position and the colour index.
+  a pixel cursor (a white ring inside a black one); Enter or Space applies the tool there — line,
+  rectangle and select take a first press for the start and a second for the end; Alt with the
+  arrows moves the selection one pixel. A polite live region announces the position and colour.
 - **Keys**: `canvas.`.
 
 **Tests** with the mock engine: a pencil drag sends previews then one `paintStroke` with the
 dragged points; line, rectangle, fill and select send their operation; Escape sends nothing; zoom
-and fit arithmetic; the grid threshold; drawing a pixel with the keyboard alone.
+and fit arithmetic; the grid threshold; drawing a pixel with the keyboard alone; the view bar's
+buttons change `EditorStore` as the shortcuts do.
 
 ## U3 — Timeline
 
-`timeline/`: `lp-timeline`.
+`timeline/`: `lp-timeline` holds the tags and the frames. The layers (`timeline/layers/`) and the
+playback preview (`timeline/playback/`) keep their folder but sit in the editor's inspector (C7).
 
-- **Frames**: thumbnails rendered by the engine into 48-pixel boxes, refreshed at most once per
-  animation frame after a change; the active frame highlighted; a duration field per frame,
-  bounded by the limits; add after the active frame, duplicate, delete; reorder by drag and drop or
-  Alt with ← and →; Shift with a click extends `frameSelection`.
-- **Layers**: listed top layer first; add, delete, rename in place, show or hide
-  (`aria-pressed`), reorder by drag and drop or Alt with ↑ and ↓.
-- **Tags**: bars over their frames; "Add tag" on `frameSelection` asks a name and a loop mode;
-  rename, change, delete. Names that break the rules are refused with the engine's error.
-- **Playback preview**: play (`P`) exports the animation as WASM through the engine and plays it
-  in a `<life-pixel>` element, from a `blob:` URL, on the tag holding the active frame or on every
-  frame: the preview is the shipping player, so no timing rule is written in TypeScript. It never
-  starts on its own; any change stops it. The app depends on `@life-pixel/player` as
-  `"file:../player-js"`, and imports it once.
+- **Frames**: numbered engine thumbnails (48-pixel boxes, refreshed at most once per animation
+  frame), each with its duration in ms, bounded by the limits (a refused value shows the one kept).
+  The active frame (pencil icon, strong edge) is distinct from the range (`aria-pressed` on "Frame
+  N") and scrolls into view. Add after it, duplicate, delete (not the last; focus stays on the
+  strip); reorder by drag and drop or Alt with ← and →; Shift with a click extends `frameSelection`.
+- **Layers**, top first: clicking a name makes it the active layer ("Active", `aria-current`), where
+  the next stroke lands. "Rename layer “X”" or a double-click renames (Enter or blur confirms,
+  Escape reverts); "Show layer “X”" is pressed when visible, a hidden layer says Hidden; "Delete
+  layer “X”" spares the last layer, then focuses the new active one; Alt with ↑ and ↓ on the name
+  or a drag reorders. Adding a layer keeps the active one; the canvas still draws hidden layers.
+- **Tags**: bars on their frames' columns, saying the loop mode in words; "Add tag" on
+  `frameSelection` asks a name, a range numbered from 1 and a loop mode, errors shown in place;
+  rename, change, delete ("Edit tag “…”"). Names that break the rules get the engine's error.
+- **Playback preview**: a fixed 10 rem box saying its scope (one tag or all frames) and its state
+  (idle, preparing, loading, playing, failed — an export or player failure is an alert). Play (`P`)
+  exports the animation as WASM through the engine and plays it in a `<life-pixel>` element, from a
+  `blob:` URL, on the tag holding the active frame or on every frame, with `motion="always"` since
+  the artist started it: the preview is the shipping player, so no timing rule is written in
+  TypeScript. It never starts on its own; any change stops it. The app depends on
+  `@life-pixel/player` as `"file:../player-js"`, and imports it once.
 - Shortcuts: `,` and `.` for the previous and next frame, `P`, `O` for onion skin.
 - **Keys**: `timeline.`.
 
-**Tests**: each action sends its operation; reordering with the keyboard; the tag dialog; the
-preview element given the export's URL and the right tag, and stopped by a change.
+**Tests**: each action sends its operation; keyboard reordering; a clicked layer gets the next
+stroke; the active frame apart from the range; the tag dialog; the preview given the export's URL
+and tag, stopped by a change, and a visible message when the export fails.
 
 ## U4 — Palette and tools
 
 `palette/` (`lp-palette-panel`) and `tools/` (`lp-tool-bar`).
 
-- **Palette**: a grid of swatches with their index; entry 0 is a checkerboard, selectable — it is
-  the eraser's colour — but not editable. Selecting sets `colorIndex`; `[` and `]` move through it.
-  Add and edit through a dialog: a colour input, an alpha slider 0 to 255, and a `#rrggbbaa` field
-  kept in sync. Remove; reorder by drag and drop or Alt with the arrows. A full palette disables
-  Add.
-- **Tool bar**: one button per tool, `aria-pressed`, a tooltip with its shortcut; a filled/outlined
-  switch for the rectangle; undo and redo buttons bound to `canUndo` and `canRedo`.
+- **Palette**: swatches "Colour N", the selected one with a double ring and a check mark; entry 0,
+  a checkerboard described as transparent, is selectable — the eraser's colour — but not editable.
+  Selecting sets `colorIndex`; `[` and `]` move through it. "Edit colour N" and "Remove colour N"
+  act on the selection; a full palette disables Add. The dialog keeps a colour input, an alpha
+  slider 0 to 255 and a `#rrggbbaa` field in sync, and says an invalid hex value, keeping the last
+  valid colour. Drag and drop or Alt with the arrows reorder; the moved colour stays selected.
+- **Tool bar**: an icon rail, one button per tool with `aria-pressed` and a tooltip (`lpTooltip`,
+  `ui/tooltip/`) giving its name and shortcut as a key cap — on hover or keyboard focus, closed by
+  Escape, a press or blur, set as `aria-describedby`. "Filled rectangle" follows the rectangle; undo
+  and redo sit side by side (`canUndo`, `canRedo`); the import buttons are icons.
 - **Import**: "Import image" picks a PNG and applies `importImage` on the active layer and frame,
   at the top-left corner; "Import sprite sheet" picks a PNG, asks the cell size and the frames'
   duration, and applies `importSpriteSheet` after the active frame. Files larger than the limits
   are refused before they are read.
-- **Shortcuts** and the help dialog:
+- **Shortcuts** and the help dialog, which shows the keys as key caps:
 
 | Key | Action | Key | Action |
 |---|---|---|---|
@@ -271,19 +340,27 @@ oversized file is refused; every shortcut, and none while typing in a field.
 
 `export/`: `lp-export-button` and the dialog it opens (also Ctrl/⌘ `E`).
 
-- **Formats**: WASM, GIF, APNG, sprite sheet, PNG frames. When the dialog opens, the engine exports
-  each in turn; every row shows the raw size and the gzip size — measured with `CompressionStream`
-  —, formatted with `Intl`, and the lightest is marked. Options: the tag (all frames or one tag),
-  and the scale for the raster formats, bounded by the limits.
+- **Dialog** (Rose Atelier's anatomy, `design-system/docs/components.md`): the title, a context
+  line (the animation's title, its size in px and its frame count), the scrolling content, a note
+  that exporting creates files and does not save the animation, an inline failure, then "Back to
+  editing".
+- **Formats**: WASM, GIF, APNG, sprite sheet, PNG frames, each with a line on what it is for. When
+  the dialog opens, the engine exports each in turn; a row says "Exporting…", then its raw size and
+  its gzip size — measured with `CompressionStream` —, formatted with `Intl`, or "Could not
+  export"; the lightest says "Smallest" in words. Options: the tag (all frames or one tag), and the
+  scale for the raster formats, bounded by the limits.
 - **Download**: through `ExportSaver` (`export/export-saver.ts`): the web implementation downloads
   each file from a `Blob`; T2 adds the desktop one. WASM gives two files: `<stem>.wasm` and
-  `life-pixel.js`, the loader. After a download, the dialog calls the `EXPORT_OBSERVER` token
+  `life-pixel.js`, the loader. The row's button says "Downloading…" meanwhile; a success is
+  announced in a status with Pip, small, beside it; a failure says the format, that the animation is
+  unchanged, and to try again — without Pip. After a download, the dialog calls the `EXPORT_OBSERVER` token
   (`export/export-observer.ts`) with the format and the size; its default does nothing, and H13
   provides the hosted one, which records the product event.
 - **Snippets**: a framework picker, the animation's URL (`/assets/<stem>.wasm` by default), the
   loader's (`/assets/life-pixel.js`), the tag and the alternative text (the title by default); the
-  code comes from `engine.snippet`, with a copy button and a translated hint on where each file
-  goes (`export.snippet.hint.<framework>`).
+  code comes from `engine.snippet`, with a copy button that says "Copied", or that copying failed
+  and to select the code, and a translated hint on where each file goes
+  (`export.snippet.hint.<framework>`).
 - **Keys**: `export.`.
 
 **Tests**: every format listed with its sizes; options re-export; downloads go through
@@ -349,12 +426,22 @@ browser, through Vitest's browser mode (`test:engine`); recovery after a forced 
 
 `frontend/e2e/editor/`, Playwright project `editor`, `npm run e2e`; the web server is `npm start`.
 
-- **Journey**: open `/editor`; draw with the pencil, the line and the fill; add a frame and draw on
-  it; set durations; tag the second frame `blink`, played once; undo and redo; open the export
-  dialog and see the five formats with their sizes; download the WASM export and the loader; play
-  them in a page served through `page.route`, and read back, with `getImageData`, the pixels drawn
-  on each frame, and `tagend` after `blink`.
-- **Keyboard**: the same drawing done with the keyboard alone.
-- **Accessibility**: `@axe-core/playwright` on the editor, the export dialog, the settings and the
-  shortcuts dialog, with no serious or critical violation.
+- **Journey**: open `/editor` for a first visit and see the welcome; "Create animation", create a
+  16 × 16 animation; draw with the pencil, the line and the fill; add a frame, then a layer, choose
+  that layer in the inspector (`aria-current`, "Layer: Layer" in the view bar) and draw on it; set
+  durations; tag the first frame `idle` and the second `blink`, played once; undo and redo; play
+  the preview in the inspector, then stop it; open the export dialog and see the five formats with
+  their sizes; download the WASM export and the loader; play them in a page served through
+  `page.route`, and read back, with `getImageData`, the pixels drawn on each frame, and `tagend`
+  after `blink`.
+- **Keyboard**: the same journey with the keyboard alone: every control reached with Tab, tools,
+  colours, frames and the preview by their shortcuts, pixels with the arrows and Enter, the layer
+  chosen with Enter on its name.
+- **Accessibility**: `@axe-core/playwright` (WCAG 2.2 AA tags) on the welcome, the editor, the
+  export dialog, the shortcuts dialog and the settings, then at 390 pixels on the welcome, the
+  editor with each inspector tab — Palette, Layers, Preview — and the export dialog, with no
+  serious or critical violation. axe runs once the page's finite animations have ended, so that a
+  dialog fading in is not measured at part of its opacity. The hosted suite (`e2e/hosted/`) runs
+  axe on the library, its dialogs and the account pages.
+- **Locators**: roles and accessible names only (`e2e/editor/editor-page.ts`), never a CSS class.
 - A passing U6 means M2 is done.

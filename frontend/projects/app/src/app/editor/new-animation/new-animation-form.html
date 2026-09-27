@@ -1,0 +1,111 @@
+<form class="form" novalidate (submit)="submit($event)">
+  <div class="lp-dialog__body">
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('title')">
+        {{ 'editor.new.title_field' | transloco }}
+      </label>
+      <p [id]="id('title-hint')" class="lp-field__hint">
+        {{ 'editor.new.title_hint' | transloco: { max: limits().nameMaxChars } }}
+      </p>
+      <input
+        #titleField
+        [id]="id('title')"
+        class="lp-input"
+        type="text"
+        autocomplete="off"
+        required
+        [value]="title()"
+        [attr.maxlength]="limits().nameMaxChars"
+        [attr.aria-invalid]="!isTitleValid()"
+        [attr.aria-describedby]="
+          isTitleValid() ? id('title-hint') : id('title-hint') + ' ' + id('title-error')
+        "
+        (input)="title.set(titleField.value)"
+      />
+      @if (!isTitleValid()) {
+        <p [id]="id('title-error')" class="lp-field__error">
+          <lp-icon name="error" size="small" />
+          {{ 'editor.new.title_error' | transloco: { max: limits().nameMaxChars } }}
+        </p>
+      }
+    </div>
+    <fieldset class="lp-fieldset" [attr.aria-describedby]="id('size-hint')">
+      <legend>{{ 'editor.new.size' | transloco }}</legend>
+      <p [id]="id('size-hint')" class="lp-field__hint">
+        {{ 'editor.new.size_hint' | transloco: bounds() }}
+      </p>
+      <div class="sides">
+        <div class="lp-field">
+          <label class="lp-field__label" [for]="id('width')">
+            {{ 'editor.new.width' | transloco }}
+          </label>
+          <div class="lp-field__control">
+            <input
+              #widthField
+              [id]="id('width')"
+              class="lp-input"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="bounds().min"
+              [max]="bounds().max"
+              [value]="width()"
+              [attr.aria-invalid]="!isWidthValid()"
+              [attr.aria-describedby]="isWidthValid() ? null : id('width-error')"
+              (input)="width.set(widthField.valueAsNumber)"
+            />
+            <span class="lp-field__unit" aria-hidden="true">{{
+              'editor.new.unit' | transloco
+            }}</span>
+          </div>
+          @if (!isWidthValid()) {
+            <p [id]="id('width-error')" class="lp-field__error">
+              <lp-icon name="error" size="small" />
+              {{ 'editor.new.side_error' | transloco: bounds() }}
+            </p>
+          }
+        </div>
+        <div class="lp-field">
+          <label class="lp-field__label" [for]="id('height')">
+            {{ 'editor.new.height' | transloco }}
+          </label>
+          <div class="lp-field__control">
+            <input
+              #heightField
+              [id]="id('height')"
+              class="lp-input"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="bounds().min"
+              [max]="bounds().max"
+              [value]="height()"
+              [attr.aria-invalid]="!isHeightValid()"
+              [attr.aria-describedby]="isHeightValid() ? null : id('height-error')"
+              (input)="height.set(heightField.valueAsNumber)"
+            />
+            <span class="lp-field__unit" aria-hidden="true">{{
+              'editor.new.unit' | transloco
+            }}</span>
+          </div>
+          @if (!isHeightValid()) {
+            <p [id]="id('height-error')" class="lp-field__error">
+              <lp-icon name="error" size="small" />
+              {{ 'editor.new.side_error' | transloco: bounds() }}
+            </p>
+          }
+        </div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="lp-dialog__actions">
+    <button type="submit" class="lp-button lp-button--primary" [disabled]="!isValid()">
+      {{ 'editor.new.create' | transloco }}
+    </button>
+    <button type="button" class="lp-button lp-button--secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+  </div>
+</form>

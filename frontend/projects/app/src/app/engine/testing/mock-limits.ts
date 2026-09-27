@@ -1,0 +1,45 @@
+import type { Limits } from '../engine-types';
+
+/**
+ * `core::limits`, transcribed (core.md's Limits table): the mock needs no engine load to know
+ * them, unlike `WasmEditorEngine`, whose `starting` status covers that wait.
+ */
+export const MOCK_LIMITS: Limits = {
+  canvasMinSide: 1,
+  canvasMaxSide: 512,
+  maxFrames: 1024,
+  maxLayers: 64,
+  maxTags: 64,
+  maxCelPixels: 16_777_216,
+  maxPaletteEntries: 256,
+  minFrameDurationMs: 10,
+  maxFrameDurationMs: 65_535,
+  defaultFrameDurationMs: 100,
+  nameMaxChars: 100,
+  tagNameMaxChars: 32,
+  maxDocumentBytes: 33_554_432,
+  importMaxSide: 4096,
+  importMaxBytes: 16_777_216,
+  strokeMaxPoints: 10_000,
+  drawMaxOperations: 1000,
+  historyMaxSteps: 200,
+  historyMaxBytes: 67_108_864,
+  exportMinScale: 1,
+  exportMaxScale: 16,
+  exportMaxSide: 8192,
+  previewMaxSide: 1024,
+  previewMaxBytes: 1_048_576,
+  passwordMinChars: 12,
+  passwordMaxChars: 128,
+  emailMaxChars: 254,
+  supportMessageMaxChars: 5000,
+  screenshotMaxBytes: 5_242_880,
+  screenshotMaxSide: 4096,
+  tokenNameMaxChars: 60,
+  tokenExpiryDays: [30, 90, 365],
+  maxActiveTokens: 20,
+  pageSizeDefault: 50,
+  pageSizeMax: 100,
+  mcpPageSizeDefault: 20,
+  mcpPageSizeMax: 50,
+};

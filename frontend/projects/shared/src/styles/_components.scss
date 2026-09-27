@@ -1,0 +1,14 @@
+// The shared component classes of the app (plan C4, design-system/docs/components.md): buttons,
+// fields, pills, banners, cards and panels, the dialog anatomy, the page template, tabs and menus.
+// Components use these classes instead of restyling `button {}` or `input {}` themselves; each
+// partial lists its classes and their markup. Every value is a token, every interactive state has
+// a hover, a focus-visible (_accessibility.scss), a disabled and, where it applies, a pressed or
+// selected look; transitions use the duration tokens, which reduced motion sets to zero.
+// frontend/projects/app/src/app/ui/README.md indexes them with the shared Angular components.
+@forward 'components/buttons';
+@forward 'components/fields';
+@forward 'components/feedback';
+@forward 'components/surfaces';
+@forward 'components/dialog';
+@forward 'components/page';
+@forward 'components/navigation';

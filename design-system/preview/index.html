@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Life Pixel</title>
+    <link rel="icon" href="../assets/mark.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../tokens/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/shell.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/studio.css" />
+    <script type="module" src="scripts/main.mjs"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="skip"></a>
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="Life Pixel">
+        <img src="../assets/mark.svg" width="32" height="32" alt="" />
+        <span>life pixel<span class="brand-caption" data-i18n="brand_caption"></span></span>
+      </a>
+      <p class="nav-heading" data-i18n="nav_heading"></p>
+      <nav data-i18n-label="navigation">
+        <a href="#overview" data-section="overview" aria-current="page">
+          <span class="nav-number">01</span><span data-i18n="nav.overview"></span>
+        </a>
+        <a href="#foundations" data-section="foundations">
+          <span class="nav-number">02</span><span data-i18n="nav.foundations"></span>
+        </a>
+        <a href="#components" data-section="components">
+          <span class="nav-number">03</span><span data-i18n="nav.components"></span>
+        </a>
+        <a href="#studio" data-section="studio">
+          <span class="nav-number">04</span><span data-i18n="nav.studio"></span>
+        </a>
+        <a href="#journeys" data-section="journeys">
+          <span class="nav-number">05</span><span data-i18n="nav.journeys"></span>
+        </a>
+      </nav>
+      <div class="sidebar-note">
+        <img src="../assets/sprout.svg" width="52" height="52" alt="" />
+        <p data-i18n="sidebar_note"></p>
+        <span class="eyebrow" data-i18n="edition"></span>
+      </div>
+      <a class="documentation-link" href="../README.md" data-i18n="documentation"></a>
+    </aside>
+    <div class="page">
+      <header class="topbar">
+        <div class="breadcrumb">
+          <span>Life Pixel</span><span aria-hidden="true">/</span>
+          <span data-i18n="brand_caption"></span>
+        </div>
+        <div class="preferences">
+          <label class="sr-only" for="language" data-i18n="language"></label>
+          <select id="language">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+          </select>
+          <button
+            class="theme-button"
+            id="theme"
+            type="button"
+            aria-pressed="false"
+            data-i18n-label="dark_theme"
+          >
+            <span aria-hidden="true">◐</span>
+          </button>
+        </div>
+      </header>
+      <main id="main" tabindex="-1" aria-busy="true"></main>
+      <footer class="footer">
+        <span data-i18n="footer"></span><span>Life Pixel · 0.1.0</span>
+      </footer>
+    </div>
+    <div class="toast" id="toast" role="status" hidden></div>
+    <dialog id="create-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description">
+      <form id="create-form" novalidate>
+        <span class="eyebrow" data-i18n="dialog.eyebrow"></span>
+        <h2 id="dialog-title" data-i18n="dialog.title"></h2>
+        <p id="dialog-description" data-i18n="dialog.description"></p>
+        <label for="animation-name" data-i18n="dialog.name"></label>
+        <input
+          id="animation-name"
+          name="name"
+          required
+          maxlength="80"
+          aria-describedby="name-error"
+          autocomplete="off"
+        />
+        <p id="name-error" class="field-error" hidden data-i18n="dialog.error"></p>
+        <div class="dialog-actions">
+          <button
+            type="button"
+            class="button secondary"
+            id="cancel-dialog"
+            data-i18n="dialog.cancel"
+          ></button>
+          <button type="submit" class="button primary" data-i18n="dialog.submit"></button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

@@ -134,10 +134,12 @@ create table mcp_usage (
 `frontend/projects/app/src/app/tokens/`, route `settings/tokens`, hosted only through T2's
 `hostedOnly` guard: the list, with name, prefix,
 scopes, dates and last use; a creation dialog — name, scopes (`read` and `write` checked), expiry
-(90 days by default) — that shows the token once, with a copy button and the command to register
+(90 days by default) — that shows the token once, with a copy button and the commands to register
 it, built from the answer's `mcp`: `claude mcp add --transport http <serverName> <url> --header
-"Authorization: Bearer <token>"` — so that staging and production get distinct names in one
-client; revocation with a confirmation. **Keys**: `tokens.`.
+"Authorization: Bearer <token>"`, and `codex mcp add <serverName> --url <url>
+--bearer-token-env-var <SERVER_NAME>_TOKEN` — Codex reads the token from that variable — so that
+staging and production get distinct names in one client; revocation with a confirmation.
+**Keys**: `tokens.`.
 
 **Tests** (`stack-tests`): authentication failures; scopes; the rate limit; the daily ceiling and
 its reset at midnight UTC; token creation, listing, revocation, expiry; links — valid, tampered,

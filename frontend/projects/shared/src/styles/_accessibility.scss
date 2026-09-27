@@ -1,0 +1,60 @@
+// Visible focus, reduced motion and the visually hidden utility (WCAG 2.2 AA).
+
+// "Nothing", yet long enough for `animationend` and `transitionend` to fire.
+$reduced-duration: 0.01ms;
+
+// 3 px at a 3 px offset (design-system/docs/accessibility.md): leave room for it, since clipping
+// overflow would crop it.
+@mixin focus-outline {
+  outline: var(--lp-focus-width) solid var(--lp-color-focus);
+  outline-offset: var(--lp-focus-offset);
+}
+
+:focus-visible {
+  @include focus-outline;
+}
+
+// Ionic's controls take the focus inside their shadow root and mark their host `ion-focused`.
+.ion-focusable.ion-focused {
+  @include focus-outline;
+}
+
+// The motion tokens drop to zero too, for components that time their own transitions with them.
+@mixin reduced-motion {
+  --lp-duration-fast: 0ms;
+  --lp-duration-normal: 0ms;
+  --lp-duration-slow: 0ms;
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: $reduced-duration !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: $reduced-duration !important;
+    transition-delay: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    @include reduced-motion;
+  }
+}
+
+:root[data-motion='reduce'] {
+  @include reduced-motion;
+}
+
+.lp-visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

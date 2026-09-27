@@ -1,0 +1,35 @@
+{
+  "frames": [
+    {
+      "durationMs": 10,
+      "rgba": "ff0000ff00ff00ff00ff00ffff0000ff"
+    },
+    {
+      "durationMs": 40,
+      "rgba": "ff0000ff0000000000000000ff0000ff"
+    },
+    {
+      "durationMs": 1000,
+      "rgba": "00000000000000000000000000000000"
+    },
+    {
+      "durationMs": 65535,
+      "rgba": "00ff00ff00ff00ff00ff00ff00ff00ff"
+    },
+    {
+      "durationMs": 100,
+      "rgba": "00ff00ff000000000000000000000000"
+    }
+  ],
+  "height": 2,
+  "tags": [
+    {
+      "first": 1,
+      "last": 3,
+      "loop": "once",
+      "name": "blink"
+    }
+  ],
+  "title": "Blink — 2!",
+  "width": 2
+}

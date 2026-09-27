@@ -1,0 +1,20 @@
+// The form spans the dialog under its title: its body scrolls, its actions stay.
+:host,
+.form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+// Width and height side by side where they fit.
+.sides {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+  gap: var(--lp-space-3) var(--lp-space-4);
+  align-items: start;
+}
+
+.duration {
+  max-width: 11rem;
+}

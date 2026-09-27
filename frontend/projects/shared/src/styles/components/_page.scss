@@ -1,0 +1,90 @@
+// The page template (plan C6): every routed page but the editor is `ion-content` > `.lp-page`,
+// headed by one `h1`. No `<main>`: the router outlet is the main landmark already.
+//
+//   <ion-content>
+//     <div class="lp-page lp-page--reading">
+//       <header class="lp-page-header">
+//         <div class="lp-page-header__text">
+//           <h1 class="lp-page-header__title">…</h1>
+//           <p class="lp-page-header__lead">…</p>
+//         </div>
+//         <div class="lp-page-header__actions">…</div>
+//       </header>
+//       …
+//     </div>
+//   </ion-content>
+//
+//   .lp-page            content width (80 rem): the library, tables
+//   .lp-page--reading   reading width (48 rem): settings, account, forms, legal text
+
+.lp-page {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-5);
+  width: 100%;
+  max-width: var(--lp-layout-content);
+  padding: var(--lp-space-5) var(--lp-space-4) var(--lp-space-6);
+  margin-inline: auto;
+}
+
+.lp-page--reading {
+  max-width: var(--lp-layout-reading);
+}
+
+@media (min-width: 48rem) {
+  .lp-page {
+    padding: var(--lp-space-6) var(--lp-space-5);
+  }
+}
+
+.lp-page-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-3) var(--lp-space-5);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.lp-page-header__text {
+  display: grid;
+  flex: 1 1 20rem;
+  gap: var(--lp-space-2);
+  min-width: 0;
+}
+
+.lp-page-header__title {
+  margin: 0;
+  font-size: var(--lp-font-size-heading);
+  line-height: var(--lp-font-line-height-heading);
+}
+
+.lp-page-header__lead {
+  max-width: var(--lp-measure-copy);
+  margin: 0;
+  font-size: var(--lp-font-size-lead);
+  color: var(--lp-color-text-muted);
+}
+
+.lp-page-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+}
+
+// A section of a page: its `h2` and what follows.
+.lp-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+
+  > h2 {
+    margin: 0;
+    font-size: var(--lp-font-size-title);
+  }
+}
+
+// The page the skip link focuses fills its box: the ring goes inside, where nothing clips it.
+.lp-skip-target:focus-visible {
+  outline-offset: calc(-1 * var(--lp-focus-width));
+}

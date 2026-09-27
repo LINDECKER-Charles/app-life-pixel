@@ -1,0 +1,159 @@
+<ion-modal
+  class="lp-modal"
+  [isOpen]="kind() !== null"
+  [attr.aria-label]="titleKey() | transloco"
+  [lpModalLabel]="titleKey() | transloco"
+  (didDismiss)="onDismissed($event)"
+>
+  <ng-template>
+    <div class="lp-dialog">
+      <div class="lp-dialog__header">
+        <h2 class="lp-dialog__title">{{ titleKey() | transloco }}</h2>
+      </div>
+      @switch (kind()) {
+        @case ('sign-in') {
+          <p class="lp-dialog__context">{{ 'library.save.sign_in.message' | transloco }}</p>
+          <div class="lp-dialog__actions">
+            <button
+              type="button"
+              class="lp-button lp-button--primary"
+              (click)="prompts.answerSignIn('sign-in')"
+            >
+              {{ 'library.save.sign_in.sign_in' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.answerSignIn('sign-up')"
+            >
+              {{ 'library.save.sign_in.sign_up' | transloco }}
+            </button>
+            <button type="button" class="lp-button lp-button--quiet" (click)="prompts.dismiss()">
+              {{ 'library.save.dialog.keep_editing' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('project') {
+          <lp-project-picker
+            (chosen)="prompts.answerProject($event)"
+            (cancelled)="prompts.dismiss()"
+          />
+        }
+        @case ('conflict') {
+          <p class="lp-dialog__context">{{ 'library.save.conflict.message' | transloco }}</p>
+          <div class="lp-dialog__body">
+            <ul class="choices">
+              <li class="choice">
+                <span class="choice__name">
+                  {{ 'library.save.conflict.copy' | transloco }}
+                  <span class="lp-pill lp-pill--success">
+                    {{ 'library.save.conflict.recommended' | transloco }}
+                  </span>
+                </span>
+                <span [id]="id('conflict-copy')">
+                  {{ 'library.save.conflict.copy_consequence' | transloco }}
+                </span>
+              </li>
+              <li class="choice">
+                <span class="choice__name">{{ 'library.save.conflict.reload' | transloco }}</span>
+                <span [id]="id('conflict-reload')">
+                  {{ 'library.save.conflict.reload_consequence' | transloco }}
+                </span>
+              </li>
+              <li class="choice">
+                <span class="choice__name">{{
+                  'library.save.conflict.overwrite' | transloco
+                }}</span>
+                <span [id]="id('conflict-overwrite')">
+                  {{ 'library.save.conflict.overwrite_consequence' | transloco }}
+                </span>
+              </li>
+            </ul>
+          </div>
+          <!-- The safe way out comes first; the two that replace work only after it. -->
+          <div class="lp-dialog__actions">
+            <button
+              type="button"
+              class="lp-button lp-button--primary"
+              [attr.aria-describedby]="id('conflict-copy')"
+              (click)="prompts.answerConflict('copy')"
+            >
+              {{ 'library.save.conflict.copy' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.dismiss()"
+            >
+              {{ 'library.save.dialog.keep_editing' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--danger"
+              [attr.aria-describedby]="id('conflict-reload')"
+              (click)="prompts.answerConflict('reload')"
+            >
+              {{ 'library.save.conflict.reload' | transloco }}
+            </button>
+            <button
+              type="button"
+              class="lp-button lp-button--danger"
+              [attr.aria-describedby]="id('conflict-overwrite')"
+              (click)="prompts.answerConflict('overwrite')"
+            >
+              {{ 'library.save.conflict.overwrite' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('quota') {
+          <p class="lp-dialog__context">{{ 'library.save.quota.explanation' | transloco }}</p>
+          <div class="lp-dialog__body">
+            @if (quota(); as usage) {
+              <p class="usage">
+                @if (usage.limitBytes !== null) {
+                  {{
+                    'library.save.quota.usage'
+                      | transloco: { used: usage.usedBytes, limit: usage.limitBytes }
+                  }}
+                } @else {
+                  {{ 'library.save.quota.usage_unavailable' | transloco }}
+                }
+              </p>
+            }
+          </div>
+          <div class="lp-dialog__actions">
+            <a
+              class="lp-button lp-button--primary"
+              routerLink="/library"
+              (click)="prompts.dismiss()"
+            >
+              {{ 'library.save.quota.library_link' | transloco }}
+            </a>
+            <button
+              type="button"
+              class="lp-button lp-button--secondary"
+              (click)="prompts.dismiss()"
+            >
+              {{ 'library.save.dialog.keep_editing' | transloco }}
+            </button>
+          </div>
+        }
+        @case ('failure') {
+          <p class="lp-dialog__context">{{ 'library.save.failure.kept' | transloco }}</p>
+          <div class="lp-dialog__failure">
+            @if (failure(); as failure) {
+              <lp-status-banner variant="danger">
+                <p>{{ 'errors.' + failure.code | transloco: failure.params }}</p>
+              </lp-status-banner>
+            }
+          </div>
+          <div class="lp-dialog__actions">
+            <button type="button" class="lp-button lp-button--primary" (click)="prompts.dismiss()">
+              {{ 'common.close' | transloco }}
+            </button>
+          </div>
+        }
+      }
+    </div>
+  </ng-template>
+</ion-modal>

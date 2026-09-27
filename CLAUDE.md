@@ -9,9 +9,10 @@ self-contained WebAssembly bundle of a few kilobytes that any web page or webvie
 a dependency. The product ships as a hosted service (web and Android), a desktop app and a
 self-hostable server, and AI agents drive it through an MCP server.
 
-**Status: design phase.** There is no application code yet. `docs/` is the specification, and
-the layout, commands and rules below are the target the first code must follow. When code and
-documentation disagree, fix one of them in the same pull request.
+**Status: V1 built.** M1 to M5 are merged and verified on the integration branch: `docs/` is the
+specification the code follows, and the layout, commands and rules below are those the code
+actually implements today. When code and documentation disagree, fix one of them in the same pull
+request.
 
 ## Language
 
@@ -28,6 +29,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 | [docs/v1/](docs/v1/README.md) | V1's technical design: scope, method, and what each task builds and how it is tested |
 | [docs/architecture.md](docs/architecture.md) | components, crates, data flow, distributions |
 | [docs/export.md](docs/export.md) | how an animation becomes a WASM bundle, and how an app plays it |
+| [crates/format/README.md](crates/format/README.md) | the payload and the player ABI, byte by byte |
 | [docs/mcp.md](docs/mcp.md) | MCP tools, transports, authentication, limits |
 | [docs/admin-console.md](docs/admin-console.md) | the admin, support and metrics console |
 | [docs/pricing.md](docs/pricing.md) | plans, storage quota, billing rules |
@@ -35,6 +37,7 @@ a user-facing string — see [docs/i18n.md](docs/i18n.md).
 | [docs/security-model.md](docs/security-model.md) | threat model, supply chain, privacy |
 | [docs/i18n.md](docs/i18n.md) | languages, catalogues, adding a language |
 | [docs/decisions.md](docs/decisions.md) | the decision log: accepted, proposed, open |
+| [design-system/](design-system/README.md) | Rose Atelier, the design system every interface follows: tokens, assets, components, journeys, patterns, content, accessibility |
 
 A **proposed** decision is not settled: do not build on it without the maintainer's go-ahead.
 
@@ -162,6 +165,7 @@ Commit convention (maintained by /commit, initialised by /b-hive-init).
   - `scripts/**` → `scripts`
   - `xtask/**` → `xtask`
   - `samples/**` → `samples`
+  - `design-system/**` → `design-system`
   - cross-cutting files at the root (`Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`,
     `rustfmt.toml`, `clippy.toml`, `deny.toml`, `.nvmrc`, `.editorconfig`, `.gitignore`,
     `.gitattributes`, `LICENSE`, `LICENSE-MIT`) → no scope: `build` for dependencies and
@@ -295,6 +299,25 @@ to depart from them.
 - Accessibility targets WCAG 2.2 AA: keyboard-reachable, labelled controls, visible focus,
   sufficient contrast, `prefers-reduced-motion` honoured.
 
+### Interface
+
+- Read `design-system/docs/` before building or changing any interface — the README's reading
+  order first. Rose Atelier is the accepted direction (D38); add no product feature on its behalf.
+- Style with the semantic tokens of `frontend/projects/shared/src/styles/_tokens.scss`: no
+  hard-coded colour in a stylesheet. The only literal colours are the named checkerboard and grid
+  constants of the canvas renderer.
+- Buttons, fields, banners, cards and dialog action bars use the shared classes of
+  `frontend/projects/shared/src/styles/_components.scss`; a component never restyles `button {}`
+  or `input {}` itself. Buttons are native `<button>`s; Ionic keeps `ion-app`, the router outlet,
+  `ion-content`, `ion-modal` and `ion-alert`.
+- Pip, the mascot, appears only in the welcome, empty states and a successful export — never in
+  errors, deletions, quotas, authentication or the admin console. Icons go through `lp-icon`,
+  hidden from assistive technology; never an emoji as an icon.
+- The canvas and its checkerboard stay neutral in both themes: a theme never recolours artwork.
+- Review every interface change on screenshots of the real app: `npm run e2e:visual --prefix
+  frontend` captures each screen at 1440, 1024, 768 and 390 px, light and dark, English and
+  French, in `frontend/e2e/visual/output/`.
+
 ### HTTP API
 
 - JSON over HTTPS under `/api/v1`, described by an OpenAPI document generated from the Rust code.
@@ -327,9 +350,26 @@ is scaffolded, and CI runs the same ones.
 cargo fmt --all --check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo test --workspace
+cargo test -p life-pixel-server --features stack-tests  # needs the local stack and a .env
+cargo test -p life-pixel-admin-server --features stack-tests  # needs the local stack and a .env
 cargo deny check
-npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend
+cargo xtask check-boundaries
+cargo xtask build-player --check
+cargo xtask build-desktop --debug
+npm ci --prefix tauri/tests/e2e && npm run lint --prefix tauri/tests/e2e  # the suite: on Linux
+npm run lint --prefix frontend && npm run test:ci --prefix frontend && npm run build --prefix frontend && npm run i18n:check --prefix frontend
+npm run test:engine --prefix frontend
+npm run e2e:visual --prefix frontend  # any interface change: review the screenshots it writes
+npm run api:generate --prefix frontend && git diff --exit-code -- crates/server/openapi.json frontend/projects/shared/src/lib/api/schema.d.ts crates/admin-server/openapi.json frontend/projects/shared/src/lib/admin-api/schema.d.ts
+npm run build --prefix player-js && git diff --exit-code -- player-js/life-pixel.js && npm test --prefix player-js && npm run size --prefix player-js
 cmp CLAUDE.md AGENTS.md
+docker run --rm -v "$PWD":/repo -w /repo hadolint/hadolint@sha256:32dac94127fd60b7b7e3fbfc65e1383b9b5e25c9bfd7b8536de7a539fe68a12d hadolint docker/app.Dockerfile docker/admin.Dockerfile
+docker compose --env-file .env.example --profile app config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.staging.example config --quiet && docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.example config --quiet && docker compose -f docker/selfhost/compose.yaml --env-file docker/selfhost/.env.example config --quiet
+docker build -f docker/app.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/app:local . && docker build -f docker/admin.Dockerfile -t ghcr.io/lindecker-charles/life-pixel/admin:local .
+docker compose --profile app up -d --wait --no-build && curl -f http://127.0.0.1:8460/healthz  # the images above, on the local stack
+docker run --rm -v "$PWD":/repo -w /repo koalaman/shellcheck@sha256:bb596a0d169b85ddd81d8b6d3a2ff6d5baf5fca10b97f575ebc647c3dff62b3d scripts/deploy/deploy.sh
+DEPLOY_DRY_RUN=1 DEPLOY_SHA=HEAD DEPLOY_PATH=/opt/life-pixel-staging DEPLOY_ENV_FILE=.env.staging.example DEPLOY_REGISTRY_USER=ci DEPLOY_REGISTRY_TOKEN_FILE=/dev/null scripts/deploy/deploy.sh
+docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
 ## Security

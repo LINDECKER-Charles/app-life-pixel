@@ -1,0 +1,77 @@
+<div class="scroller" role="region" [attr.aria-labelledby]="id('caption')">
+  <table class="table" [attr.aria-busy]="isPreparing()">
+    <caption [id]="id('caption')" class="lp-visually-hidden">
+      {{
+        'export.table.caption' | transloco
+      }}
+    </caption>
+    <thead>
+      <tr>
+        <th scope="col">{{ 'export.table.format' | transloco }}</th>
+        <th scope="col" class="size">{{ 'export.table.raw' | transloco }}</th>
+        <th scope="col" class="size">{{ 'export.table.gzip' | transloco }}</th>
+        <th scope="col">
+          <span class="lp-visually-hidden">{{ 'export.table.download' | transloco }}</span>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of rows(); track row.format) {
+        <tr [class.smallest]="row.format === smallest()">
+          <th scope="row">
+            <span class="name">{{ 'export.format.' + row.format | transloco }}</span>
+            @if (row.format === smallest()) {
+              <span class="lp-pill lp-pill--success">
+                <lp-icon name="check" size="small" />
+                {{ 'export.table.lightest' | transloco }}
+              </span>
+            }
+            <span class="use">{{ 'export.format_use.' + row.format | transloco }}</span>
+          </th>
+          <td class="size">
+            @switch (row.status) {
+              @case ('ready') {
+                <span class="value">{{ rawSize(row) }}</span>
+              }
+              @case ('loading') {
+                <span class="state">{{ 'export.table.loading' | transloco }}</span>
+              }
+              @case ('failed') {
+                <span class="state failed">
+                  <lp-icon name="error" size="small" />
+                  {{ 'export.table.failed' | transloco }}
+                </span>
+              }
+            }
+          </td>
+          <td class="size">
+            @if (row.status === 'ready') {
+              <span class="value">{{ gzipSize(row) }}</span>
+            } @else {
+              <span class="state">{{ 'export.table.' + row.status | transloco }}</span>
+            }
+          </td>
+          <td class="action">
+            <button
+              type="button"
+              class="lp-button lp-button--secondary lp-button--compact"
+              [disabled]="row.status !== 'ready' || (downloading() !== null && !isDownloading(row))"
+              [attr.aria-busy]="isDownloading(row) || null"
+              [title]="'export.table.download' | transloco"
+              (click)="download.emit(row.format)"
+            >
+              <lp-icon name="download" size="small" />
+              <span class="label">
+                @if (isDownloading(row)) {
+                  {{ 'export.table.downloading' | transloco }}
+                } @else {
+                  {{ 'export.table.download' | transloco }}
+                }
+              </span>
+            </button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

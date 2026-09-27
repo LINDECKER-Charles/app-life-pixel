@@ -2,7 +2,9 @@
 
 The pipeline follows the one already used by the other projects of the shared VPS: build once,
 promote the same artefact from staging to production, deploy over SSH behind the shared Caddy
-edge. Nothing below exists yet; this is the target of the first CI pull request.
+edge. The workflows, images and scripts below are built and checked on every pull request; only
+the maintainer's push to `dev`, the GitHub secrets and environments, and the VPS itself turn them
+into a running staging and production — see [docs/v1/README.md](v1/README.md#release).
 
 ## Environments
 
@@ -65,7 +67,7 @@ type/topic ──PR──► dev ──CI green──► test (fast-forward) ─
 | `_promote.yml` | push to `main` | retags `:<sha>` as `:prod`, without rebuilding |
 | `_deploy.yml` | after build or promotion | deploys to the VPS over SSH (below) |
 | `security.yml` | pull request, push, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`), dependency review, `cargo deny`, `npm audit` |
-| `release.yml` | tag `vX.Y.Z` | Tauri builds — desktop installers (Windows, macOS, Linux) and the Android bundle for the Play Console —, `@life-pixel/player` to npm, Docker version tags, GitHub Release with provenance attestations |
+| `release.yml` | tag `vX.Y.Z`, or by hand as a dry run | desktop installers (Windows, macOS universal, Ubuntu 22.04) with the signed updater, `@life-pixel/player` to npm, Docker version tags, a draft GitHub Release with provenance attestations, published once every job passes — see "Release" below. Android joins at M6 |
 
 The same checks run on the pull request and on the push that follows the merge: the second run
 validates the real merge commit before it is promoted.
@@ -89,6 +91,18 @@ The deploy job, per environment:
 6. checks `https://<domain>/healthz` over TLS, as a warning only: a certificate that is still
    being issued is diagnosed, not fixed by restarting the edge.
 
+`scripts/deploy/deploy.sh` does these six steps on the host. `_deploy.yml`, in the GitHub
+environment of its target (`staging` or `production`), sends it over SSH with the `.env` and the
+job's registry token in files of mode 600, never on a command line. `ci.yml` hands it the
+target's secrets alone, by name — never `secrets: inherit`, nor a secret read by a computed name,
+either of which gives the runner every secret of the repository —, and it checks each is set
+before anything is sent. Production requires `PROD_KNOWN_HOSTS`, which pins the host's ed25519
+key; staging pins it when `STAGING_KNOWN_HOSTS` is set, and otherwise trusts whatever key the host
+presents on each run, with a warning. `DEPLOY_DRY_RUN=1` prints the
+commands instead, and CI's `docker`
+job runs it so. The environment files are documented by `.env.staging.example` and
+`.env.prod.example`, which never set the images' listeners nor folders.
+
 What `compose.deploy.yaml` must declare:
 
 - the public services (`server`, `admin`) join the external `edge` network with the
@@ -104,7 +118,11 @@ What `compose.deploy.yaml` must declare:
 
 Services per environment: `server` (image `app`), `admin` (image `admin`), `postgres` with a
 named volume. Object storage is an external S3-compatible bucket, one per environment (D16), on
-Scaleway Object Storage in Paris (D35).
+Scaleway Object Storage in Paris (D35). Until an environment's bucket exists, its `.env` sets
+`LP_STORAGE_URL=file:///var/lib/life-pixel`, the self-hosting mode: the documents then live in the
+`documents` volume that `compose.deploy.yaml` mounts on `server`, which stays empty once the
+environment stores to its bucket. Staging runs so until Scaleway is set up, with its email
+deferred too: `LP_SMTP_URL` points nowhere, and the server only logs the emails it cannot send.
 
 ## Backups — required before production
 
@@ -116,11 +134,60 @@ Scaleway Object Storage in Paris (D35).
 - versioning of the production bucket, whose replaced or deleted objects expire after 30 days;
 - a restore rehearsed before launch, then periodically.
 
-Staging data is disposable and not backed up.
+Staging data is disposable and not backed up: `COMPOSE_PROFILES=backup` and H15's variables are
+never set in `.env.staging.example`, so `backup-dump` and `backup-upload` never run there.
+
+The chain runs in two services of `compose.deploy.yaml`, profile `backup`, production only, with
+`scripts/backup/` mounted read-only:
+
+- **Schedule** — `backup-dump` (`postgres:18-alpine`, the same image and version as `postgres`, so
+  `pg_dump` always matches the server) wakes once a day at `BACKUP_TIME` (UTC, `03:15` by default)
+  and dumps every database of `BACKUP_DATABASES` with `pg_dump --format=custom`, first as
+  `<database>-<UTC timestamp>.dump.partial`, renamed `.dump` only once the dump has completed, into
+  the `backups` volume. `backup-upload` (`rclone/rclone`) wakes every 10 minutes and moves every
+  finished `.dump` it finds there to the crypt remote, one `rclone move` per file, logging one JSON
+  line per attempt (`backup_uploaded` or `backup_failed`, with the file and its size) to its
+  stdout.
+- **Location** — encrypted on the host, before it ever leaves, by the `crypt` remote
+  (`RCLONE_CONFIG_BACKUPCRYPT_*`, obscured passwords, a maintainer's offline copy is the only other
+  one); stored under the `s3` remote (`RCLONE_CONFIG_BACKUPS3_*`) in the `nl-ams` bucket, away from
+  the live data's `fr-par` bucket. File names stay readable
+  (`RCLONE_CONFIG_BACKUPCRYPT_FILENAME_ENCRYPTION=off`), so a backup is found by its
+  `<database>-<UTC timestamp>.dump` name alone, without decrypting anything first. The upload
+  credentials write only — `--no-check-dest`, `--s3-no-check-bucket` and `--s3-no-head` never ask
+  them to read or overwrite —, so a compromised host can still never erase a backup already sent.
+  Retention: the bucket's lifecycle rule deletes backups after 180 days; versioning keeps replaced
+  or deleted objects 30 days (D35) — both set by the maintainer, outside this repository.
+- **Restore** — `scripts/backup/restore.sh <file> <database>`, run by the maintainer, needs the
+  read-only rclone credentials and the crypt passwords (never the write-only upload ones, which
+  cannot read) configured as the `backupcrypt` remote, and libpq's client tools on `PATH`: it
+  fetches and decrypts `<file>` through the crypt remote with `rclone copy`, then replays it into
+  `<database>` with `pg_restore --clean --if-exists --no-owner`, dropping what that database
+  already holds first. The server comes from libpq's environment — `PGHOST`, `PGPORT`, `PGUSER`,
+  and the password in `PGPASSWORD` or a `PGPASSFILE` —, never from a URL on the command line,
+  where a process list would show the password; the script refuses one.
+- **Rehearsal** — `scripts/backup/rehearse-local.sh` rehearses the whole chain against the local
+  stack, with throwaway crypt passwords: `dump-loop.sh` dumps one database, `upload-loop.sh` moves
+  it, encrypted, to a throwaway bucket on the local S3Mock — the same `rclone` image as production
+  —, the same image then fetches and decrypts it, and `pg_restore` replays it into a new database,
+  whose every table's row count is compared with the source. It creates only that database and
+  that bucket, both named at random, and removes them itself, even on failure: nothing of a run
+  outlives it. Required before the first production deploy, then rehearsed again after any change
+  to `scripts/backup/`, to the pinned images, or to the crypt or bucket configuration, and
+  periodically otherwise (every quarter is a reasonable default).
+- **Alert** — `infra-vps` pages when no `backup_uploaded` line appears in `backup-upload`'s logs
+  for 26 hours: long enough to absorb one missed 10-minute cycle or a short host hiccup without
+  paging on the first delay, short enough that a broken pipeline is caught within a day.
 
 ## Secrets
 
-GitHub secrets, following the shared deployment kit:
+GitHub secrets, following the shared deployment kit. The deployment's are repository secrets:
+`ci.yml` reads them outside any environment. A secret of the name `_deploy.yml` gives it —
+`SSH_KEY`, `HOST`, `SSH_USER`, `DEPLOY_PATH`, `ENV_FILE`, `KNOWN_HOSTS` — set on the `staging` or
+`production` environment takes precedence over the repository one, and it is behind that
+environment's protection rules once the repository's copy is deleted: the setup production should
+use. `_deploy.yml` declares every secret optional for this reason, and its first step requires
+each one the target needs.
 
 | Secret | Content |
 |---|---|
@@ -128,24 +195,74 @@ GitHub secrets, following the shared deployment kit:
 | `STAGING_HOST`, `PROD_HOST` | the VPS |
 | `STAGING_PATH`, `PROD_PATH` | `/opt/life-pixel-staging`, `/opt/life-pixel-prod` |
 | `STAGING_SSH_USER`, `PROD_SSH_USER` | optional, `root` by default |
+| `STAGING_KNOWN_HOSTS`, `PROD_KNOWN_HOSTS` | the VPS's ed25519 host key as a `known_hosts` line, `ssh-keyscan -t ed25519 -H <host>`, whose `ssh-keygen -lf` fingerprint matches `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` run on the VPS itself; required for production, optional for staging, which otherwise trusts whatever key the host presents on each run |
 | `ENV_STAGING`, `ENV_PROD` | the full `.env` of the environment, as one multi-line secret |
 | `ENV_TEST` | optional, for CI |
+| `PROMOTION_DEPLOY_KEY` | private half of a deploy key with write access, which the `test` ruleset lets push: `promote-test` fast-forwards `test` with it |
 
 The `.env` of an environment carries the database URL, the object storage endpoint, bucket and
 keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`),
 the OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents
-each variable; the real files are never committed.
+each variable; the real files are never committed. Every host generates its own keys
+(`openssl rand -hex 32`): outside `local`, both servers refuse to start on a key of fewer than 17
+distinct bytes, such as the public development keys of `.env.example`, one repeated byte each —
+the server its four keys, the admin server `LPA_SESSION_SECRET` and `LPA_TOTP_KEY`, its
+`create-admin` and `disable-admin` commands included. The admin API secret the two share is
+checked once, by the server, as `LP_ADMIN_API_SECRET`.
 
-Release secrets, when the matching distribution lands (D32): the Tauri updater signing key, the
-Apple Developer ID certificate and notarisation key, the Windows signing credentials, the Android
-upload key and a Play Console service account. They live in a GitHub `release` environment that
-requires the maintainer's approval. The updater key and the upload key also have an encrypted
-offline copy: without the updater key, no installed desktop app could ever update again. npm
-publishes through trusted publishing, without a token.
+Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
+Android upload key and Play Console service account join them at M6. The updater key and the
+upload key also have an encrypted offline copy: without the updater key, no installed desktop app
+could ever update again.
 
 Enrolment starts about a month before M5 and M6: an organisation account needs a D-U-N-S number
 first, and a new personal Play Console account must run a two-week closed test before it can
 publish.
+
+## Release
+
+`release.yml` runs on a `v*.*.*` tag, or by hand (`workflow_dispatch`) with a `dry_run` input
+(true by default): a dry run builds and signs every artifact but publishes nothing, for a
+rehearsal; running it with `dry_run: false` from an existing tag's ref republishes that tag, for
+recovery. Every job that publishes something runs in the `release` GitHub environment (D32),
+which requires the maintainer's approval and holds the signing secrets below.
+
+| Job | Does |
+|---|---|
+| `desktop` | builds the sidecar and the app for macOS (universal), Windows and Ubuntu 22.04 with `tauri-apps/tauri-action`, using `bundle.conf.json` and `release.conf.json` together; signs and notarises macOS, signs Windows when `WINDOWS_SIGN_COMMAND` is set; publishes a draft release with `latest.json`, or keeps the installers as workflow artifacts on a dry run |
+| `frontend` | builds the editor's engine and the front end once, with no secret, for every `desktop` leg |
+| `npm-build` | checks that `player-js`'s committed build is current, with no publishing right |
+| `npm` | publishes `@life-pixel/player` from a clean checkout by trusted publishing (`id-token: write`, `--provenance`, `--ignore-scripts`, no token): nothing is installed and no script runs there |
+| `docker` | retags the `app` and `admin` images already built for this commit (`_build.yml`) as `:vX.Y.Z` and `:latest`, without rebuilding |
+| `attest` | attaches a provenance attestation to every installer of the draft release |
+| `publish` | once every job above passes, turns the draft release into the release |
+
+The desktop build is only signed, and the updater only exists, in this workflow: `LP_UPDATER_PUBKEY`
+and `LP_UPDATER_ENDPOINT` are read by `tauri-plugin-updater` at compile time (`option_env!`), so a
+local or CI build has neither — a run through `cargo xtask build-desktop` proves it by having no
+updater at all. The installed app checks ten seconds after start, then every six hours, stays
+silent when offline or on any other failure, and only ever offers to install and restart; it never
+restarts on its own. `LP_UPDATER_ENDPOINT` is not a secret: it is computed from the repository, so
+a fork's release checks its own releases, not this one's.
+
+| Secret | Content |
+|---|---|
+| `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` | the updater's signing key pair, which signs every installer |
+| `TAURI_UPDATER_PUBKEY` | the matching public key, baked into every release build as `LP_UPDATER_PUBKEY` |
+| `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | the Developer ID certificate and notarisation credentials for macOS |
+| `WINDOWS_SIGN_COMMAND` | optional until the Windows signing service is chosen (M5, D32); when set, patches `bundle.windows.signCommand` into `release.conf.json` before the build |
+
+The signing secrets reach the `tauri-action` step alone, never the whole job, and no npm package
+runs on that job's runner: the `frontend` job builds the front end, and `release.conf.json` turns
+off the `beforeBuildCommand` that would build it again. The steps of one job share their runner,
+so step-scoped secrets are not isolation from what ran before: the `desktop` job's Rust build
+scripts — `cargo install tauri-cli`'s, the sidecar's, and the app's own, compiled inside the
+signing step — could still reach the updater key and the Apple credentials; `cargo deny` and the
+pinned lock file are what guard them. Isolating the key completely means signing in a job of its
+own that builds nothing — building with `createUpdaterArtifacts` off, then `cargo tauri signer
+sign` and `latest.json` there.
+
+Android is left out of `release.yml` until M6.
 
 ## Rollback
 

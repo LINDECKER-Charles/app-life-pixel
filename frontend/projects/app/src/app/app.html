@@ -1,0 +1,9 @@
+<ion-app>
+  <a class="skip-link" href="#main-content" (click)="skipToContent($event)">
+    {{ 'shell.skip_to_content' | transloco }}
+  </a>
+  <lp-app-header />
+  <lp-engine-notifications />
+  <ion-router-outlet #outlet id="main-content" class="outlet" />
+  <lp-app-footer />
+</ion-app>

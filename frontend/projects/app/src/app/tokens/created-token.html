@@ -1,0 +1,54 @@
+<div class="lp-dialog__body">
+  <lp-status-banner variant="warning">
+    <p>{{ 'tokens.created.once' | transloco }}</p>
+  </lp-status-banner>
+  @for (field of fields(); track field.what) {
+    <div class="lp-field">
+      <span class="lp-field__label" [id]="id(field.what + '-label')">
+        {{ field.label | transloco }}
+      </span>
+      @if (field.hint; as hint) {
+        <p class="lp-field__hint" [id]="id(field.what + '-hint')">
+          {{ hint.key | transloco: hint.params }}
+        </p>
+      }
+      <pre
+        #shown
+        class="secret"
+        [attr.aria-labelledby]="id(field.what + '-label')"
+        [attr.aria-describedby]="field.hint ? id(field.what + '-hint') : null"
+      ><code>{{ field.text }}</code></pre>
+      <p class="lp-cluster">
+        <button
+          type="button"
+          class="lp-button lp-button--secondary lp-button--compact"
+          (click)="copy(field, shown)"
+        >
+          <lp-icon name="copy" size="small" />{{ field.copyLabel | transloco }}
+        </button>
+        <span class="copy-state" role="status">
+          @if (copied()?.what === field.what) {
+            <ng-container *ngTemplateOutlet="copyState" />
+          }
+        </span>
+      </p>
+    </div>
+  }
+</div>
+<div class="lp-dialog__actions">
+  <button type="button" class="lp-button lp-button--primary" (click)="done.emit()">
+    {{ 'tokens.created.done' | transloco }}
+  </button>
+</div>
+
+<ng-template #copyState>
+  @if (copied()?.failed) {
+    <span class="copy-failed">
+      <lp-icon name="error" size="small" />{{ 'tokens.created.copy_failed' | transloco }}
+    </span>
+  } @else {
+    <span class="copy-done">
+      <lp-icon name="check" size="small" />{{ 'tokens.created.copied' | transloco }}
+    </span>
+  }
+</ng-template>

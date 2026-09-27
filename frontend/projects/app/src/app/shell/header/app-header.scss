@@ -1,0 +1,106 @@
+// One row from 48 rem: the brand, the navigation, the account menu at the end. Below, the brand
+// and the account menu share the first row and the navigation takes the second, labels kept.
+.app-header {
+  position: relative;
+  z-index: var(--lp-z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-1) var(--lp-space-4);
+  align-items: center;
+  padding: var(--lp-space-2) var(--lp-space-4);
+  background: var(--lp-color-surface);
+  border-bottom: var(--lp-border-width) solid var(--lp-color-border-subtle);
+}
+
+.brand {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--lp-space-2);
+  align-items: center;
+  min-height: var(--lp-control-height-compact);
+  padding-inline-end: var(--lp-space-1);
+  font-size: var(--lp-font-size-large);
+  font-weight: var(--lp-font-weight-display);
+  color: var(--lp-color-text);
+  text-decoration: none;
+  border-radius: var(--lp-radius-medium);
+}
+
+.mark {
+  image-rendering: pixelated;
+}
+
+.navigation {
+  order: 3;
+  flex-basis: 100%;
+  min-width: 0;
+
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--lp-space-1);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
+}
+
+.link {
+  display: inline-flex;
+  gap: var(--lp-space-2);
+  align-items: center;
+  min-height: var(--lp-control-height-compact);
+  padding: var(--lp-space-1) var(--lp-space-3);
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  color: var(--lp-color-text);
+  text-decoration: none;
+  white-space: nowrap;
+  border-radius: var(--lp-radius-medium);
+
+  &:hover {
+    text-decoration: none;
+    background: var(--lp-color-surface-soft);
+  }
+
+  // The current area: the rose surface, and a raspberry bar that stays in forced colours.
+  &.active {
+    color: var(--lp-color-accent-text);
+    background: var(--lp-color-accent-soft);
+    box-shadow: inset 0 calc(-1 * var(--lp-border-width-strong)) 0 var(--lp-color-accent);
+  }
+}
+
+// Narrow rows keep the words and drop the icons.
+.link-icon {
+  display: none;
+}
+
+.account {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  margin-inline-start: auto;
+}
+
+@media (min-width: 48rem) {
+  .app-header {
+    flex-wrap: nowrap;
+  }
+
+  .navigation {
+    order: 0;
+    flex-basis: auto;
+  }
+
+  .link-icon {
+    display: inline-flex;
+  }
+}
+
+@media (forced-colors: active) {
+  .link.active {
+    text-decoration: underline;
+    text-decoration-thickness: var(--lp-border-width-strong);
+  }
+}

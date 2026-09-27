@@ -1,0 +1,134 @@
+{
+  "frames": [
+    {
+      "filename": "blink-2 0",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      },
+      "duration": 10
+    },
+    {
+      "filename": "blink-2 1",
+      "frame": {
+        "x": 2,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      },
+      "duration": 40
+    },
+    {
+      "filename": "blink-2 2",
+      "frame": {
+        "x": 4,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      },
+      "duration": 1000
+    },
+    {
+      "filename": "blink-2 3",
+      "frame": {
+        "x": 0,
+        "y": 2,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      },
+      "duration": 65535
+    },
+    {
+      "filename": "blink-2 4",
+      "frame": {
+        "x": 2,
+        "y": 2,
+        "w": 2,
+        "h": 2
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 2
+      },
+      "sourceSize": {
+        "w": 2,
+        "h": 2
+      },
+      "duration": 100
+    }
+  ],
+  "meta": {
+    "app": "Life Pixel",
+    "version": "1",
+    "image": "blink-2.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 6,
+      "h": 4
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "blink",
+        "from": 1,
+        "to": 3,
+        "direction": "forward",
+        "repeat": "1"
+      }
+    ]
+  }
+}

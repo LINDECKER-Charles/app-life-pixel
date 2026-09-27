@@ -1,0 +1,85 @@
+@if (document(); as document) {
+  <div class="head">
+    <button
+      type="button"
+      class="lp-button lp-button--quiet lp-button--compact"
+      (click)="addFrame()"
+    >
+      <lp-icon name="plus" size="small" />
+      {{ 'timeline.frames.add' | transloco }}
+    </button>
+    <button
+      type="button"
+      class="lp-button lp-button--quiet lp-button--compact"
+      (click)="duplicateFrame()"
+    >
+      <lp-icon name="duplicate" size="small" />
+      {{ 'timeline.frames.duplicate' | transloco }}
+    </button>
+    <button
+      type="button"
+      class="lp-button lp-button--quiet lp-button--compact"
+      [disabled]="document.frames.length <= 1"
+      (click)="deleteFrame()"
+    >
+      <lp-icon name="trash" size="small" />
+      {{ 'timeline.frames.delete' | transloco }}
+    </button>
+  </div>
+  <ol class="frames" role="list">
+    @for (frame of document.frames; track frame.id; let index = $index) {
+      @let active = frame.id === editor.activeFrame();
+      <li
+        class="frame"
+        [attr.data-frame]="frame.id"
+        draggable="true"
+        (dragstart)="onDragStart(index)"
+        (dragover)="$event.preventDefault()"
+        (drop)="onDrop(index)"
+      >
+        <button
+          type="button"
+          class="thumbnail-button"
+          [class.active]="active"
+          [attr.aria-pressed]="isSelected(index)"
+          [attr.aria-current]="active ? 'true' : null"
+          [attr.aria-label]="'timeline.frames.thumbnail_label' | transloco: { number: index + 1 }"
+          [attr.aria-describedby]="id('strip-hint')"
+          (click)="select(index, $event)"
+          (keydown)="onKeydown(index, $event)"
+        >
+          <lp-frame-thumbnail [frame]="frame.id" [changedAt]="changedAt()" />
+          <span class="number">
+            @if (active) {
+              <lp-icon name="pencil" size="small" />
+            }
+            {{ index + 1 }}
+          </span>
+        </button>
+        <label class="lp-visually-hidden" [for]="id('duration-' + frame.id)">
+          {{ 'timeline.frames.duration_label' | transloco: { number: index + 1 } }}
+        </label>
+        <div class="duration">
+          <input
+            #durationField
+            class="lp-input lp-input--compact duration-field"
+            [id]="id('duration-' + frame.id)"
+            type="number"
+            inputmode="numeric"
+            step="1"
+            [value]="frame.durationMs"
+            [attr.min]="limits()?.minFrameDurationMs"
+            [attr.max]="limits()?.maxFrameDurationMs"
+            (change)="setDuration(frame.id, durationField)"
+          />
+          <span class="unit" aria-hidden="true">{{
+            'timeline.frames.duration_unit' | transloco
+          }}</span>
+        </div>
+      </li>
+    }
+  </ol>
+  <p [id]="id('strip-hint')" class="lp-visually-hidden">
+    {{ 'timeline.frames.strip_hint' | transloco }}
+  </p>
+}

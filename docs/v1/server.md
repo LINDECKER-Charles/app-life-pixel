@@ -43,7 +43,7 @@ Dependencies: `service`, `axum`, `tokio`, `tower`, `tower-http`, `utoipa`, `utoi
 | `LP_STORAGE_URL` | `s3://life-pixel-local` | `s3://<bucket>`, or `file:///<folder>` for self-hosting |
 | `LP_S3_ENDPOINT`, `LP_S3_REGION`, `LP_S3_ACCESS_KEY_ID`, `LP_S3_SECRET_ACCESS_KEY`, `LP_S3_PATH_STYLE` | `http://127.0.0.1:5461`, `us-east-1`, `local`, `local`, `true` | S3 settings; Scaleway in `fr-par` on the hosts |
 | `LP_SMTP_URL`, `LP_MAIL_FROM` | `smtp://127.0.0.1:5462`, `Life Pixel <no-reply@localhost>` | SMTP in URL form (D34) |
-| `LP_SESSION_SECRET`, `LP_EVENTS_SECRET`, `LP_EXPORT_LINK_SECRET`, `LP_ADMIN_API_SECRET` | 64 hexadecimal characters each | HMAC keys; the last is shared with the admin server |
+| `LP_SESSION_SECRET`, `LP_EVENTS_SECRET`, `LP_EXPORT_LINK_SECRET`, `LP_ADMIN_API_SECRET` | 64 hexadecimal characters each, public development keys of one repeated byte | HMAC keys; the last is shared with the admin server. Outside `local`, a key of fewer than 17 distinct bytes is refused (`WeakKey`) |
 | `LP_PLAN_FREE_STORAGE_BYTES`, `LP_PLAN_FREE_MCP_CALLS_PER_DAY` | `100000000`, `1000` | the free plan (D31) |
 | `LP_MIN_CLIENT_VERSIONS` | `web=0.0.0,desktop=0.0.0` | per platform |
 | `LP_TRUSTED_PROXIES` | empty | networks whose `X-Forwarded-For` is believed |

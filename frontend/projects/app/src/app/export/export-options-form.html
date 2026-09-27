@@ -1,0 +1,43 @@
+<div class="options">
+  <div class="lp-field">
+    <label class="lp-field__label" [for]="id('tag')">{{ 'export.options.tag' | transloco }}</label>
+    <select
+      [id]="id('tag')"
+      class="lp-input"
+      #tagField
+      [value]="tag() ?? ''"
+      (change)="onTagChange(tagField.value)"
+    >
+      <option value="">{{ 'export.options.tag_all' | transloco }}</option>
+      @for (item of tags(); track item.name) {
+        <option [value]="item.name">{{ item.name }}</option>
+      }
+    </select>
+  </div>
+  <div class="lp-field">
+    <label class="lp-field__label" [for]="id('scale')">{{
+      'export.options.scale' | transloco
+    }}</label>
+    <div class="lp-field__control">
+      <input
+        #scaleField
+        [id]="id('scale')"
+        class="lp-input"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        [min]="bounds().min"
+        [max]="bounds().max"
+        [value]="scale()"
+        [attr.aria-describedby]="id('scale-hint')"
+        (change)="onScaleChange(scaleField)"
+      />
+      <span class="lp-field__unit" aria-hidden="true">{{
+        'export.options.scale_unit' | transloco
+      }}</span>
+    </div>
+    <p [id]="id('scale-hint')" class="lp-field__hint">
+      {{ 'export.options.scale_hint' | transloco: bounds() }}
+    </p>
+  </div>
+</div>

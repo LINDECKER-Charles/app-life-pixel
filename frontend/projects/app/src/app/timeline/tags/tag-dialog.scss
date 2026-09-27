@@ -1,0 +1,20 @@
+// The form spans the dialog's body and its action row (`lp-dialog__body`, `lp-dialog__actions`),
+// so that the body scrolls and the actions stay in view; fields and buttons are the shared ones.
+.form {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.range {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+  gap: var(--lp-space-3);
+  align-items: start;
+}
+
+// Deleting stands apart from saving and cancelling, at the far end of the row.
+.delete {
+  margin-inline-start: auto;
+}

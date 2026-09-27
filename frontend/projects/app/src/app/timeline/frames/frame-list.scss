@@ -1,0 +1,126 @@
+// The frame strip (design-system/docs/components.md, "Palette, layers and timeline"): each frame
+// shows its thumbnail, its number and its duration; the frames of the selection take a soft
+// surface, and the active frame — the one drawn on — a strong raspberry edge and a pencil, so the
+// two never read as the same thing.
+@use 'strip';
+
+$thumbnail-size: 2.5rem;
+
+:host {
+  @include strip.row;
+}
+
+.head {
+  @include strip.head;
+}
+
+.frames {
+  display: grid;
+  grid-auto-columns: strip.$cell-width;
+  grid-auto-flow: column;
+  gap: strip.$cell-gap;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  min-width: 0;
+  // The focus and the reveal leave the frame clear of the sticky commands.
+  scroll-margin-inline-start: calc(strip.$head-width + var(--lp-space-2));
+
+  @media (max-width: strip.$narrow-max-width) {
+    scroll-margin-inline-start: var(--lp-space-2);
+  }
+}
+
+.thumbnail-button {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  align-items: center;
+  padding: var(--lp-space-1);
+  margin: 0;
+  font: inherit;
+  color: var(--lp-color-text-muted);
+  cursor: pointer;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width-strong) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-medium);
+
+  &:hover {
+    border-color: var(--lp-color-border);
+  }
+
+  // In the selected range.
+  &[aria-pressed='true'] {
+    color: var(--lp-color-accent-text);
+    background: var(--lp-color-accent-soft);
+  }
+
+  // The active frame, drawn on.
+  &.active {
+    color: var(--lp-color-accent-text);
+    border-color: var(--lp-color-accent);
+    box-shadow: inset 0 calc(-1 * var(--lp-border-width-strong)) 0 var(--lp-color-accent);
+  }
+
+  lp-frame-thumbnail {
+    display: block;
+    width: $thumbnail-size;
+    height: $thumbnail-size;
+  }
+}
+
+.number {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-xsmall);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: 1rem;
+}
+
+.duration {
+  display: flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+}
+
+.duration-field {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+  padding-inline: var(--lp-space-2);
+  text-align: end;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+  }
+}
+
+.unit {
+  flex-shrink: 0;
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-xsmall);
+  color: var(--lp-color-text-muted);
+}
+
+@media (forced-colors: active) {
+  .thumbnail-button[aria-pressed='true'] {
+    border-style: dashed;
+  }
+
+  .thumbnail-button.active {
+    border-color: Highlight;
+    border-style: double;
+    border-width: 4px;
+  }
+}

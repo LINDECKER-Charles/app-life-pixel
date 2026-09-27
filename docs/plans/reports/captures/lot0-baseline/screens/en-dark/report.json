@@ -1,0 +1,36 @@
+{
+  "code": "en",
+  "theme": "dark",
+  "applied": {
+    "language": "en",
+    "dark": true
+  },
+  "captures": [
+    "screens/en-dark/settings-1440.png",
+    "screens/en-dark/settings-1024.png",
+    "screens/en-dark/settings-768.png",
+    "screens/en-dark/settings-390.png",
+    "screens/en-dark/not-found-1440.png",
+    "screens/en-dark/not-found-1024.png",
+    "screens/en-dark/not-found-768.png",
+    "screens/en-dark/not-found-390.png",
+    "screens/en-dark/editor-new-animation-1440.png",
+    "screens/en-dark/editor-new-animation-1024.png",
+    "screens/en-dark/editor-new-animation-768.png",
+    "screens/en-dark/editor-new-animation-390.png",
+    "screens/en-dark/editor-1440.png",
+    "screens/en-dark/editor-1024.png",
+    "screens/en-dark/editor-768.png",
+    "screens/en-dark/editor-390.png",
+    "screens/en-dark/export-1440.png",
+    "screens/en-dark/export-1024.png",
+    "screens/en-dark/export-768.png",
+    "screens/en-dark/export-390.png"
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ]
+}

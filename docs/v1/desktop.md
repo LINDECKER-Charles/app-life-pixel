@@ -49,10 +49,15 @@ CLI, so that a local agent reaches the same library over stdio.
 
 - The base configuration holds nothing that needs a file or a key the build may lack: T3's
   `tauri/bundle.conf.json` adds the sidecar (`bundle.externalBin`), T4's `tauri/release.conf.json`
-  the updater artifacts, both passed with `--config` to `cargo tauri build`. So
+  the updater artifacts — and turns off the `beforeBuildCommand`, `release.yml` building the front
+  end in a job of its own —, both passed with `--config` to `cargo tauri build`. So
   `cargo build --workspace` needs neither the sidecar nor a key, nor — in debug, where Tauri
   embeds no assets — the front-end build; if Tauri's context macro still requires `frontendDist`
   to exist, T1 makes that hold without building the app.
+- The CSP allows no `'unsafe-eval'`, only `'wasm-unsafe-eval'` for the engine: nothing in the
+  front end may evaluate code. ICU messages are therefore formatted by the shared i18n's
+  `IcuTranspiler`, which walks `@messageformat/parser`'s syntax tree with `Intl`, not by
+  `@messageformat/core`, whose compiled messages need `new Function`.
 - From T1 on, CI's `rust` job installs Tauri's Linux system packages (WebKitGTK and its
   companions), since `cargo clippy --workspace` and `cargo test --workspace` now compile
   `tauri/`; on macOS and Windows, the system provides the webview.
@@ -121,9 +126,9 @@ picked by platform; the routes hidden on the desktop.
   mount point changes at each launch, the app first copies the sidecar to
   `<data folder>/bin/life-pixel`, when missing or older, and gives that stable path.
 - `settings/agents` (`frontend/projects/app/src/app/mcp/`) shows, with copy buttons, the command
-  `claude mcp add life-pixel -- "<cliPath>" mcp --library "<libraryPath>"` and the equivalent
-  `mcpServers` entry for an MCP client's JSON configuration, and explains what an agent can then
-  do. **Keys**: `mcp.`.
+  `claude mcp add life-pixel -- "<cliPath>" mcp --library "<libraryPath>"`, the same for Codex
+  with `codex mcp add`, and the equivalent `mcpServers` entry for an MCP client's JSON
+  configuration, and explains what an agent can then do. **Keys**: `mcp.`.
 - **Watcher**: `notify-debouncer-full` watches the library folder (300 ms) and emits
   `library-changed` with the project and animation ids concerned. Lists refresh. When the open
   animation changed on disk, the app reloads it if it holds no unsaved work, and otherwise asks:
@@ -136,8 +141,9 @@ hand in a temporary library; the app's reaction, with and without unsaved work, 
 
 - **Updater**: `tauri-plugin-updater` is registered only when the build received `LP_UPDATER_PUBKEY`
   and `LP_UPDATER_ENDPOINT` (read with `option_env!`): a local build has no updater.
-  `tauri/release.conf.json` turns `bundle.createUpdaterArtifacts` on and carries the updater's
-  public key for release builds only. It checks 10 seconds after start then every 6 hours, stays
+  `tauri/release.conf.json` turns `bundle.createUpdaterArtifacts` on, carries the updater's
+  public key for release builds only, and removes `build.beforeBuildCommand`: the front end comes
+  built from the `frontend` job. It checks 10 seconds after start then every 6 hours, stays
   silent offline, and offers "Install and restart" — never restarting by itself.
 - **`release.yml`**, on a `v*.*.*` tag, and by hand with a `dry_run` input that builds without
   publishing; every publishing job runs in the `release` environment, which requires the
@@ -145,8 +151,10 @@ hand in a temporary library; the app's reaction, with and without unsaved work, 
 
 | Job | Does |
 |---|---|
-| `desktop` | a matrix on macOS (universal binary), Windows and Ubuntu 22.04: the Rust toolchain, wasm-bindgen-cli and `cargo xtask build-editor`, `npm ci --prefix frontend`, the Tauri CLI, `cargo xtask build-sidecar` for the matrix's target, then `tauri-apps/tauri-action` with `tauriScript: cargo tauri`, both overlays and the signing variables — Apple certificate and notarisation key, the Windows signing command of the service chosen at M5, `TAURI_SIGNING_PRIVATE_KEY` and its password, `LP_UPDATER_PUBKEY`, `LP_UPDATER_ENDPOINT` —, publishing a draft GitHub Release with the updater's `latest.json` |
-| `npm` | checks that `player-js`'s committed build is current, then `npm publish --provenance --access public` through trusted publishing (`id-token: write`, no token) |
+| `frontend` | wasm-bindgen-cli and `cargo xtask build-editor`, `npm ci --prefix frontend` and `npm run build:app`, with no secret; the build is the `frontend` artifact |
+| `desktop` | a matrix on macOS (universal binary), Windows and Ubuntu 22.04: the Rust toolchain, the `frontend` artifact, the Tauri CLI, `cargo xtask build-sidecar` for the matrix's target, then `tauri-apps/tauri-action` with `tauriScript: cargo tauri`, both overlays and the signing variables — Apple certificate and notarisation key, the Windows signing command of the service chosen at M5, `TAURI_SIGNING_PRIVATE_KEY` and its password, `LP_UPDATER_PUBKEY`, `LP_UPDATER_ENDPOINT` —, publishing a draft GitHub Release with the updater's `latest.json` |
+| `npm-build` | checks that `player-js`'s committed build is current, with no publishing right |
+| `npm` | `npm publish --ignore-scripts --provenance --access public` from a clean checkout through trusted publishing (`id-token: write`, no token): nothing installed, no script run |
 | `docker` | tags the images of the tagged commit `:vX.Y.Z` and `:latest` with `docker buildx imagetools create` |
 | `attest` | `actions/attest-build-provenance` on the installers |
 | `publish` | turns the draft release into a release once every job has passed |

@@ -1,0 +1,96 @@
+{
+  "frames": [
+    {
+      "filename": "mascot 0",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 3
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 3
+      },
+      "sourceSize": {
+        "w": 4,
+        "h": 3
+      },
+      "duration": 100
+    },
+    {
+      "filename": "mascot 1",
+      "frame": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 3
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 3
+      },
+      "sourceSize": {
+        "w": 4,
+        "h": 3
+      },
+      "duration": 150
+    },
+    {
+      "filename": "mascot 2",
+      "frame": {
+        "x": 0,
+        "y": 3,
+        "w": 4,
+        "h": 3
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 3
+      },
+      "sourceSize": {
+        "w": 4,
+        "h": 3
+      },
+      "duration": 25
+    }
+  ],
+  "meta": {
+    "app": "Life Pixel",
+    "version": "1",
+    "image": "mascot.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 8,
+      "h": 6
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "idle",
+        "from": 0,
+        "to": 1,
+        "direction": "forward"
+      },
+      {
+        "name": "jump",
+        "from": 2,
+        "to": 2,
+        "direction": "forward",
+        "repeat": "1"
+      }
+    ]
+  }
+}

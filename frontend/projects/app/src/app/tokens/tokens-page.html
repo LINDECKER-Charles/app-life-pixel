@@ -1,0 +1,86 @@
+<ion-content>
+  <div class="lp-page lp-page--reading">
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'tokens.title' | transloco }}</h1>
+        <p class="lp-page-header__lead">{{ 'tokens.intro' | transloco }}</p>
+      </div>
+      <div class="lp-page-header__actions">
+        <button type="button" class="lp-button lp-button--primary" (click)="creating.set(true)">
+          <lp-icon name="plus" />{{ 'tokens.create.action' | transloco }}
+        </button>
+      </div>
+    </header>
+    <lp-token-creation-dialog [(open)]="creating" (created)="onCreated($event)" />
+
+    <section
+      class="lp-section"
+      [attr.aria-labelledby]="id('list-heading')"
+      [attr.aria-busy]="loading()"
+    >
+      <h2 #listHeading tabindex="-1" [id]="id('list-heading')">
+        {{ 'tokens.list.heading' | transloco }}
+      </h2>
+      <p class="lp-visually-hidden" role="status">
+        @if (revoked(); as name) {
+          {{ 'tokens.revoke.done' | transloco: { name } }}
+        }
+      </p>
+      @if (loadError(); as error) {
+        <lp-status-banner variant="danger">
+          <p>{{ 'errors.' + error.code | transloco: error.params }}</p>
+          <div lpBannerActions>
+            <button type="button" class="lp-button lp-button--secondary" (click)="load()">
+              {{ 'common.retry' | transloco }}
+            </button>
+          </div>
+        </lp-status-banner>
+      } @else if (!loaded()) {
+        <p class="state">{{ 'common.loading' | transloco }}</p>
+      } @else if (tokens().length === 0) {
+        <p class="lp-panel lp-panel--soft state">{{ 'tokens.list.empty' | transloco }}</p>
+      }
+      @if (revokeError(); as error) {
+        <lp-status-banner variant="danger">
+          <p>{{ 'errors.' + error.code | transloco: error.params }}</p>
+        </lp-status-banner>
+      }
+      <ul class="tokens">
+        @for (token of tokens(); track token.id) {
+          <li class="lp-panel token">
+            <div class="token__header">
+              <h3 class="token__name name">{{ token.name }}</h3>
+              <code class="token__prefix">{{ token.prefix }}…</code>
+            </div>
+            <p class="token__scopes">
+              <span class="lp-visually-hidden">{{ 'tokens.list.scopes' | transloco }}</span>
+              @for (scope of token.scopes; track scope) {
+                <span class="lp-pill">{{ scopeLabels[scope] | transloco }}</span>
+              }
+            </p>
+            <p class="token__meta">
+              {{ 'tokens.list.created' | transloco: { date: date(token.createdAt) } }} ·
+              {{ 'tokens.list.expires' | transloco: { date: date(token.expiresAt) } }} ·
+              @if (token.lastUsedAt; as lastUsedAt) {
+                {{ 'tokens.list.last_used' | transloco: { date: date(lastUsedAt) } }}
+              } @else {
+                {{ 'tokens.list.never_used' | transloco }}
+              }
+            </p>
+            <p>
+              <button
+                type="button"
+                class="lp-button lp-button--danger lp-button--compact"
+                [attr.aria-busy]="revoking() === token.id ? 'true' : null"
+                [attr.aria-label]="'tokens.revoke.label' | transloco: { name: token.name }"
+                (click)="revoke(token)"
+              >
+                {{ 'tokens.revoke.action' | transloco }}
+              </button>
+            </p>
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+</ion-content>

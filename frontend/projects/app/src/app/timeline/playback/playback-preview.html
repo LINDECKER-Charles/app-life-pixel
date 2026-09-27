@@ -1,0 +1,57 @@
+@if (document(); as document) {
+  <div
+    class="stage"
+    [attr.aria-busy]="status() === 'preparing' || status() === 'loading'"
+    [style.--lp-preview-aspect]="document.width / document.height"
+  >
+    @if (src(); as src) {
+      <life-pixel
+        [src]="src"
+        [tag]="tag()"
+        [attr.alt]="''"
+        motion="always"
+        (load)="onLoad()"
+        (error)="onError()"
+      ></life-pixel>
+    }
+    @if (status() !== 'playing') {
+      <p class="placeholder" [class.over]="src() !== null">
+        @switch (status()) {
+          @case ('idle') {
+            <lp-icon name="play" size="large" />
+            {{ 'timeline.playback.idle' | transloco }}
+          }
+          @case ('failed') {
+            <lp-icon name="error" size="large" />
+            {{ 'timeline.playback.unavailable' | transloco }}
+          }
+          @default {
+            {{ 'timeline.playback.preparing' | transloco }}
+          }
+        }
+      </p>
+    }
+  </div>
+  <p class="scope">
+    @if (scopeTag(); as name) {
+      {{ 'timeline.playback.scope_tag' | transloco: { name } }}
+    } @else {
+      {{ 'timeline.playback.scope_all' | transloco }}
+    }
+  </p>
+  @if (status() === 'failed') {
+    <lp-status-banner variant="danger">
+      <p>{{ 'timeline.playback.failed' | transloco }}</p>
+    </lp-status-banner>
+  }
+  <button
+    type="button"
+    class="lp-button lp-button--secondary lp-button--compact toggle"
+    [attr.aria-pressed]="src() !== null"
+    [attr.aria-busy]="status() === 'preparing' ? 'true' : null"
+    (click)="toggle()"
+  >
+    <lp-icon [name]="src() !== null ? 'stop' : 'play'" size="small" />
+    {{ (src() !== null ? 'timeline.playback.stop' : 'timeline.playback.play') | transloco }}
+  </button>
+}

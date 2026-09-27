@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+// The tags over the frame strip; the layers and the playback preview live in the inspector.
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  min-width: 0;
+}

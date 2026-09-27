@@ -1,0 +1,123 @@
+// The layer rows (design-system/docs/components.md, "Palette, layers and timeline"): the active
+// layer carries a raspberry edge, a soft surface and the word "Active", never the colour alone;
+// a hidden one says so in words, beside its crossed-out eye.
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+}
+
+.toolbar {
+  display: flex;
+}
+
+.layers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.layer {
+  display: flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  min-width: 0;
+  padding: var(--lp-space-1);
+  border: var(--lp-border-width) solid transparent;
+  border-inline-start: var(--lp-border-width-strong) solid transparent;
+  border-radius: var(--lp-radius-medium);
+
+  &.active {
+    background: var(--lp-color-accent-soft);
+    border-color: var(--lp-color-border-subtle);
+    border-inline-start-color: var(--lp-color-accent);
+  }
+}
+
+.select {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: var(--lp-control-height-compact);
+  padding: 0 var(--lp-space-2);
+  margin: 0;
+  font: inherit;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text);
+  text-align: start;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--lp-radius-small);
+
+  &:hover {
+    background: var(--lp-color-surface-soft);
+  }
+
+  .active & {
+    font-weight: var(--lp-font-weight-bold);
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+.name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--lp-space-2);
+  font-size: var(--lp-font-size-xsmall);
+  font-weight: var(--lp-font-weight-semibold);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text-muted);
+}
+
+.state--active {
+  color: var(--lp-color-accent-text);
+}
+
+.name-field {
+  flex: 1;
+  width: auto;
+  min-width: 0;
+}
+
+// A hidden layer's eye is muted, and its row says "Hidden".
+.visibility[aria-pressed='false'] {
+  color: var(--lp-color-text-muted);
+}
+
+// Visibility is the eye itself, not the shared toggle's selected surface.
+.visibility[aria-pressed='true'] {
+  color: var(--lp-color-text);
+  background: transparent;
+  border-color: transparent;
+
+  &:hover {
+    background: var(--lp-color-surface-soft);
+  }
+}
+
+.empty {
+  margin: 0;
+  color: var(--lp-color-text-muted);
+}
+
+@media (forced-colors: active) {
+  .layer.active {
+    border-inline-start-color: Highlight;
+  }
+}

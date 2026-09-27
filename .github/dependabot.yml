@@ -1,0 +1,39 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      actions: { patterns: ["*"] }
+  - package-ecosystem: cargo
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      cargo: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule: { interval: weekly }
+    groups:
+      frontend: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /player-js
+    schedule: { interval: weekly }
+    groups:
+      player-js: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /tauri/tests/e2e
+    schedule: { interval: weekly }
+    groups:
+      desktop-e2e: { patterns: ["*"] }
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule: { interval: weekly }
+  # H14: the base images of docker/*.Dockerfile, pinned by digest, and the self-hosting example's.
+  - package-ecosystem: docker
+    directory: /docker
+    schedule: { interval: weekly }
+    groups:
+      docker: { patterns: ["*"] }
+  - package-ecosystem: docker-compose
+    directory: /docker/selfhost
+    schedule: { interval: weekly }

@@ -1,0 +1,126 @@
+// Tabs and menus (design-system/docs/components.md, "Navigation, tabs and settings").
+//
+// Tabs swap peer panels in one context; route changes stay links. The behaviour (one active
+// tab, roving tabindex, arrows, Home/End) belongs to the component that owns them:
+//
+//   <div class="lp-tabs" role="tablist" aria-label="…">
+//     <button class="lp-tab" role="tab" id="t1" aria-selected="true" aria-controls="p1">…</button>
+//   </div>
+//   <div class="lp-tab-panel" role="tabpanel" id="p1" aria-labelledby="t1">…</div>
+//
+// A menu is the `lp-menu-button` component (app/ui/menu), which draws `.lp-menu` and its items.
+
+.lp-tabs {
+  display: flex;
+  gap: var(--lp-space-1);
+  overflow-x: auto;
+  border-bottom: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  // Room for the focus outline, which the scrolling box would crop.
+  padding: var(--lp-focus-offset) var(--lp-focus-offset) 0;
+}
+
+.lp-tab {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--lp-space-2);
+  align-items: center;
+  min-height: var(--lp-control-height-compact);
+  padding: var(--lp-space-1) var(--lp-space-3);
+  margin: 0 0 calc(-1 * var(--lp-border-width));
+  font: inherit;
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  color: var(--lp-color-text-muted);
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--lp-border-width-strong) solid transparent;
+  border-radius: var(--lp-radius-medium) var(--lp-radius-medium) 0 0;
+
+  &:hover {
+    color: var(--lp-color-text);
+    background: var(--lp-color-surface-soft);
+  }
+
+  &[aria-selected='true'] {
+    color: var(--lp-color-accent-text);
+    border-bottom-color: var(--lp-color-accent);
+  }
+}
+
+.lp-tab-panel {
+  padding-block-start: var(--lp-space-3);
+}
+
+.lp-menu {
+  position: absolute;
+  inset-block-start: calc(100% + var(--lp-space-1));
+  inset-inline-end: 0;
+  z-index: var(--lp-z-dropdown);
+  box-sizing: border-box;
+  min-width: 14rem;
+  max-width: min(22rem, calc(100vw - 2 * var(--lp-space-4)));
+  padding: var(--lp-space-1);
+  color: var(--lp-color-text);
+  background: var(--lp-color-surface-raised);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+  box-shadow: var(--lp-shadow-medium);
+}
+
+.lp-menu__header {
+  padding: var(--lp-space-2) var(--lp-space-3);
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.lp-menu__list {
+  display: grid;
+  gap: 0.125rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.lp-menu__item {
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--lp-space-2);
+  align-items: center;
+  width: 100%;
+  min-height: var(--lp-control-height-compact);
+  padding: var(--lp-space-1) var(--lp-space-3);
+  font: inherit;
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-semibold);
+  color: var(--lp-color-text);
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  border-radius: var(--lp-radius-medium);
+
+  // Arrow keys move the focus programmatically: the item shows it even after a pointer opened
+  // the menu, when the browser draws no focus-visible ring.
+  &:hover,
+  &:focus {
+    text-decoration: none;
+    background: var(--lp-color-surface-soft);
+  }
+}
+
+.lp-menu__separator {
+  height: 0;
+  margin: var(--lp-space-1) 0;
+  border: 0;
+  border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+}
+
+@media (pointer: coarse) {
+  .lp-menu__item {
+    min-height: var(--lp-control-height);
+  }
+}

@@ -12,7 +12,9 @@ Rules for every workflow, now and later:
 - actions are pinned to a full commit SHA, the version in a comment: `actions/checkout@<sha> # v5`;
 - `permissions: {}` at the top; each job asks only for what it uses, `contents: read` by default;
 - `concurrency: { group: "${{ github.workflow }}-${{ github.ref }}", cancel-in-progress: true }`
-  on pull requests; pushes are never cancelled;
+  on pull requests; pushes are never cancelled. A reusable workflow (`workflow_call`) declares
+  none: it runs in its caller's group, and its `github.workflow` is the caller's name, so the
+  same group deadlocks against the caller;
 - no secret reaches a pull request job, and `pull_request_target` is never used;
 - a job that needs the Rust toolchain runs `rustup show`, which installs what `rust-toolchain.toml`
   pins; a job that needs Node uses `actions/setup-node` with `node-version-file: .nvmrc`.

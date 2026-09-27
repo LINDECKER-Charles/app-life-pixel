@@ -172,16 +172,23 @@ data export unzipped and opened by H2's adapter; deletion leaving nothing of the
 | `sign-in-page.ts`, `sign-up-page.ts` | the forms |
 | `verify-email-page.ts` | reads `token` from the URL, verifies, says the result |
 | `reset-password-page.ts`, `reset-password-confirm-page.ts` | request a link; set a new password |
-| `account-page.ts` | the address and its verification (resend), storage used against the quota, language, data export, deletion, sign-out |
+| `account-page.ts` | the address and its verification (resend), storage used against the quota, language, data export, sign-out |
+| `deletion/account-deletion.ts` | the account deletion, last on the account page |
+| `form/` | `FormErrors`, the error summary and the password field shared by the forms |
 | `account-menu.ts` | the header menu: "Sign in", or the address with Account, Library, Sign out |
 
 - `SessionStore.load()` runs at start-up on the hosted app — never on the desktop — through
   `GET /auth/session`. A `401` on a later call clears the session; a `426` opens a blocking dialog
   asking to reload.
-- Forms: labelled Ionic inputs, `autocomplete` set (`email`, `current-password`, `new-password`),
-  lengths from the engine's limits, the server's codes shown next to their field as
-  `errors.<code>`, focus moved to the first error, a show-password toggle.
-- Deleting the account asks for the password and an explicit confirmation naming the address.
+- Forms: native inputs with visible labels, `autocomplete` set (`email`, `current-password`,
+  `new-password`), lengths from the engine's limits, a show-password toggle. Submit buttons stay
+  enabled: submitting checks the fields, then an error summary lists each error (a link to its
+  field) and the focus moves to the first invalid field — or to the summary for an error of the
+  whole form. The server's codes are shown next to their field as `errors.<code>`, tied to it by
+  `aria-describedby`.
+- Deleting the account states its consequences, then asks for the password and an explicit
+  confirmation naming the address; the final button stays disabled until the address matches.
+  It carries no decoration.
 - Sign-up links H16's terms and privacy policy (`/legal/terms`, `/legal/privacy`).
 - Sign-in and sign-up are pages of the same app: the work in the editor survives them, and a
   `returnUrl` brings the person back.
@@ -220,19 +227,29 @@ export const LIBRARY_STORE = new InjectionToken<LibraryStore>('LibraryStore');
   Failures reject with `{ code, params }`.
 - `CurrentAnimation` (`current-animation.ts`) knows whether the editor holds a saved animation —
   its id, version and project — or unsaved work.
-- **Pages**: the library lists projects with their counts, and animations across projects with a
-  search field; create, rename, duplicate and delete projects; for animations: open
-  (`/editor/:animationId`), rename, move, duplicate, delete, each with a confirmation when it
-  destroys. Lists load 50 at a time with a "Load more" button. Duplicate names are built by the
-  client from translated keys (`library.copy_of`).
+- **Pages** (`pages/`, on the page template of D38: `ion-content`, one `h1`, no nested `main`):
+  the library's header says what it holds and offers "Create an animation"; it lists projects with
+  their counts, and animations across projects with a search field. Each row is compact: the
+  title, a link that opens it (`/editor/:animationId`), its size and frame count, an "Actions for
+  …" menu — Rename, Move, Duplicate for an animation; Rename, Duplicate for a project — and
+  Delete, apart, which asks for a confirmation naming what is lost. A list says each of its states
+  apart (`lists/list-status.ts`): loading its first page; a failure to read it, an error with
+  Retry, never an empty list; an action that failed, with Dismiss; no saved animation yet, an empty
+  state with Pip; no animation matching the search, without Pip, with "Clear the search". Lists
+  load 50 at a time with a "Load more" button. Duplicate names are built by the client from
+  translated keys (`library.copy_of`).
 - **Saving** (Ctrl/⌘ `S`, and the Save button of the editor's header):
   - a visitor is asked to sign in or sign up; once signed in, saving goes on;
   - unsaved work asks for a project — pick one or create one — then `createAnimation`;
   - a saved animation calls `saveDocument` with its version;
-  - `document.version_conflict` offers: reload the saved version, overwrite it — read the current
-    version, then save —, or save a copy;
-  - `quota.storage_exceeded` shows the usage, the limit and a link to the library;
-  - success calls `engine.markSaved()`; failure keeps the work and says why.
+  - `document.version_conflict` offers, each with its consequence written under it: save a copy
+    (recommended, and first), reload the saved version — the edits are lost —, or overwrite it —
+    the changes saved elsewhere are lost; it reads the current version, then saves. Nothing
+    destructive is preselected or focused first;
+  - `quota.storage_exceeded` says the work is still open, shows the usage read from `usage()` and
+    the limit — or that the usage is unavailable, never an invented zero — and links the library;
+  - success calls `engine.markSaved()`; failure keeps the work open and says why, with the editor's
+    save state at "Could not save" (editor.md, U1).
 - Opening another animation while there is unsaved work asks first.
 - **Keys**: `library.`.
 

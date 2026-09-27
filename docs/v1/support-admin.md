@@ -122,7 +122,7 @@ one too. After an erasure, the entry keeps the account id and the reason, never 
 | `GET /users?q&status&cursor&limit` | users found by address or id: `id`, `email`, `emailVerified`, `plan`, `status`, `storageUsedBytes`, `createdAt`, `lastSeenAt` |
 | `GET /users/{id}` | the same, plus language, project and animation counts, events of the last 30 days by name, sessions, support requests; A3 adds tokens |
 | `POST /users/{id}/suspend`, `POST /users/{id}/reactivate` | `{ reason }` → `204`; suspending ends the sessions |
-| `GET /users/{id}/export` | the zip of H6 |
+| `POST /users/{id}/export` | `{ reason }` → the zip of H6; a `POST` with a body, not a `GET`, because the admin console asks a reason for every user action and the audit entry keeps it |
 | `DELETE /users/{id}` | `{ reason }` → `204`, H6's deletion |
 | `GET /support-requests?status&category&assignee&cursor&limit` | the queue, with the account's address and each request's age |
 | `GET /support-requests/{id}` | the thread with internal notes, the context, `hasScreenshot` |
@@ -163,7 +163,7 @@ audited in its transaction, a failure leaving neither the change nor the entry; 
 | `LPA_PUBLIC_URL`, `LPA_APP_DIR`, `LPA_I18N_DIR` | `http://localhost:8463`, `frontend/dist/admin/browser`, `i18n` | |
 | `LPA_ALLOWED_ORIGINS` | `http://localhost:4263` | more origins the CSRF check accepts, for `ng serve`; empty on the hosts |
 | `LPA_DATABASE_URL` | `postgres://life_pixel_admin:local@127.0.0.1:5460/life_pixel_admin` | |
-| `LPA_SESSION_SECRET`, `LPA_TOTP_KEY` | 64 hexadecimal characters each | CSRF key; key encrypting the TOTP secrets |
+| `LPA_SESSION_SECRET`, `LPA_TOTP_KEY` | 64 hexadecimal characters each, public development keys of one repeated byte | CSRF key; key encrypting the TOTP secrets. Outside `local`, a key of fewer than 17 distinct bytes is refused (`WeakKey`) |
 | `LPA_SERVER_ADMIN_API_URL`, `LPA_SERVER_ADMIN_API_SECRET` | `http://127.0.0.1:8462/internal/admin/v1`, the server's secret | |
 | `LPA_ENVIRONMENTS` | `staging,production` | the environments its monitoring shows |
 | `LPA_VICTORIAMETRICS_URL`, `LPA_VICTORIALOGS_URL`, `LPA_ALERTMANAGER_URL`, `LPA_GRAFANA_URL` | empty | empty: the page says the source is not configured |

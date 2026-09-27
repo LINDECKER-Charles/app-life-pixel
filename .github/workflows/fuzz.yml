@@ -1,0 +1,51 @@
+name: Fuzz
+on:
+  schedule:
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  # P1: the decoder parses untrusted bytes inside other people's pages. `fuzz-smoke` in
+  # _verify.yml fuzzes it 60 seconds on each pull request; this job fuzzes it 30 minutes every
+  # week and keeps the corpus it grows.
+  decode:
+    name: Fuzz the decoder
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: crates/format
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install the nightly toolchain
+        run: rustup toolchain install nightly --profile minimal
+      - name: Cache Cargo
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          workspaces: crates/format/fuzz
+      - name: Install cargo-fuzz
+        run: cargo +nightly install cargo-fuzz --version 0.13.2 --locked
+      - name: Seed the corpus with the v1 fixture
+        run: mkdir -p fuzz/corpus/decode && cp tests/fixtures/v1/sample.lpix fuzz/corpus/decode/
+      - name: Fuzz for 30 minutes
+        run: cargo +nightly fuzz run decode -- -max_total_time=1800
+      - name: Keep the corpus
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-corpus-decode
+          path: crates/format/fuzz/corpus/decode
+          if-no-files-found: ignore
+      - name: Keep the failing input
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: fuzz-artifacts-decode
+          path: crates/format/fuzz/artifacts/decode
+          if-no-files-found: ignore

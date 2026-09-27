@@ -1,0 +1,28 @@
+<header class="app-header">
+  <a class="brand" routerLink="/editor">
+    <img class="mark" [src]="markSource" alt="" width="28" height="28" />
+    <span>{{ 'app.name' | transloco }}</span>
+  </a>
+  <nav class="navigation" [attr.aria-label]="'shell.nav.label' | transloco">
+    <ul>
+      @for (link of links; track link.path) {
+        <li>
+          <a
+            class="link"
+            [routerLink]="link.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+          >
+            <lp-icon class="link-icon" [name]="link.icon" />
+            <span>{{ link.label | transloco }}</span>
+          </a>
+        </li>
+      }
+    </ul>
+  </nav>
+  @if (accountMenu) {
+    <div class="account">
+      <ng-container *ngComponentOutlet="accountMenu" />
+    </div>
+  }
+</header>

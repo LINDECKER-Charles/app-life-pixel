@@ -1,0 +1,59 @@
+<ion-content>
+  <div class="lp-page lp-page--reading account-form-page">
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'auth.sign_in.title' | transloco }}</h1>
+        <p class="lp-page-header__lead">{{ 'auth.sign_in.lead' | transloco }}</p>
+      </div>
+    </header>
+    <form class="lp-card lp-stack account-form" novalidate (submit)="submit($event)">
+      <lp-error-summary [entries]="form.entries()" [targets]="targets" />
+      <div class="lp-field">
+        <label class="lp-field__label" [for]="id('email')">
+          {{ 'auth.sign_in.email_label' | transloco }}
+        </label>
+        <input
+          #emailInput
+          [id]="id('email')"
+          class="lp-input"
+          type="email"
+          autocomplete="email"
+          [attr.maxlength]="limits.emailMaxChars"
+          [value]="email()"
+          [attr.aria-invalid]="form.of('email') ? 'true' : null"
+          [attr.aria-describedby]="form.of('email') ? id('email-error') : null"
+          (input)="onEmail(emailInput.value)"
+        />
+        @if (form.of('email'); as error) {
+          <p class="lp-field__error" [id]="id('email-error')">
+            <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+          </p>
+        }
+      </div>
+      <lp-password-field
+        [fieldId]="id('password')"
+        [label]="'auth.sign_in.password_label' | transloco"
+        autocomplete="current-password"
+        [value]="password()"
+        [error]="form.of('password')"
+        (valueChange)="onPassword($event)"
+      />
+      <p class="account-form__note">
+        <a routerLink="/reset-password">{{ 'auth.sign_in.forgot_password' | transloco }}</a>
+      </p>
+      <button
+        type="submit"
+        class="lp-button lp-button--primary account-form__submit"
+        [attr.aria-busy]="pending() ? 'true' : null"
+      >
+        {{ 'auth.sign_in.submit' | transloco }}
+      </button>
+    </form>
+    <p class="account-form__aside">
+      {{ 'auth.sign_in.no_account' | transloco }}
+      <a routerLink="/sign-up" [queryParams]="{ returnUrl: returnUrl() }">
+        {{ 'auth.sign_in.sign_up_link' | transloco }}
+      </a>
+    </p>
+  </div>
+</ion-content>

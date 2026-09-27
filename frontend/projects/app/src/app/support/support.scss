@@ -1,0 +1,74 @@
+// Shared by the support pages and the new request's form. The page template, cards, panels, pills,
+// fields and buttons are global (_page.scss, _surfaces.scss, _feedback.scss, _fields.scss).
+
+.state,
+.meta,
+.note {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.state {
+  font-size: var(--lp-font-size-body);
+}
+
+.actions,
+.back {
+  margin: 0;
+}
+
+.back a {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+}
+
+.requests,
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.request {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2) var(--lp-space-3);
+  align-items: center;
+
+  .meta {
+    flex-basis: 100%;
+  }
+}
+
+.request__link {
+  font-weight: var(--lp-font-weight-bold);
+}
+
+.message {
+  display: grid;
+  gap: var(--lp-space-2);
+
+  p {
+    margin: 0;
+  }
+}
+
+// The team's messages: an edge as well as the soft surface, never the colour alone.
+.team {
+  background: var(--lp-color-surface-soft);
+  border-inline-start: var(--lp-border-width-strong) solid var(--lp-color-accent);
+}
+
+.body {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,7 @@
+// The tag and the scale side by side where they fit, one above the other on a narrow screen.
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: var(--lp-space-4);
+  align-items: start;
+}

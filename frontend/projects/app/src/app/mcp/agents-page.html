@@ -1,0 +1,57 @@
+<ion-content>
+  <div class="lp-page lp-page--reading">
+    <a class="back" routerLink="/settings">
+      <lp-icon name="chevron-left" size="small" />
+      {{ 'mcp.agents.back' | transloco }}
+    </a>
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'mcp.agents.title' | transloco }}</h1>
+        <p class="lp-page-header__lead">{{ 'mcp.agents.intro' | transloco }}</p>
+      </div>
+    </header>
+    @switch (lookup().kind) {
+      @case ('loading') {
+        <p class="loading" role="status">{{ 'common.loading' | transloco }}</p>
+      }
+      @case ('failed') {
+        <lp-status-banner variant="danger">
+          <p>{{ 'mcp.agents.unavailable' | transloco }}</p>
+        </lp-status-banner>
+      }
+      @default {
+        @if (paths(); as agentPaths) {
+          @for (setup of setups(); track setup.id) {
+            <section class="lp-card" [attr.aria-labelledby]="id(setup.id + '-heading')">
+              <h2 class="lp-card__title" [id]="id(setup.id + '-heading')">
+                {{ setup.heading | transloco }}
+              </h2>
+              <div class="lp-stack">
+                <p>{{ setup.hint | transloco }}</p>
+                <lp-copy-block [text]="setup.text" [copyLabel]="setup.copyLabel" />
+              </div>
+            </section>
+          }
+          <lp-status-banner variant="info">
+            <p class="library">
+              {{ 'mcp.agents.library' | transloco: { path: agentPaths.libraryPath } }}
+            </p>
+          </lp-status-banner>
+        } @else {
+          <lp-status-banner variant="warning">
+            <p>{{ 'mcp.agents.no_cli' | transloco }}</p>
+          </lp-status-banner>
+        }
+      }
+    }
+    <section class="lp-section" [attr.aria-labelledby]="id('abilities-heading')">
+      <h2 [id]="id('abilities-heading')">{{ 'mcp.agents.abilities.heading' | transloco }}</h2>
+      <ul>
+        @for (ability of abilities; track ability) {
+          <li>{{ ability | transloco }}</li>
+        }
+      </ul>
+      <p>{{ 'mcp.agents.abilities.live' | transloco }}</p>
+    </section>
+  </div>
+</ion-content>

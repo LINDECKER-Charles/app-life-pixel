@@ -6,19 +6,36 @@ the codebase. Claude is the first client we target; any MCP client works.
 
 ## Where it runs
 
-| Distribution | Transport | Authentication | Registering it in Claude Code |
-|---|---|---|---|
-| Hosted | Streamable HTTP, `https://lifepixel.tech/mcp` | personal access token; OAuth 2.1 next | `claude mcp add --transport http life-pixel https://lifepixel.tech/mcp --header "Authorization: Bearer <token>"` |
-| Self-hosted | the same, on the user's host | the same | the same, with the user's host |
-| Desktop and CLI | stdio, `life-pixel mcp` | none: the local user | `claude mcp add life-pixel -- life-pixel mcp` |
+| Distribution | Transport | Authentication |
+|---|---|---|
+| Hosted | Streamable HTTP, `https://lifepixel.tech/mcp` | personal access token; OAuth 2.1 next |
+| Self-hosted | the same, on the user's host | the same |
+| Desktop and CLI | stdio, `life-pixel mcp` | none: the local user |
+
+Registering it in a client — the app prints these commands with the right values: the token
+dialog of `settings/tokens` for the hosted and self-hosted servers, `settings/agents` on the
+desktop:
+
+| Client | Hosted and self-hosted | Desktop and CLI |
+|---|---|---|
+| Claude Code | `claude mcp add --transport http life-pixel https://lifepixel.tech/mcp --header "Authorization: Bearer <token>"` | `claude mcp add life-pixel -- life-pixel mcp` |
+| Codex | `codex mcp add life-pixel --url https://lifepixel.tech/mcp --bearer-token-env-var LIFE_PIXEL_TOKEN` | `codex mcp add life-pixel -- life-pixel mcp` |
+| other clients | their own configuration, with the same URL and header | an `mcpServers` entry launching `life-pixel mcp` |
 
 - The staging endpoint, `https://staging.lifepixel.tech/mcp`, announces itself as
   `life-pixel-staging`, so that both environments can sit side by side in a client configuration.
+- Codex takes no secret on its command line: at each start, it reads the token from the
+  environment variable named at registration. The app names it after the server —
+  `LIFE_PIXEL_TOKEN`, `LIFE_PIXEL_STAGING_TOKEN` — for the same reason.
 - claude.ai and Claude Desktop connectors authenticate remote servers with OAuth: OAuth 2.1, as the
   MCP authorization specification describes it, comes right after token authentication (see
   [product.md](product.md)). Claude Desktop can also launch the local server over stdio.
 - The local server works on the desktop app's library folder; the app picks up the changes an
   agent makes.
+- Every transport offers the MCP revisions up to 2025-11-25, negotiated by `initialize`. It does
+  not offer 2026-07-28 while `rmcp` leaves out the cache hints that revision requires on list
+  results: a client probing with `server/discover` is refused with `-32022` and falls back to
+  `initialize` (see [mcp-troubleshooting.md](mcp-troubleshooting.md)).
 
 ## Tools
 

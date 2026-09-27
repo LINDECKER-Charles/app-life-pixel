@@ -1,0 +1,118 @@
+<form class="form" novalidate (submit)="submit($event)">
+  <div class="lp-dialog__body">
+    <fieldset class="lp-fieldset">
+      <legend>{{ 'tools.sprite_sheet.cell_size' | transloco }}</legend>
+      <p [id]="id('size-hint')" class="lp-field__hint">
+        {{ 'tools.sprite_sheet.size_hint' | transloco: cellBounds() }}
+      </p>
+      <div class="sides">
+        <div class="lp-field">
+          <label class="lp-field__label" [for]="id('cell-width')">{{
+            'tools.sprite_sheet.cell_width' | transloco
+          }}</label>
+          <div class="lp-field__control">
+            <input
+              #widthField
+              [id]="id('cell-width')"
+              class="lp-input"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="cellBounds().min"
+              [max]="cellBounds().max"
+              [value]="cellWidth()"
+              [attr.aria-invalid]="!isCellWidthValid()"
+              [attr.aria-describedby]="
+                isCellWidthValid()
+                  ? id('size-hint')
+                  : id('size-hint') + ' ' + id('cell-width-error')
+              "
+              (input)="cellWidth.set(widthField.valueAsNumber)"
+            />
+            <span class="lp-field__unit">{{ 'import.unit.pixels' | transloco }}</span>
+          </div>
+          @if (!isCellWidthValid()) {
+            <p [id]="id('cell-width-error')" class="lp-field__error">
+              <lp-icon name="error" size="small" />
+              {{ 'import.sheet.range_error' | transloco: cellBounds() }}
+            </p>
+          }
+        </div>
+        <div class="lp-field">
+          <label class="lp-field__label" [for]="id('cell-height')">{{
+            'tools.sprite_sheet.cell_height' | transloco
+          }}</label>
+          <div class="lp-field__control">
+            <input
+              #heightField
+              [id]="id('cell-height')"
+              class="lp-input"
+              type="number"
+              inputmode="numeric"
+              step="1"
+              required
+              [min]="cellBounds().min"
+              [max]="cellBounds().max"
+              [value]="cellHeight()"
+              [attr.aria-invalid]="!isCellHeightValid()"
+              [attr.aria-describedby]="
+                isCellHeightValid()
+                  ? id('size-hint')
+                  : id('size-hint') + ' ' + id('cell-height-error')
+              "
+              (input)="cellHeight.set(heightField.valueAsNumber)"
+            />
+            <span class="lp-field__unit">{{ 'import.unit.pixels' | transloco }}</span>
+          </div>
+          @if (!isCellHeightValid()) {
+            <p [id]="id('cell-height-error')" class="lp-field__error">
+              <lp-icon name="error" size="small" />
+              {{ 'import.sheet.range_error' | transloco: cellBounds() }}
+            </p>
+          }
+        </div>
+      </div>
+    </fieldset>
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('duration')">{{
+        'tools.sprite_sheet.duration' | transloco
+      }}</label>
+      <p [id]="id('duration-hint')" class="lp-field__hint">
+        {{ 'tools.sprite_sheet.duration_hint' | transloco: durationRange() }}
+      </p>
+      <input
+        #durationField
+        [id]="id('duration')"
+        class="lp-input duration"
+        type="number"
+        inputmode="numeric"
+        step="1"
+        required
+        [min]="durationRange().min"
+        [max]="durationRange().max"
+        [value]="durationMs()"
+        [attr.aria-invalid]="!isDurationValid()"
+        [attr.aria-describedby]="
+          isDurationValid() ? id('duration-hint') : id('duration-hint') + ' ' + id('duration-error')
+        "
+        (input)="durationMs.set(durationField.valueAsNumber)"
+      />
+      @if (!isDurationValid()) {
+        <p [id]="id('duration-error')" class="lp-field__error">
+          <lp-icon name="error" size="small" />
+          {{ 'import.sheet.range_error' | transloco: durationRange() }}
+        </p>
+      }
+    </div>
+    <p class="lp-field__hint">{{ 'import.palette_notice' | transloco }}</p>
+  </div>
+  <div class="lp-dialog__actions">
+    <button type="submit" class="lp-button lp-button--primary" [disabled]="!isValid()">
+      {{ 'tools.sprite_sheet.submit' | transloco }}
+    </button>
+    <button type="button" class="lp-button lp-button--secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+  </div>
+</form>

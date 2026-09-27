@@ -1,0 +1,49 @@
+{
+  "name": "@life-pixel/player",
+  "version": "1.0.0",
+  "description": "The <life-pixel> element: plays Life Pixel's WebAssembly animation exports",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LINDECKER-Charles/app-life-pixel.git",
+    "directory": "player-js"
+  },
+  "keywords": [
+    "pixel-art",
+    "animation",
+    "webassembly",
+    "custom-element"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./life-pixel.d.ts",
+      "default": "./life-pixel.js"
+    }
+  },
+  "types": "./life-pixel.d.ts",
+  "files": [
+    "life-pixel.js",
+    "life-pixel.d.ts",
+    "snippets"
+  ],
+  "sideEffects": [
+    "./life-pixel.js"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc && esbuild src/index.ts --bundle --format=esm --minify --target=es2022 --outfile=life-pixel.js",
+    "test": "playwright test",
+    "size": "node tools/check-size.mjs"
+  },
+  "packageManager": "npm@11.19.0",
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^24.13.6",
+    "esbuild": "0.28.2",
+    "typescript": "~6.0.3",
+    "wabt": "1.0.39"
+  }
+}

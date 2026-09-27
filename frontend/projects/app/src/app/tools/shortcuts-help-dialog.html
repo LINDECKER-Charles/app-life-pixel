@@ -1,0 +1,32 @@
+<ion-modal
+  class="lp-modal"
+  [isOpen]="state.isOpen()"
+  [attr.aria-label]="'shortcuts.title' | transloco"
+  (didDismiss)="state.close()"
+>
+  <ng-template>
+    <div class="lp-dialog">
+      <header class="lp-dialog__header">
+        <h2 [id]="id('title')" class="lp-dialog__title">
+          {{ 'shortcuts.title' | transloco }}
+        </h2>
+      </header>
+      <!-- The list overflows: a focusable, named region lets the keyboard scroll it (WCAG 2.1.1). -->
+      <div class="lp-dialog__body" role="region" tabindex="0" [attr.aria-labelledby]="id('title')">
+        <ul class="list">
+          @for (shortcut of shortcuts.all(); track $index) {
+            <li class="row">
+              <span>{{ shortcut.label | transloco }}</span>
+              <kbd class="keys">{{ describe(shortcut) }}</kbd>
+            </li>
+          }
+        </ul>
+      </div>
+      <div class="lp-dialog__actions">
+        <button type="button" class="lp-button lp-button--secondary" (click)="state.close()">
+          {{ 'common.close' | transloco }}
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</ion-modal>

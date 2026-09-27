@@ -1,0 +1,49 @@
+// Shared by saving's questions and the project picker. The dialog anatomy, buttons and fields are
+// the global classes of `_components.scss`; only what these dialogs add lives here.
+
+// The picker's form spans the dialog under its title: its body scrolls, its actions stay.
+:host(lp-project-picker),
+.picker {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.more {
+  justify-self: start;
+}
+
+// A conflict's three ways out, each with what it keeps and what it replaces.
+.choices {
+  display: grid;
+  gap: var(--lp-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.choice {
+  display: grid;
+  gap: var(--lp-space-1);
+  padding: var(--lp-space-3) var(--lp-space-4);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+}
+
+.choice__name {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+  font-weight: var(--lp-font-weight-bold);
+  color: var(--lp-color-text);
+}
+
+.usage {
+  margin: 0;
+  font-weight: var(--lp-font-weight-semibold);
+}

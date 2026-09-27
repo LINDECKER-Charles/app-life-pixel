@@ -1,0 +1,54 @@
+// Shared by the token dialog's steps, the creation form and the secret shown once. The dialog's
+// anatomy, the fields, banners and buttons are global (_dialog.scss, _fields.scss, _buttons.scss):
+// each step fills the dialog below its title, its body scrolling above its action row.
+
+:host,
+.step {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.scope-hint {
+  display: block;
+  font-weight: var(--lp-font-weight-regular);
+  color: var(--lp-color-text-muted);
+}
+
+.secret {
+  padding: var(--lp-space-3);
+  margin: 0;
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text);
+  word-break: break-all;
+  white-space: pre-wrap;
+  background: var(--lp-color-surface-soft);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-medium);
+}
+
+.lp-cluster {
+  margin: 0;
+}
+
+.copy-state {
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-semibold);
+}
+
+.copy-done,
+.copy-failed {
+  display: inline-flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+}
+
+.copy-done {
+  color: var(--lp-color-success);
+}
+
+.copy-failed {
+  color: var(--lp-color-danger);
+}

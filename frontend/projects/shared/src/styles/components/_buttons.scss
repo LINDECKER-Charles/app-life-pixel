@@ -1,0 +1,161 @@
+// Buttons (design-system/docs/components.md, "Buttons, links and icon buttons"). A native
+// `<button>` for an action, an `<a>` for navigation; both take these classes.
+//
+//   .lp-button                    base: 44 px minimum, rounded, label and optional `lp-icon`
+//   .lp-button--primary           the one main next step of a decision area
+//   .lp-button--secondary         a supporting action: surface, control border
+//   .lp-button--quiet             a repeated low-priority action: transparent until hovered
+//   .lp-button--danger            confirms a deletion or an overwrite
+//   .lp-button--compact           36 px minimum, for dense editor panels (fine pointers only)
+//   .lp-icon-button               a square icon-only button; its name is an `aria-label`
+//
+// A toggle is any of them with `aria-pressed`: `true` draws the selected marker. Pending work
+// sets `aria-busy="true"` and keeps the label ("Saving…"); impossible actions are `disabled`.
+
+@mixin selected-marker {
+  color: var(--lp-color-accent-text);
+  background: var(--lp-color-accent-soft);
+  border-color: var(--lp-color-accent);
+}
+
+.lp-button,
+.lp-icon-button {
+  display: inline-flex;
+  flex-shrink: 0;
+  gap: var(--lp-space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--lp-control-height);
+  margin: 0;
+  font: inherit;
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  background: transparent;
+  border: var(--lp-border-width) solid transparent;
+  border-radius: var(--lp-radius-large);
+  transition:
+    background-color var(--lp-duration-fast) var(--lp-ease-standard),
+    border-color var(--lp-duration-fast) var(--lp-ease-standard),
+    color var(--lp-duration-fast) var(--lp-ease-standard);
+
+  &:hover {
+    text-decoration: none;
+    background: var(--lp-color-surface-soft);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--lp-color-accent-soft);
+  }
+
+  &[aria-pressed='true'] {
+    @include selected-marker;
+  }
+
+  &[aria-busy='true'] {
+    cursor: progress;
+  }
+
+  &:disabled,
+  &[aria-disabled='true'] {
+    color: var(--lp-color-disabled-text);
+    cursor: not-allowed;
+    background: var(--lp-color-disabled-bg);
+    border-color: var(--lp-color-border-subtle);
+  }
+}
+
+.lp-button {
+  padding: var(--lp-space-2) var(--lp-space-4);
+}
+
+.lp-button--primary {
+  color: var(--lp-color-on-accent);
+  background: var(--lp-color-accent);
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: var(--lp-color-on-accent);
+    background: var(--lp-color-accent-hover);
+  }
+}
+
+.lp-button--secondary {
+  background: var(--lp-color-surface);
+  border-color: var(--lp-color-border);
+}
+
+.lp-button--quiet {
+  color: var(--lp-color-accent-text);
+}
+
+// Danger text on its pale background, filled on hover: both pairs are measured (_tokens.scss).
+.lp-button--danger {
+  color: var(--lp-color-danger);
+  background: var(--lp-color-danger-bg);
+  border-color: var(--lp-color-danger);
+
+  &:hover:not(:disabled),
+  &:active:not(:disabled) {
+    color: var(--lp-color-on-danger);
+    background: var(--lp-color-danger);
+  }
+}
+
+.lp-button--compact {
+  min-height: var(--lp-control-height-compact);
+  padding: var(--lp-space-1) var(--lp-space-3);
+}
+
+.lp-icon-button {
+  min-width: var(--lp-control-height);
+  padding: var(--lp-space-2);
+
+  &.lp-button--compact {
+    min-width: var(--lp-control-height-compact);
+    padding: var(--lp-space-1);
+  }
+}
+
+// A compact control keeps a comfortable target where the pointer is coarse (touch).
+@media (pointer: coarse) {
+  .lp-button--compact,
+  .lp-icon-button.lp-button--compact {
+    min-width: var(--lp-control-height);
+    min-height: var(--lp-control-height);
+  }
+}
+
+// Forced colours drop backgrounds: the selected state keeps a thicker, system-coloured edge.
+// A primary's HighlightText label would sit on the Canvas backplate painted behind text, so it
+// is drawn as a button pair instead, told apart by its strong edge (Highlight when hovered).
+@media (forced-colors: active) {
+  .lp-button[aria-pressed='true'],
+  .lp-icon-button[aria-pressed='true'] {
+    border: var(--lp-border-width-strong) solid Highlight;
+  }
+
+  .lp-button--primary {
+    &,
+    &:hover:not(:disabled),
+    &:active:not(:disabled) {
+      color: ButtonText;
+      background: ButtonFace;
+      border: var(--lp-border-width-strong) solid ButtonText;
+    }
+
+    &:hover:not(:disabled) {
+      border-color: Highlight;
+    }
+
+    &:disabled,
+    &[aria-disabled='true'] {
+      color: GrayText;
+      border-color: GrayText;
+    }
+  }
+}

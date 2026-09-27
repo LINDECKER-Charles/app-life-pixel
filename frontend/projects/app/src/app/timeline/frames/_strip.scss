@@ -1,0 +1,53 @@
+// The timeline's columns, shared by the frame strip and the tag track above it so that a tag's bar
+// spans exactly its frames: a head column of commands, sticky while the strip scrolls, then one
+// column per frame.
+$head-width: 12.5rem;
+$cell-width: 5.5rem;
+$cell-gap: var(--lp-space-2);
+// Below 48 rem (plan C11), the head no longer fits beside the frames: it becomes a row above them.
+$narrow-max-width: 47.99rem;
+
+// Both rows scroll together in the timeline region: each is as wide as its content, at least the
+// region's width, and its head stays at the start edge.
+@mixin row {
+  display: grid;
+  grid-template-columns: $head-width auto;
+  gap: $cell-gap;
+  align-items: start;
+  width: max-content;
+  min-width: 100%;
+
+  @media (max-width: $narrow-max-width) {
+    grid-template-columns: auto;
+  }
+}
+
+@mixin head {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  align-items: stretch;
+  align-self: stretch;
+  padding-inline-end: var(--lp-space-2);
+  background: var(--lp-color-surface);
+  border-inline-end: var(--lp-border-width) solid var(--lp-color-border-subtle);
+
+  // One line each, so that the three frame commands fit the timeline's height.
+  .lp-button {
+    justify-content: flex-start;
+    white-space: nowrap;
+  }
+
+  // As wide as the timeline region shows (its container), the commands stay in view and wrap
+  // while the frames pan beneath them.
+  @media (max-width: $narrow-max-width) {
+    flex-flow: row wrap;
+    width: 100cqi;
+    padding-inline-end: 0;
+    border-inline-end: 0;
+  }
+}

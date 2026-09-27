@@ -1,0 +1,97 @@
+<form class="create" novalidate (submit)="create($event)">
+  <div class="lp-field">
+    <label class="lp-field__label" [for]="id('new-project')">
+      {{ 'library.project.name_label' | transloco }}
+    </label>
+    <div class="lp-field__control">
+      <input
+        [id]="id('new-project')"
+        class="lp-input"
+        type="text"
+        name="name"
+        autocomplete="off"
+        [value]="newName()"
+        (input)="onNameInput($event)"
+      />
+      <button
+        type="submit"
+        class="lp-button lp-button--secondary"
+        [disabled]="newName().trim() === ''"
+      >
+        <lp-icon name="plus" />
+        {{ 'library.project.create' | transloco }}
+      </button>
+    </div>
+  </div>
+</form>
+<lp-list-status [list]="list" />
+@if (list.loaded() && list.items().length === 0) {
+  <p class="empty">{{ 'library.projects.empty' | transloco }}</p>
+}
+<ul class="items" [attr.aria-busy]="list.loading()">
+  @for (project of list.items(); track project.id) {
+    <li class="item">
+      <span class="item-symbol" aria-hidden="true">
+        <lp-icon name="library" size="large" />
+      </span>
+      <div class="text">
+        <a class="name" [routerLink]="['/library/projects', project.id]">{{ project.name }}</a>
+        <span class="meta">
+          {{ 'library.project.count' | transloco: { count: project.animationCount } }}
+        </span>
+      </div>
+      <div class="actions">
+        <lp-menu-button
+          [label]="'library.project.actions_label' | transloco: { name: project.name }"
+        >
+          <span lpMenuTrigger aria-hidden="true">{{ 'library.actions' | transloco }}</span>
+          <span lpMenuTrigger class="lp-visually-hidden">
+            {{ 'library.project.actions_label' | transloco: { name: project.name } }}
+          </span>
+          <button
+            type="button"
+            role="menuitem"
+            class="lp-menu__item"
+            [attr.aria-label]="'library.project.rename_label' | transloco: { name: project.name }"
+            (click)="actions.rename(project, list)"
+          >
+            <lp-icon name="edit" size="small" />
+            {{ 'library.rename' | transloco }}
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            class="lp-menu__item"
+            [attr.aria-label]="
+              'library.project.duplicate_label' | transloco: { name: project.name }
+            "
+            (click)="actions.duplicate(project, list)"
+          >
+            <lp-icon name="duplicate" size="small" />
+            {{ 'library.duplicate' | transloco }}
+          </button>
+        </lp-menu-button>
+        <button
+          type="button"
+          class="lp-icon-button lp-button--quiet lp-button--compact delete"
+          [attr.aria-label]="'library.project.delete_label' | transloco: { name: project.name }"
+          [title]="'library.project.delete_label' | transloco: { name: project.name }"
+          (click)="actions.delete(project, list)"
+        >
+          <lp-icon name="trash" />
+        </button>
+      </div>
+    </li>
+  }
+</ul>
+@if (list.hasMore()) {
+  <button
+    type="button"
+    class="lp-button lp-button--secondary more"
+    [attr.aria-busy]="list.loading()"
+    [disabled]="list.loading()"
+    (click)="list.loadMore()"
+  >
+    {{ 'library.load_more' | transloco }}
+  </button>
+}

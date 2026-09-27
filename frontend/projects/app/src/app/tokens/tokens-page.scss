@@ -1,0 +1,63 @@
+// The page template, panels, pills, banners and buttons are global (_page.scss, _surfaces.scss,
+// _feedback.scss, _buttons.scss): this lays out the list of tokens.
+
+h2:focus-visible {
+  outline-offset: var(--lp-space-1);
+}
+
+.state {
+  margin: 0;
+  color: var(--lp-color-text-muted);
+}
+
+.tokens {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+
+  &:empty {
+    display: none;
+  }
+}
+
+.token {
+  display: grid;
+  gap: var(--lp-space-2);
+
+  p {
+    margin: 0;
+  }
+}
+
+.token__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-1) var(--lp-space-3);
+  align-items: baseline;
+}
+
+.token__name {
+  margin: 0;
+  font-size: var(--lp-font-size-body);
+  overflow-wrap: anywhere;
+}
+
+.token__prefix {
+  font-family: var(--lp-font-family-mono);
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.token__scopes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+}
+
+.token__meta {
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}

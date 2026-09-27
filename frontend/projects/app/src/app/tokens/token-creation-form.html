@@ -1,0 +1,97 @@
+<form class="step" novalidate (submit)="submit($event)">
+  <div class="lp-dialog__body">
+    <lp-error-summary [entries]="errors.entries()" [targets]="targets" />
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('name')">
+        {{ 'tokens.create.name_label' | transloco }}
+      </label>
+      <p class="lp-field__hint" [id]="id('name-hint')">
+        {{ 'tokens.create.name_hint' | transloco: { max: limits.nameMaxChars } }}
+      </p>
+      <input
+        #nameField
+        class="lp-input"
+        type="text"
+        autocomplete="off"
+        required
+        [id]="id('name')"
+        [attr.aria-describedby]="
+          errors.of('name') ? id('name-hint') + ' ' + id('name-error') : id('name-hint')
+        "
+        [value]="name()"
+        [attr.maxlength]="limits.nameMaxChars"
+        [attr.aria-invalid]="errors.of('name') ? 'true' : null"
+        (input)="onName(nameField.value)"
+      />
+      @if (errors.of('name'); as error) {
+        <p class="lp-field__error" [id]="id('name-error')">
+          <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+        </p>
+      }
+    </div>
+    <fieldset
+      class="lp-fieldset"
+      [attr.aria-describedby]="errors.of('scopes') ? id('scopes-error') : null"
+    >
+      <legend>{{ 'tokens.create.scopes_label' | transloco }}</legend>
+      @for (scope of scopeOptions; track scope) {
+        <label class="lp-check">
+          <input
+            #scopeField
+            type="checkbox"
+            [id]="id('scope-' + scope)"
+            [value]="scope"
+            [checked]="scopes().has(scope)"
+            [attr.aria-invalid]="errors.of('scopes') ? 'true' : null"
+            (change)="toggleScope(scope, scopeField.checked)"
+          />
+          <span>
+            {{ scopeLabels[scope] | transloco }}
+            <span class="scope-hint">{{ scopeHints[scope] | transloco }}</span>
+          </span>
+        </label>
+      }
+      @if (errors.of('scopes'); as error) {
+        <p class="lp-field__error" [id]="id('scopes-error')">
+          <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+        </p>
+      }
+    </fieldset>
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('expiry')">
+        {{ 'tokens.create.expiry_label' | transloco }}
+      </label>
+      <select
+        #expiryField
+        class="lp-input"
+        [id]="id('expiry')"
+        [attr.aria-invalid]="errors.of('expiry') ? 'true' : null"
+        [attr.aria-describedby]="errors.of('expiry') ? id('expiry-error') : null"
+        (change)="expiryDays.set(+expiryField.value)"
+      >
+        @for (days of limits.expiryDays; track days) {
+          <option [value]="days" [selected]="days === expiryDays()">
+            {{ 'tokens.create.expiry_days' | transloco: { days } }}
+          </option>
+        }
+      </select>
+      @if (errors.of('expiry'); as error) {
+        <p class="lp-field__error" [id]="id('expiry-error')">
+          <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+        </p>
+      }
+    </div>
+  </div>
+  <div class="lp-dialog__actions">
+    <button
+      type="submit"
+      class="lp-button lp-button--primary"
+      [attr.aria-busy]="pending() ? 'true' : null"
+    >
+      {{ 'tokens.create.submit' | transloco }}
+    </button>
+    <button type="button" class="lp-button lp-button--secondary" (click)="cancelled.emit()">
+      {{ 'common.cancel' | transloco }}
+    </button>
+  </div>
+</form>

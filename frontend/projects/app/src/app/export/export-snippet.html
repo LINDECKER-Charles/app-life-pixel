@@ -1,0 +1,109 @@
+<section class="snippet" [attr.aria-labelledby]="id('title')">
+  <h3 [id]="id('title')" class="heading">{{ 'export.snippet.title' | transloco }}</h3>
+  <div class="fields">
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('framework')">{{
+        'export.snippet.framework' | transloco
+      }}</label>
+      <select
+        [id]="id('framework')"
+        class="lp-input"
+        #frameworkField
+        [value]="framework()"
+        (change)="onFrameworkChange(frameworkField.value)"
+      >
+        @for (item of frameworks; track item) {
+          <option [value]="item">{{ 'export.framework.' + item | transloco }}</option>
+        }
+      </select>
+    </div>
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('tag')">{{
+        'export.snippet.tag' | transloco
+      }}</label>
+      <select
+        [id]="id('tag')"
+        class="lp-input"
+        #tagField
+        [value]="tag()"
+        (change)="tag.set(tagField.value)"
+      >
+        <option value="">{{ 'export.options.tag_all' | transloco }}</option>
+        @for (item of tags(); track item.name) {
+          <option [value]="item.name">{{ item.name }}</option>
+        }
+      </select>
+    </div>
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('src')">{{
+        'export.snippet.src' | transloco
+      }}</label>
+      <input
+        [id]="id('src')"
+        class="lp-input"
+        #srcField
+        type="text"
+        [value]="src()"
+        (change)="src.set(srcField.value)"
+      />
+    </div>
+    <div class="lp-field">
+      <label class="lp-field__label" [for]="id('loader')">{{
+        'export.snippet.loader' | transloco
+      }}</label>
+      <input
+        [id]="id('loader')"
+        class="lp-input"
+        #loaderField
+        type="text"
+        [value]="loader()"
+        (change)="loader.set(loaderField.value)"
+      />
+    </div>
+    <div class="lp-field wide">
+      <label class="lp-field__label" [for]="id('alt')">{{
+        'export.snippet.alt' | transloco
+      }}</label>
+      <input
+        [id]="id('alt')"
+        class="lp-input"
+        #altField
+        type="text"
+        [value]="alt()"
+        (change)="alt.set(altField.value)"
+      />
+    </div>
+  </div>
+  <p class="lp-field__hint">{{ 'export.snippet.hint.' + framework() | transloco }}</p>
+  <pre
+    class="code"
+    role="region"
+    tabindex="0"
+    [attr.aria-label]="'export.snippet.code_label' | transloco"
+  ><code>{{ code() }}</code></pre>
+  <div class="copy">
+    <button
+      type="button"
+      class="lp-button lp-button--secondary"
+      [disabled]="code() === ''"
+      (click)="copy()"
+    >
+      <lp-icon [name]="copyState() === 'copied' ? 'check' : 'copy'" size="small" />
+      @if (copyState() === 'copied') {
+        {{ 'export.snippet.copied' | transloco }}
+      } @else {
+        {{ 'export.snippet.copy' | transloco }}
+      }
+    </button>
+    <p class="lp-visually-hidden" aria-live="polite">
+      @if (copyState() === 'copied') {
+        {{ 'export.snippet.copied' | transloco }}
+      }
+    </p>
+  </div>
+  @if (copyState() === 'failed') {
+    <lp-status-banner variant="danger">
+      <p>{{ 'export.snippet.copy_failed' | transloco }}</p>
+    </lp-status-banner>
+  }
+</section>

@@ -1,0 +1,81 @@
+<nav class="crumbs" [attr.aria-label]="'admin.nav.breadcrumbs' | transloco">
+  <a routerLink="/" [queryParams]="params()">{{ 'admin.overview.title' | transloco }}</a>
+  <span aria-hidden="true">›</span>
+  <span>{{ 'admin.monitoring.title' | transloco }}</span>
+</nav>
+<h1>
+  {{ 'admin.monitoring.title' | transloco }} ·
+  <lp-environment-name [environment]="state().env" />
+</h1>
+
+<nav class="panels" [attr.aria-label]="'admin.monitoring.panels' | transloco">
+  <ul>
+    @for (item of panels; track item.panel) {
+      <li>
+        <a
+          [routerLink]="['/monitoring', item.panel]"
+          [queryParams]="params()"
+          [attr.aria-current]="item.panel === panel() ? 'page' : null"
+          >{{ item.nameKey | transloco }}</a
+        >
+      </li>
+    }
+  </ul>
+</nav>
+
+@if (info(); as info) {
+  <figure class="panel" aria-labelledby="panel-question">
+    <figcaption>
+      <h2 id="panel-question">{{ info.questionKey | transloco }}</h2>
+      <p class="legend">{{ 'admin.chart.legend' | transloco }}</p>
+    </figcaption>
+    @if (loading() && !data()) {
+      <p role="status">{{ 'admin.loading' | transloco }}</p>
+    } @else if (empty()) {
+      <lp-empty-state nothing="admin.chart.empty" [problem]="problem()" />
+    } @else if (data(); as data) {
+      <lp-panel-chart [data]="data" [format]="format()" />
+    }
+  </figure>
+
+  @if (rows().length > 0) {
+    <section aria-labelledby="panel-values">
+      <div class="table-header">
+        <h2 id="panel-values">{{ 'admin.chart.values' | transloco }}</h2>
+        <button type="button" (click)="exportCsv(info)">
+          {{ 'admin.table.export_csv' | transloco }}
+        </button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            @for (column of columns; track column.key) {
+              <th scope="col" [attr.aria-sort]="table.ariaSort(column.key)">
+                <lp-sort-button
+                  [direction]="table.ariaSort(column.key)"
+                  (toggled)="table.toggle(column.key)"
+                  >{{ column.labelKey | transloco }}</lp-sort-button
+                >
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of table.rows(); track $index) {
+            <tr>
+              <th scope="row">{{ row.label }}</th>
+              <td>
+                {{ (row.previous ? 'admin.chart.previous' : 'admin.chart.current') | transloco }}
+              </td>
+              <td>{{ value(row.last) }}</td>
+              <td>{{ value(row.min) }}</td>
+              <td>{{ value(row.max) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+} @else {
+  <lp-empty-state nothing="admin.monitoring.unknown_panel" [params]="{ panel: panel() }" />
+}

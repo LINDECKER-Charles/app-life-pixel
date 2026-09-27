@@ -1,0 +1,26 @@
+// Shared by the account's form pages: sign-in, sign-up, verification and password reset. The page
+// template, the card and the fields are global (_page.scss, _surfaces.scss, _fields.scss): this
+// only keeps these forms short, an address and a password wide.
+
+.account-form-page {
+  max-width: 32rem;
+}
+
+.account-form {
+  --lp-stack-gap: var(--lp-space-5);
+}
+
+.account-form__submit {
+  width: 100%;
+}
+
+.account-form__note {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.account-form__aside {
+  margin: 0;
+  text-align: center;
+}

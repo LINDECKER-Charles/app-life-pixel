@@ -1,0 +1,104 @@
+<ion-content>
+  <div class="lp-page lp-page--reading">
+    <p class="back">
+      <a routerLink="/support">
+        <lp-icon name="chevron-left" size="small" />{{ 'support.thread.back' | transloco }}
+      </a>
+    </p>
+    <header class="lp-page-header">
+      <div class="lp-page-header__text">
+        <h1 class="lp-page-header__title">{{ 'support.thread.title' | transloco }}</h1>
+        @if (account() && thread(); as thread) {
+          <p class="lp-page-header__lead">
+            {{ categoryLabels[thread.category] | transloco }} ·
+            {{
+              'support.thread.status'
+                | transloco: { status: (statusLabels[thread.status] | transloco) }
+            }}
+          </p>
+        }
+      </div>
+    </header>
+    @if (!account()) {
+      <lp-support-signed-out [returnUrl]="'/support/' + requestId()" />
+    } @else if (loadError(); as error) {
+      <lp-status-banner variant="danger">
+        <p>{{ 'errors.' + error.code | transloco: error.params }}</p>
+      </lp-status-banner>
+    } @else if (thread(); as thread) {
+      @if (thread.hasScreenshot) {
+        <p class="meta">{{ 'support.thread.screenshot_attached' | transloco }}</p>
+      }
+
+      <section class="lp-section" [attr.aria-labelledby]="id('messages-heading')">
+        <h2 [id]="id('messages-heading')">{{ 'support.thread.messages' | transloco }}</h2>
+        <ol class="messages">
+          @for (message of thread.messages; track message.id) {
+            <li class="lp-panel message" [class.team]="message.author === 'team'">
+              <p class="meta">
+                <strong>
+                  @if (message.author === 'team') {
+                    {{ 'support.thread.author_team' | transloco }}
+                  } @else {
+                    {{ 'support.thread.author_user' | transloco }}
+                  }
+                </strong>
+                · <time [attr.datetime]="message.createdAt">{{ date(message.createdAt) }}</time>
+              </p>
+              <p class="body">{{ message.body }}</p>
+            </li>
+          }
+        </ol>
+      </section>
+
+      <section class="lp-card lp-stack" [attr.aria-labelledby]="id('reply-heading')">
+        <h2 [id]="id('reply-heading')" class="lp-card__title">
+          {{ 'support.thread.reply_heading' | transloco }}
+        </h2>
+        @if (thread.status === 'closed') {
+          <p>{{ 'support.thread.closed' | transloco }}</p>
+        } @else {
+          <form class="lp-stack" novalidate (submit)="send($event, thread)">
+            <lp-error-summary [entries]="errors.entries()" [targets]="targets" />
+            <div class="lp-field">
+              <label class="lp-field__label" [for]="id('reply')">
+                {{ 'support.thread.reply_label' | transloco }}
+              </label>
+              <textarea
+                [id]="id('reply')"
+                class="lp-input"
+                rows="4"
+                [value]="reply()"
+                [disabled]="pending()"
+                [attr.aria-invalid]="errors.of('body') ? 'true' : null"
+                [attr.aria-describedby]="
+                  errors.of('body')
+                    ? id('reply-counter') + ' ' + id('reply-error')
+                    : id('reply-counter')
+                "
+                (input)="onReply($event)"
+              ></textarea>
+              <p [id]="id('reply-counter')" class="lp-field__hint">
+                {{ 'support.new.counter' | transloco: { count: length(), max: maxChars } }}
+              </p>
+              @if (errors.of('body'); as error) {
+                <p class="lp-field__error" [id]="id('reply-error')">
+                  <lp-icon name="error" size="small" />{{ error.key | transloco: error.params }}
+                </p>
+              }
+            </div>
+            <p class="actions">
+              <button
+                type="submit"
+                class="lp-button lp-button--primary"
+                [attr.aria-busy]="pending() ? 'true' : null"
+              >
+                {{ 'support.thread.reply_submit' | transloco }}
+              </button>
+            </p>
+          </form>
+        }
+      </section>
+    }
+  </div>
+</ion-content>

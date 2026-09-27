@@ -2,8 +2,9 @@
 
 An export has to be three things at once: light, dependency-free, and safe to run inside
 someone else's app. This document describes how the design gets there. The compilation
-mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets and the player ABI are
-drafts, settled by the M1 prototype.
+mechanism is settled (D12 in [decisions.md](decisions.md)); the budgets were confirmed by the M1
+prototype's size checkpoint (S1) — see [Budgets](#budgets). The payload and the player ABI are
+specified byte by byte in [crates/format/README.md](../crates/format/README.md), their reference.
 
 Everything an export puts into an app — the player, the loader, the integration snippets — is
 MIT-licensed (D15): the snippets are templates kept with the loader in `player-js`.
@@ -22,13 +23,20 @@ storage quota.
 
 ## Compiling: data, not code
 
-1. **Validate** the document with `core` — the same rules as the editor and the server.
-2. **Flatten** the layers of each frame, keeping palette indices.
+1. **Validate** the document with `core` — the same rules as the editor and the server. Reading a
+   document validates it, so the compiler's `export_wasm` takes an `Animation`, which is valid
+   by construction.
+2. **Flatten** the layers of each frame with `core`'s compositing — the visible layers from
+   bottom to top, index 0 transparent —, keeping palette indices. Palette entry 0, which `core`
+   only requires fully transparent, is written `00 00 00 00`, as the payload requires.
 3. **Encode** the frames (run-length, then delta against the previous frame) into a `format`
-   payload: a header (magic bytes, format version, player ABI version), the palette(s), the
-   frames and their durations, the tags.
+   payload: a header (magic bytes, format version, player ABI version, size, frame count), the
+   palette, the title, the tags with their first and last frames and loop modes, then the frames
+   and their durations. The domain limits of `core` fit within the format's bounds, so every
+   animation the editor accepts encodes.
 4. **Append** the payload to the prebuilt player as a WebAssembly custom section named
-   `life-pixel`.
+   `life-pixel`: byte `0x00`, the LEB128 size of what follows, the LEB128 length of the name,
+   `life-pixel`, the payload.
 
 Custom sections may follow the last section of a module, so step 4 is a plain concatenation:
 the module stays valid and its code stays exactly the code we built and reviewed. A user's
@@ -36,8 +44,15 @@ content can only ever be data, read by a bounds-checked decoder. There is no Rus
 production, an export is deterministic, and the same compiler runs in the browser, on the
 server, in the CLI and on the desktop.
 
-The player embedded in the compiler is built from the same commit, reproducibly; CI checks its
-hash and its size.
+The player embedded in the compiler is built from the same commit, reproducibly: the compiler's
+build script runs the function `cargo xtask build-player` runs (`xtask/src/player_build.rs`),
+into its own target directory, with the workspace and `CARGO_HOME` paths remapped and without
+the outer build's compiler wrappers, flags, target or target directory. Whatever builds the
+compiler — `cargo clippy`, a build for `wasm32-unknown-unknown` —, the module hashes to
+`crates/player/player.sha256`, which a test of the compiler checks; CI checks the hash and the
+size of the player. The loader, `player-js/life-pixel.js`, is embedded as committed. The golden
+exports of `crates/compiler/tests/golden/` are played frame by frame in `wasmi` against
+`core`'s rendering, and in a browser through the loader.
 
 ## Playing
 
@@ -50,15 +65,25 @@ hash and its size.
 4. CSS scales the canvas with `image-rendering: pixelated`: pixel-exact at any size, at no
    resampling cost.
 
-Draft player ABI, version 1:
+Player ABI, version 1: the player exports these functions and its `memory`, and imports nothing;
+every value is a 32-bit integer. The statuses and the playback rules are in
+[crates/format/README.md](../crates/format/README.md#player-abi-v1).
 
-| Export | Role |
-|---|---|
-| `alloc(len) -> ptr` | reserve room for the payload |
-| `load(ptr, len) -> status` | decode and check the payload; a non-zero status refuses it |
-| `tick(elapsed_ms) -> changed` | advance time; tells whether a new image is ready |
-| `frame_ptr() -> ptr`, `width()`, `height()` | where to read the RGBA framebuffer |
-| `set_tag(index)`, `seek(frame)` | control playback |
+| Export | Signature | Effect |
+|---|---|---|
+| `abi_version` | `() -> u32` | `1` |
+| `alloc` | `(len) -> ptr` | reserves `len` bytes for the payload and returns their address, `0` if it cannot; once per instance |
+| `load` | `(ptr, len) -> status` | parses and checks the whole payload written at `ptr`, then shows the first frame of the initial range; a non-zero status refuses it |
+| `width`, `height` | `() -> u32` | the canvas size |
+| `frame_ptr` | `() -> ptr` | the framebuffer: `width × height × 4` bytes of RGBA, rows top to bottom, alpha not premultiplied |
+| `tick` | `(elapsed_ms) -> flags` | advances playback; bit 0: the framebuffer changed; bit 1: the range reached its end |
+| `tag_count` | `() -> u32` | number of tags |
+| `tag_name_ptr`, `tag_name_len` | `(index) -> u32` | the tag's UTF-8 name; `0` for an index out of range |
+| `set_tag` | `(index) -> status` | plays tag `index`, or the whole animation for `0xFFFFFFFF`; shows its first frame |
+| `set_loop` | `(mode) -> status` | `0` the range's own mode, `1` loop, `2` once |
+| `seek` | `(frame) -> status` | shows frame `frame` of the current range, counted from its first frame |
+| `frame_index` | `() -> u32` | the animation frame shown |
+| `title_ptr`, `title_len` | `() -> u32` | the UTF-8 title |
 
 The element also:
 
@@ -109,6 +134,44 @@ mascot.addEventListener('tagend', () => { mascot.tag = 'idle'; });
 
 CI fails when a budget is exceeded. The M1 prototype confirms or revises these numbers once;
 after that, raising a budget is a design discussion, never a silent edit.
+
+**Confirmed by S1's size checkpoint** ([Measured sizes](#measured-sizes)): the player measures
+11,838 B (≤ 16 KiB, 72% of budget) and the loader 1,926 B gzipped (≤ 2 KiB, 94% of budget).
+Neither budget is exceeded, so both are kept as initially set; the loader's headroom is the
+tighter of the two and is worth watching as `player-js/` grows.
+
+## Measured sizes
+
+`cargo xtask measure-sizes` (S1, [docs/v1/format-player.md](v1/format-player.md#s1--size-checkpoint))
+compiles the four animations of [`samples/`](../samples/README.md) as WASM, GIF and APNG through
+the compiler, and as a lossless animated WebP through `img2webp` from their PNG frames — WebP
+measurement only, the format is not exported by the product (see
+[Classic formats](#classic-formats)) — then measures each raw, gzipped at level 9 and with
+brotli at level 11, plus the player alone and the loader. Run twice, the table is identical: the
+compiler, `img2webp` and the two compressors are deterministic for a fixed input.
+
+<!-- sizes:start -->
+| Artefact | Raw | Gzip 9 | Brotli 11 |
+|---|---|---|---|
+| `mascot-wave.wasm` | 13501 B | 6231 B | 5736 B |
+| `mascot-wave.gif` | 1653 B | 852 B | 793 B |
+| `mascot-wave.apng` | 2891 B | 1258 B | 1193 B |
+| `mascot-wave.webp` | 1552 B | 1281 B | 1189 B |
+| `loader-dots.wasm` | 12139 B | 5623 B | 5138 B |
+| `loader-dots.gif` | 321 B | 241 B | 205 B |
+| `loader-dots.apng` | 1098 B | 543 B | 542 B |
+| `loader-dots.webp` | 480 B | 321 B | 295 B |
+| `hero-run.wasm` | 17448 B | 7926 B | 7200 B |
+| `hero-run.gif` | 5066 B | 2644 B | 2580 B |
+| `hero-run.apng` | 7819 B | 3024 B | 2961 B |
+| `hero-run.webp` | 4576 B | 2270 B | 2184 B |
+| `empty-state.wasm` | 13648 B | 6010 B | 5461 B |
+| `empty-state.gif` | 5280 B | 2362 B | 2056 B |
+| `empty-state.apng` | 7307 B | 2464 B | 2349 B |
+| `empty-state.webp` | 1744 B | 1322 B | 1241 B |
+| `player.wasm (no payload)` | 11838 B | 5429 B | 4933 B |
+| `life-pixel.js (loader)` | 4376 B | 1926 B | 1684 B |
+<!-- sizes:end -->
 
 ## Versioning
 

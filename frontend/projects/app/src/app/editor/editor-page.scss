@@ -1,0 +1,200 @@
+// The editor's layout (plan C7, design-system/docs/journeys.md §2): the document bar on top, the
+// tool rail, the canvas stage and the inspector in the middle, the timeline under the rail and the
+// stage. The stage takes the height left, never less than half the window, and the timeline gives
+// way first. The layout adapts to the width (C11, foundations.md, "Responsive composition"):
+// below 75 rem the inspector turns to tabs (InspectorLayout) and may fold away; below 48 rem the
+// regions follow one another in the document's order, and the page scrolls — but for the rail,
+// which shows under the stage so that the canvas comes first. The breakpoints query the page's own
+// width in rem, so that they follow a larger root text size too; whatever still overflows — a
+// short window, large text — scrolls within the editor rather than out of reach.
+$narrow-max-width: 47.99rem;
+$medium-min-width: 48rem;
+$medium-max-width: 74.99rem;
+// Half the window, the least the stage keeps however many rows share the page.
+$stage-min-height: 50dvh;
+// Below 48 rem, the stage's height: most of a phone's screen, and room for the view bar.
+$narrow-stage-height: max(24rem, 60dvh);
+// The widest the rail grows: its buttons wrap within it rather than squeeze the stage.
+$rail-max-width: 10rem;
+$rail-column: fit-content($rail-max-width);
+$stage-column: minmax(16rem, 1fr);
+
+:host {
+  display: flex;
+  flex-direction: column;
+  container: editor / inline-size;
+}
+
+.editor {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-2);
+  // The rail takes its content's width up to a bound, and shrinks before the stage does.
+  grid-template-columns: $rail-column $stage-column var(--lp-layout-inspector);
+  grid-template-rows: auto minmax($stage-min-height, 1fr) minmax(0, var(--lp-layout-timeline));
+  grid-template-areas:
+    'docbar docbar docbar'
+    'rail stage inspector'
+    'timeline timeline inspector';
+
+  @container editor (max-width: #{$narrow-max-width}) {
+    grid-template-columns: minmax(0, 1fr);
+    // `max-content`, not `auto`: the timeline scrolls, and an `auto` row would squeeze it to nothing.
+    grid-template-rows: auto $narrow-stage-height max-content max-content max-content;
+    grid-template-areas: 'docbar' 'stage' 'rail' 'timeline' 'inspector';
+  }
+}
+
+.docbar {
+  display: flex;
+  flex-wrap: wrap;
+  grid-area: docbar;
+  gap: var(--lp-space-2) var(--lp-space-4);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--lp-space-2) var(--lp-space-3);
+  background: var(--lp-color-surface-soft);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+}
+
+.document {
+  display: flex;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+  min-width: 0;
+}
+
+.title {
+  flex: 1 1 12rem;
+  max-width: 32rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
+  align-items: center;
+}
+
+.region,
+.inspector {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-large);
+}
+
+.rail {
+  grid-area: rail;
+  padding: var(--lp-space-2);
+  overflow-y: auto;
+}
+
+// The canvas, with its view bar underneath, fills the stage; the welcome covers it while no
+// document is open.
+.stage {
+  display: grid;
+  grid-area: stage;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: 'canvas';
+  overflow: hidden;
+  background: var(--lp-color-canvas-bg);
+}
+
+.canvas,
+.welcome {
+  grid-area: canvas;
+  min-height: 0;
+}
+
+.welcome {
+  z-index: var(--lp-z-sticky);
+}
+
+.inspector {
+  display: flex;
+  flex-direction: column;
+  grid-area: inspector;
+  overflow-y: auto;
+}
+
+.tabs {
+  padding: var(--lp-space-2) var(--lp-space-2) 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-2);
+  padding: var(--lp-space-3);
+
+  & + & {
+    border-top: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  }
+
+  // A panel behind an unselected tab.
+  &[hidden] {
+    display: none;
+  }
+}
+
+.panel-title {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  font-weight: var(--lp-font-weight-bold);
+  line-height: var(--lp-font-line-height-heading);
+  color: var(--lp-color-text-muted);
+}
+
+// The frame strip may pan within its region; its commands take the region's visible width.
+.timeline {
+  grid-area: timeline;
+  padding: var(--lp-space-2) var(--lp-space-3);
+  overflow: auto;
+  container-type: inline-size;
+}
+
+// The fold of the inspector exists between 48 and 75 rem only: the persistent layout has room
+// for it, and below 48 rem the panels follow the timeline.
+.inspector-toggle {
+  display: none;
+}
+
+@container editor (min-width: #{$medium-min-width}) and (max-width: #{$medium-max-width}) {
+  .inspector-toggle {
+    display: inline-flex;
+  }
+
+  .inspector-closed {
+    grid-template-columns: $rail-column $stage-column;
+    grid-template-areas:
+      'docbar docbar'
+      'rail stage'
+      'timeline timeline';
+
+    .inspector {
+      display: none;
+    }
+  }
+}
+
+// One after another, each region takes its content's height and the page scrolls instead.
+@container editor (max-width: #{$narrow-max-width}) {
+  .docbar {
+    padding: var(--lp-space-2);
+  }
+
+  .rail,
+  .inspector {
+    min-height: auto;
+    overflow: visible;
+  }
+}
