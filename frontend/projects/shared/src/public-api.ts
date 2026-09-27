@@ -17,6 +17,7 @@ export * from './lib/api/support-api';
 export * from './lib/api/tokens-api';
 export * from './lib/appearance/appearance';
 export * from './lib/appearance/apply-appearance';
+export * from './lib/dom/id-scope';
 export * from './lib/i18n/available-languages';
 export * from './lib/i18n/choose-language';
 export * from './lib/i18n/language';
