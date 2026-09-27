@@ -81,8 +81,8 @@ describe('the export dialog', () => {
     await everyRowSettled(root);
     for (const row of rows(root)) {
       const cells = row.querySelectorAll('td');
-      expect(cells[0]?.textContent?.trim()).toMatch(/^\d/);
-      expect(cells[1]?.textContent?.trim()).toMatch(/^\d/);
+      expect(cells[0]?.textContent).toMatch(/^\d[\d.,]*\s?[a-zA-Z]+$/);
+      expect(cells[1]?.textContent).toMatch(/^\d[\d.,]*\s?[a-zA-Z]+$/);
     }
   });
 

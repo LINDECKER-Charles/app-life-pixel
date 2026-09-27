@@ -31,7 +31,7 @@
           <td class="size">
             @switch (row.status) {
               @case ('ready') {
-                {{ rawSize(row) }}
+                <span class="value">{{ rawSize(row) }}</span>
               }
               @case ('loading') {
                 <span class="state">{{ 'export.table.loading' | transloco }}</span>
@@ -46,7 +46,7 @@
           </td>
           <td class="size">
             @if (row.status === 'ready') {
-              {{ gzipSize(row) }}
+              <span class="value">{{ gzipSize(row) }}</span>
             } @else {
               <span class="state">{{ 'export.table.' + row.status | transloco }}</span>
             }
