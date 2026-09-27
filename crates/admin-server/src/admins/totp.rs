@@ -49,6 +49,17 @@ impl TotpSecret {
         base32(&self.0)
     }
 
+    /// The secret of `text`, RFC 4648 base32 as authenticators show it — any case, spaces and
+    /// padding ignored —, or `None` when it is not base32 or not 20 bytes.
+    #[must_use]
+    pub fn from_base32(text: &str) -> Option<Self> {
+        let digits = text
+            .chars()
+            .filter(|character| !character.is_whitespace())
+            .collect::<String>();
+        Self::from_bytes(&base32_decoded(digits.trim_end_matches('='))?)
+    }
+
     /// The code of `step`, as six digits.
     #[must_use]
     pub fn code_at(&self, step: i64) -> String {
@@ -100,10 +111,13 @@ pub fn step_at(now: OffsetDateTime) -> i64 {
     now.unix_timestamp().div_euclid(TOTP_STEP_SECONDS)
 }
 
+/// RFC 4648's base32 alphabet.
+const BASE32_ALPHABET: &[u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+/// The bits one base32 character carries.
+const BITS_PER_CHARACTER: u32 = 5;
+
 /// RFC 4648 base32, without padding.
 fn base32(bytes: &[u8]) -> String {
-    const ALPHABET: &[u8; 32] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-    const BITS_PER_CHARACTER: u32 = 5;
     let mut text = String::new();
     let (mut buffer, mut bits) = (0_u32, 0_u32);
     for byte in bytes {
@@ -111,14 +125,35 @@ fn base32(bytes: &[u8]) -> String {
         bits += 8;
         while bits >= BITS_PER_CHARACTER {
             bits -= BITS_PER_CHARACTER;
-            text.push(char::from(ALPHABET[((buffer >> bits) & 0x1f) as usize]));
+            text.push(char::from(
+                BASE32_ALPHABET[((buffer >> bits) & 0x1f) as usize],
+            ));
         }
     }
     if bits > 0 {
         let index = (buffer << (BITS_PER_CHARACTER - bits)) & 0x1f;
-        text.push(char::from(ALPHABET[index as usize]));
+        text.push(char::from(BASE32_ALPHABET[index as usize]));
     }
     text
+}
+
+/// The bytes of unpadded base32 `text`, in any case: `None` on a character outside the alphabet
+/// or leftover bits that are not zero, as a truncated or mistyped secret leaves.
+fn base32_decoded(text: &str) -> Option<Vec<u8>> {
+    let mut bytes = Vec::with_capacity(text.len() * 5 / 8);
+    let (mut buffer, mut bits) = (0_u32, 0_u32);
+    for character in text.bytes() {
+        let upper = character.to_ascii_uppercase();
+        let value = BASE32_ALPHABET.iter().position(|digit| *digit == upper)?;
+        buffer = (buffer << BITS_PER_CHARACTER) | u32::try_from(value).ok()?;
+        bits += BITS_PER_CHARACTER;
+        if bits >= 8 {
+            bits -= 8;
+            bytes.push(u8::try_from((buffer >> bits) & 0xff).ok()?);
+        }
+    }
+    let leftover = buffer & ((1 << bits) - 1);
+    (bits < BITS_PER_CHARACTER && leftover == 0).then_some(bytes)
 }
 
 #[cfg(test)]
@@ -196,5 +231,35 @@ mod tests {
         assert_eq!(secret.to_base32().len(), 32);
         assert_ne!(secret, TotpSecret::generate());
         assert!(!format!("{secret:?}").contains(&secret.to_base32()));
+    }
+
+    #[test]
+    fn a_secret_reads_back_from_base32_as_an_authenticator_shows_it() {
+        let secret = TotpSecret::generate();
+        assert_eq!(TotpSecret::from_base32(&secret.to_base32()), Some(secret));
+        for shown in [
+            "gezdgnbvgy3tqojqgezdgnbvgy3tqojq",
+            "GEZD GNBV GY3T QOJQ GEZD GNBV GY3T QOJQ",
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ====",
+        ] {
+            assert_eq!(
+                TotpSecret::from_base32(shown),
+                Some(rfc_secret()),
+                "{shown}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_secret_that_is_not_twenty_bytes_of_base32_is_refused() {
+        for text in [
+            "",
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJ",
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGE",
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJ1",
+            "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJ!",
+        ] {
+            assert_eq!(TotpSecret::from_base32(text), None, "{text}");
+        }
     }
 }

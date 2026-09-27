@@ -3,13 +3,17 @@
 //! it; no error quotes a value, so no secret is logged.
 
 mod env;
+mod root_admin;
 mod sections;
 mod values;
 
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 
+use crate::admins::sign_in::AdminAccount;
+
 pub use env::{ConfigError, Env, FromVariable};
+use root_admin::read_root_admin;
 pub use sections::{
     EnvironmentNames, GrafanaDatasources, MonitoringConfig, Selectors, ServerAdminApi, ServiceUrl,
     TrustedProxies,
@@ -46,6 +50,8 @@ pub struct Config {
     pub server_admin_api: ServerAdminApi,
     /// `LPA_ENVIRONMENTS`, the sources, the selectors and `LPA_ALERTS_FILTER`.
     pub monitoring: MonitoringConfig,
+    /// `LPA_ROOT_ADMIN_*`: the admin created when there is none, if set.
+    pub root_admin: Option<AdminAccount>,
     /// `LPA_TRUSTED_PROXIES`: the edge, whose `X-Forwarded-For` names the client.
     pub trusted_proxies: TrustedProxies,
     /// `OTEL_EXPORTER_OTLP_ENDPOINT`: traces are sent only when it is set.
@@ -85,6 +91,7 @@ impl Config {
             totp_key: read_key(&env, "LPA_TOTP_KEY", environment)?,
             server_admin_api: ServerAdminApi::read(&env)?,
             monitoring: MonitoringConfig::read(&env)?,
+            root_admin: read_root_admin(&env)?,
             trusted_proxies: env.parse_or_default("LPA_TRUSTED_PROXIES")?,
             otlp_endpoint: env.optional("OTEL_EXPORTER_OTLP_ENDPOINT"),
             log_filter: env.parse_or_default("RUST_LOG")?,
