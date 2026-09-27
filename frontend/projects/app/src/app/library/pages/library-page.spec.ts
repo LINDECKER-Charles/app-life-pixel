@@ -200,9 +200,12 @@ describe('the library page', () => {
 
   it('names its own fields and sections while the router outlet keeps another copy', async () => {
     await setUp();
-    await render(LibraryPage);
-
+    const kept = await render(LibraryPage);
     const root = await render(LibraryPage);
+    // Creating the second page detached the first: first in the document again, the kept page
+    // would take any id the two pages shared.
+    document.body.prepend(kept);
+    expect(kept.isConnected && root.isConnected).toBe(true);
 
     for (const label of ['Search the animations by title', 'Project name']) {
       expect(root.contains(fieldLabelled(root, label))).toBe(true);
