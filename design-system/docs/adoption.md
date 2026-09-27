@@ -1,8 +1,11 @@
 # Adoption and maintenance
 
-Status: isolated design proposal. The `design-system/` directory defines the visual direction,
-component contracts and proposed journeys. Its reference screens are review artifacts, not live
-routes, and do not implement persistence, the Rust engine, authentication or exports.
+Status: adopted by the application and the admin console (decision D38 in `docs/decisions.md`,
+2026-09-27); see [Adoption status](#adoption-status) for each phase and
+[verification.md](verification.md) for what was observed on the application. The `design-system/`
+directory defines the visual direction, component contracts and proposed journeys. Its reference
+screens are review artifacts, not live routes, and do not implement persistence, the Rust engine,
+authentication or exports.
 
 The warm cream and pale pink surfaces, raspberry action color and occasional chibi bunny Pip belong
 to the product shell. Artist pixels and the drawing workspace remain neutral. Cute expression is
@@ -27,11 +30,11 @@ application. Production behavior must be verified when adopting each component.
 | `frontend/projects/admin/src/app/app.routes.ts` | Guarded admin routes |
 | `frontend/projects/app/src/app/shell/app-header.html` | App navigation and account slot |
 | `frontend/projects/app/src/app/editor/editor-page.html` | Editor region composition |
-| `frontend/projects/app/src/app/editor/editor-page.scss` | Desktop grid; stacked below 768 px |
+| `frontend/projects/app/src/app/editor/editor-page.scss` | Named-area grid; tabbed inspector below 75 rem, one column below 48 rem |
 | `frontend/projects/app/src/app/tools/tool-bar.html` | Native controls with shortcuts and toggles |
 | `frontend/projects/app/src/app/canvas/render/canvas-renderer.ts` | Neutral drawing checkerboard |
 | `frontend/projects/app/src/app/palette/palette-panel.html` | Palette state and user colors |
-| `frontend/projects/app/src/app/timeline/timeline.html` | Layers, frames, tags and playback |
+| `frontend/projects/app/src/app/timeline/timeline.html` | Tags and frames; layers and playback sit in the inspector |
 | `frontend/projects/app/src/app/library/lists/animation-list.html` | Search, rows and pagination |
 | `frontend/projects/app/src/app/library/lists/project-list.html` | Project creation and actions |
 | `frontend/projects/app/src/app/library/save/save-dialog.html` | Save/quota/conflict decisions |
@@ -166,6 +169,21 @@ including touch, safe areas, virtual keyboard and available viewport height.
 
 Each phase is a reviewable change returning to `dev` through a PR. No design phase requires a direct
 commit to `main`/`test`, a production deployment or a change to core architecture.
+
+## Adoption status
+
+Recorded on 2026-09-27 on the integration branch `feat/rose-atelier-redesign`, before its PR to
+`dev`. "Adopted" means shipped in the application's code and covered by its tests; the remaining
+defects are those observed in [verification.md](verification.md#application-verification).
+
+| Phase | Status | Where it landed | Remaining |
+| --- | --- | --- | --- |
+| 1. Review the isolated system | Done | D38 accepted with the maintainer's arbitrations: welcome instead of the forced dialog, Help hidden on the desktop, Nunito in the app only, mark in the header only, admin included, colour parity only | Screen-reader review of the real journeys |
+| 2. Adopt foundations | Adopted | `_tokens.scss` holds the Rose Atelier colours under the production names (light, dark, forced colours) with the Ionic mapping; `token-parity.test.mjs` keeps them equal to `tokens/tokens.css`; Nunito and the assets are copied at build time; the canvas and checkerboard stay neutral | Forced colours: text on `Highlight` fills is hidden by the browser's backplate |
+| 3. Consolidate repeated controls | Adopted | `_components.scss` (buttons, fields, pills, banners, panels, dialog anatomy, page template), `lp-icon`, `lp-empty-state`, `lp-status-banner`; no local `button {}` or `input {}` rule, no hexadecimal colour in the app's styles | — |
+| 4. First-creation journey | Adopted | Welcome in the empty `/editor` (no new route), new-animation dialog, document bar with save state, tool rail, view bar, inspector, timeline, adaptive layout at 75 and 48 rem, export dialog | The shell leaves no room at 400 % zoom; welcome card over the view bar; canvas not redrawn after an image import; Export enabled with no animation |
+| 5. Library and supporting journeys | Adopted | Library, project, settings, agents, account, sign-in and sign-up, password reset, tokens, support, legal and not-found pages on the page template; save, conflict and quota dialogs | Hosted journeys not re-run in the verification environment |
+| 6. Admin and distribution variants | Admin adopted; variants not reviewed | Admin console restyled soberly, system font, no mascot | Desktop (Tauri) shell not reviewed in this pass; Android remains M6 feature work |
 
 ## Verification matrix
 
