@@ -4,7 +4,8 @@ name: Deploy
 # build or the promotion, which passes the target's own repository secrets and nothing else: the
 # runner never receives the other environment's, nor any other secret of the repository. A secret
 # of the same name in the job's GitHub environment (SSH_KEY, HOST, SSH_USER, DEPLOY_PATH,
-# ENV_FILE, KNOWN_HOSTS) takes precedence over the one passed, as GitHub resolves them.
+# ENV_FILE, KNOWN_HOSTS) takes precedence over the one passed, as GitHub resolves them; it is
+# behind that environment's protection rules only once the repository's copy is deleted.
 on:
   workflow_call:
     inputs:
@@ -19,19 +20,19 @@ on:
     secrets:
       ssh_key:
         description: The private key dedicated to CI deployments
-        required: true
+        required: false
       host:
         description: The VPS
-        required: true
+        required: false
       ssh_user:
         description: The account on the VPS, root when empty
         required: false
       deploy_path:
         description: The environment's folder on the VPS
-        required: true
+        required: false
       env_file:
         description: The environment's whole .env
-        required: true
+        required: false
       known_hosts:
         description: >-
           The VPS's ed25519 host key as a known_hosts line; required for production, while staging
@@ -50,7 +51,8 @@ jobs:
       group: deploy-${{ inputs.environment }}
       cancel-in-progress: false
     steps:
-      # A caller may pass an empty secret: nothing is sent before every required one is set.
+      # Every secret is optional for the caller, so that one set on the job's environment can take
+      # the repository's place: this step is where each is required, before anything is sent.
       # Production never trusts an unpinned host key.
       - name: Check the environment and its secrets
         env:
