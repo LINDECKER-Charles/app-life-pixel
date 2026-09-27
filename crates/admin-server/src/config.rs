@@ -106,7 +106,7 @@ fn read_key(
 }
 
 /// What `create-admin` and `disable-admin` need, and nothing else: `LPA_DATABASE_URL` and
-/// `LPA_TOTP_KEY`.
+/// `LPA_TOTP_KEY`, refused when weak outside the `local` of `LPA_ENVIRONMENT`, as `serve` does.
 #[derive(Clone, Debug)]
 pub struct AccountsConfig {
     /// `LPA_DATABASE_URL`.
@@ -116,16 +116,26 @@ pub struct AccountsConfig {
 }
 
 impl AccountsConfig {
-    /// The two variables of the process environment.
+    /// The variables of the process environment.
     ///
     /// # Errors
     ///
-    /// When one is missing or invalid.
+    /// When one is missing, invalid or, for the key, weak.
     pub fn from_env() -> Result<Self, ConfigError> {
-        let env = Env::new(&|variable| std::env::var(variable).ok());
+        Self::from_lookup(&|variable| std::env::var(variable).ok())
+    }
+
+    /// The variables `lookup` finds.
+    ///
+    /// # Errors
+    ///
+    /// When one is missing, invalid or, for the key, weak.
+    pub fn from_lookup(lookup: &dyn Fn(&str) -> Option<String>) -> Result<Self, ConfigError> {
+        let env = Env::new(lookup);
+        let environment = env.parse("LPA_ENVIRONMENT")?;
         Ok(Self {
             database_url: env.parse("LPA_DATABASE_URL")?,
-            totp_key: env.parse("LPA_TOTP_KEY")?,
+            totp_key: read_key(&env, "LPA_TOTP_KEY", environment)?,
         })
     }
 }
