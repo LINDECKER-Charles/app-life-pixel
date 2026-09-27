@@ -7,13 +7,19 @@ use std::net::SocketAddr;
 
 use axum::Router;
 use axum::body::{Body, Bytes};
-use axum::http::Method;
+use axum::http::{Method, StatusCode};
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::routing::{get, post};
 use common::{TestServer, client_peer, empty, get_with, request, send};
 use life_pixel_server::http::problem::{BodyLimit, ensure_problem};
 use life_pixel_server::http::rate_limit::limit_api;
 use serde_json::json;
+
+/// The burst of the `api` policy: 600 requests a minute, one more back every 100 ms.
+const API_ALLOWANCE: usize = 600;
+/// The requests the allowance may win back while a slow runner spends the burst: each stands
+/// for 100 ms, far longer than the burst ever takes.
+const REFILL_MARGIN: usize = 100;
 
 fn with_client(client: &str) -> axum::http::Request<Body> {
     get_with("/api/v1/nothing", "life-pixel-client", client)
@@ -119,10 +125,16 @@ async fn the_api_limit_answers_429_with_retry_after_per_address() {
             .layer(axum::extract::connect_info::MockConnectInfo(peer))
     };
     let ping = || empty(Method::GET, "/ping");
-    for _ in 0..600 {
+    for _ in 0..API_ALLOWANCE {
         assert_eq!(send(limited(client_peer()), ping()).await.body, "pong");
     }
-    let refused = send(limited(client_peer()), ping()).await;
+    let mut refused = send(limited(client_peer()), ping()).await;
+    for _ in 0..REFILL_MARGIN {
+        if refused.status == StatusCode::TOO_MANY_REQUESTS {
+            break;
+        }
+        refused = send(limited(client_peer()), ping()).await;
+    }
     let params = refused.assert_problem(429, "rate_limit.exceeded");
     assert_eq!(params, json!({ "retryAfterSeconds": 1 }));
     assert_eq!(refused.header("retry-after"), "1");
