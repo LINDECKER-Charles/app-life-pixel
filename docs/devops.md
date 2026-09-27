@@ -184,8 +184,10 @@ The chain runs in two services of `compose.deploy.yaml`, profile `backup`, produ
 GitHub secrets, following the shared deployment kit. The deployment's are repository secrets:
 `ci.yml` reads them outside any environment. A secret of the name `_deploy.yml` gives it —
 `SSH_KEY`, `HOST`, `SSH_USER`, `DEPLOY_PATH`, `ENV_FILE`, `KNOWN_HOSTS` — set on the `staging` or
-`production` environment takes precedence over the repository one, which puts it behind that
-environment's protection rules: the setup production should use.
+`production` environment takes precedence over the repository one, and it is behind that
+environment's protection rules once the repository's copy is deleted: the setup production should
+use. `_deploy.yml` declares every secret optional for this reason, and its first step requires
+each one the target needs.
 
 | Secret | Content |
 |---|---|
@@ -228,8 +230,9 @@ which requires the maintainer's approval and holds the signing secrets below.
 | Job | Does |
 |---|---|
 | `desktop` | builds the sidecar and the app for macOS (universal), Windows and Ubuntu 22.04 with `tauri-apps/tauri-action`, using `bundle.conf.json` and `release.conf.json` together; signs and notarises macOS, signs Windows when `WINDOWS_SIGN_COMMAND` is set; publishes a draft release with `latest.json`, or keeps the installers as workflow artifacts on a dry run |
-| `npm-build` | checks that `player-js`'s committed build is current and packs it, with no publishing right |
-| `npm` | publishes that package by trusted publishing (`id-token: write`, `--provenance`, no token), running no dependency code |
+| `frontend` | builds the editor's engine and the front end once, with no secret, for every `desktop` leg |
+| `npm-build` | checks that `player-js`'s committed build is current, with no publishing right |
+| `npm` | publishes `@life-pixel/player` from a clean checkout by trusted publishing (`id-token: write`, `--provenance`, `--ignore-scripts`, no token): nothing is installed and no script runs there |
 | `docker` | retags the `app` and `admin` images already built for this commit (`_build.yml`) as `:vX.Y.Z` and `:latest`, without rebuilding |
 | `attest` | attaches a provenance attestation to every installer of the draft release |
 | `publish` | once every job above passes, turns the draft release into the release |
@@ -249,13 +252,15 @@ a fork's release checks its own releases, not this one's.
 | `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | the Developer ID certificate and notarisation credentials for macOS |
 | `WINDOWS_SIGN_COMMAND` | optional until the Windows signing service is chosen (M5, D32); when set, patches `bundle.windows.signCommand` into `release.conf.json` before the build |
 
-The signing secrets reach the `tauri-action` step alone, never the whole job: `npm ci` and
-`cargo install` run the install and build scripts of every dependency before it, and the front end
-is built before it too, `release.conf.json` turning off the `beforeBuildCommand` that would build
-it again there. That step still compiles the app, so the build scripts and procedural macros of
-its Rust dependencies run with the updater key; `cargo deny` and the pinned lock file are what
-guard them. Isolating the key completely means signing in a job of its own that builds nothing —
-building with `createUpdaterArtifacts` off, then `cargo tauri signer sign` and `latest.json` there.
+The signing secrets reach the `tauri-action` step alone, never the whole job, and no npm package
+runs on that job's runner: the `frontend` job builds the front end, and `release.conf.json` turns
+off the `beforeBuildCommand` that would build it again. The steps of one job share their runner,
+so step-scoped secrets are not isolation from what ran before: the `desktop` job's Rust build
+scripts — `cargo install tauri-cli`'s, the sidecar's, and the app's own, compiled inside the
+signing step — could still reach the updater key and the Apple credentials; `cargo deny` and the
+pinned lock file are what guard them. Isolating the key completely means signing in a job of its
+own that builds nothing — building with `createUpdaterArtifacts` off, then `cargo tauri signer
+sign` and `latest.json` there.
 
 Android is left out of `release.yml` until M6.
 

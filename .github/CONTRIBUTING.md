@@ -376,8 +376,10 @@ docker compose -f compose.yaml -f compose.deploy.yaml --env-file .env.prod.examp
 scripts/backup/rehearse-local.sh   # with the local stack up: rehearses dump, upload, restore
 ```
 
-`scripts/backup/restore.sh <file> <database-url>` runs only on the VPS, by the maintainer, with
-the read-only rclone credentials and the crypt passwords configured as the `backupcrypt` remote.
+`scripts/backup/restore.sh <file> <database>` runs only on the VPS, by the maintainer, with the
+read-only rclone credentials and the crypt passwords configured as the `backupcrypt` remote; the
+server comes from libpq's environment (`PGHOST`, `PGPORT`, `PGUSER`, and `PGPASSWORD` or a
+`PGPASSFILE`), never from a URL on the command line, which the script refuses.
 `rehearse-local.sh` needs `PGPASSWORD` (or `.env`'s `LP_POSTGRES_PASSWORD`) and creates only a
 database and an S3Mock bucket, both named at random, which it removes itself, even on failure.
 
