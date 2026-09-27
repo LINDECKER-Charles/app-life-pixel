@@ -1,0 +1,189 @@
+{
+  "stage": [
+    {
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "stageHeight": 405,
+      "canvasWidth": 950,
+      "canvasHeight": 358,
+      "stageShareOfViewport": 0.527,
+      "artworkFits": true
+    },
+    {
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "stageHeight": 405,
+      "canvasWidth": 608,
+      "canvasHeight": 328,
+      "stageShareOfViewport": 0.527,
+      "artworkFits": true
+    }
+  ],
+  "overflow": {
+    "viewport": {
+      "width": 320,
+      "height": 640
+    },
+    "pageScrollWidth": 320,
+    "scrollsSideways": false,
+    "outside": []
+  },
+  "phone": {
+    "width": 390,
+    "height": 640
+  },
+  "scrolling": [
+    {
+      "path": "/sign-in",
+      "finalPath": "/sign-in",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      }
+    },
+    {
+      "path": "/sign-up",
+      "finalPath": "/sign-up",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      }
+    },
+    {
+      "path": "/reset-password",
+      "finalPath": "/reset-password",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": false,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      }
+    },
+    {
+      "path": "/verify-email",
+      "finalPath": "/verify-email",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": false,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      }
+    },
+    {
+      "path": "/library",
+      "finalPath": "/sign-in",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      }
+    },
+    {
+      "path": "/settings",
+      "finalPath": "/settings",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 1
+      }
+    },
+    {
+      "path": "/legal/terms",
+      "finalPath": "/legal/terms",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      }
+    },
+    {
+      "path": "/visual-review-missing-page",
+      "finalPath": "/visual-review-missing-page",
+      "hasIonContent": true,
+      "pageOverflow": "visible",
+      "natural": {
+        "contentOverflows": false,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      },
+      "stretched": {
+        "contentOverflows": true,
+        "reachedBottom": true,
+        "hiddenAfterScrollPx": 0
+      }
+    }
+  ],
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ]
+}
