@@ -1,90 +1,137 @@
-<ion-modal [isOpen]="isOpen()" [attr.aria-label]="titleKey() | transloco" (didDismiss)="close()">
+<ion-modal
+  class="lp-modal"
+  [isOpen]="isOpen()"
+  [attr.aria-label]="titleKey() | transloco"
+  [lpModalLabel]="titleKey() | transloco"
+  (didDismiss)="close()"
+>
   <ng-template>
     @if (target(); as target) {
-      <div class="dialog">
-        <h2 class="heading">{{ titleKey() | transloco }}</h2>
+      <div class="lp-dialog">
+        <header class="lp-dialog__header">
+          <h2 class="lp-dialog__title">{{ titleKey() | transloco }}</h2>
+        </header>
         <form class="form" novalidate (submit)="submit($event)">
-          <div class="field">
-            <label for="tag-name">{{ 'timeline.tags.dialog.name_label' | transloco }}</label>
-            <input
-              #nameField
-              id="tag-name"
-              type="text"
-              autocomplete="off"
-              required
-              [value]="name()"
-              [attr.maxlength]="limits()?.tagNameMaxChars"
-              [attr.aria-invalid]="!isNameValid()"
-              (input)="name.set(nameField.value)"
-            />
-          </div>
-          <div class="field">
-            <label for="tag-first">{{ 'timeline.tags.dialog.first_label' | transloco }}</label>
-            <input
-              #firstField
-              id="tag-first"
-              type="number"
-              inputmode="numeric"
-              step="1"
-              required
-              min="0"
-              [max]="frameCount() - 1"
-              [value]="first()"
-              [attr.aria-invalid]="!isRangeValid()"
-              (input)="first.set(firstField.valueAsNumber)"
-            />
-          </div>
-          <div class="field">
-            <label for="tag-last">{{ 'timeline.tags.dialog.last_label' | transloco }}</label>
-            <input
-              #lastField
-              id="tag-last"
-              type="number"
-              inputmode="numeric"
-              step="1"
-              required
-              min="0"
-              [max]="frameCount() - 1"
-              [value]="last()"
-              [attr.aria-invalid]="!isRangeValid()"
-              (input)="last.set(lastField.valueAsNumber)"
-            />
-          </div>
-          <fieldset class="field">
-            <legend>{{ 'timeline.tags.dialog.loop_label' | transloco }}</legend>
-            <label>
+          <div class="lp-dialog__body">
+            <div class="lp-field">
+              <label class="lp-field__label" for="tag-name">
+                {{ 'timeline.tags.dialog.name_label' | transloco }}
+              </label>
               <input
-                type="radio"
-                name="tag-loop"
-                value="loop"
-                [checked]="loop() === 'loop'"
-                (change)="loop.set('loop')"
+                #nameField
+                id="tag-name"
+                class="lp-input"
+                type="text"
+                autocomplete="off"
+                required
+                [value]="name()"
+                [attr.maxlength]="limits()?.tagNameMaxChars"
+                [attr.aria-invalid]="showNameError()"
+                [attr.aria-describedby]="showNameError() ? 'tag-name-error' : null"
+                (input)="name.set(nameField.value)"
+                (blur)="nameTouched.set(true)"
               />
-              {{ 'timeline.tags.dialog.loop_loop' | transloco }}
-            </label>
-            <label>
-              <input
-                type="radio"
-                name="tag-loop"
-                value="once"
-                [checked]="loop() === 'once'"
-                (change)="loop.set('once')"
-              />
-              {{ 'timeline.tags.dialog.loop_once' | transloco }}
-            </label>
-          </fieldset>
-          <div class="actions">
+              @if (showNameError()) {
+                <p id="tag-name-error" class="lp-field__error">
+                  <lp-icon name="error" size="small" />
+                  {{
+                    'timeline.tags.dialog.name_error'
+                      | transloco: { max: limits()?.tagNameMaxChars ?? 0 }
+                  }}
+                </p>
+              }
+            </div>
+            <fieldset class="lp-fieldset" aria-describedby="tag-range-hint">
+              <legend>{{ 'timeline.frames.heading' | transloco }}</legend>
+              <p id="tag-range-hint" class="lp-field__hint">
+                {{ 'timeline.tags.dialog.range_hint' | transloco: { count: frameCount() } }}
+              </p>
+              <div class="range">
+                <div class="lp-field">
+                  <label class="lp-field__label" for="tag-first">
+                    {{ 'timeline.tags.dialog.first_label' | transloco }}
+                  </label>
+                  <input
+                    #firstField
+                    id="tag-first"
+                    class="lp-input"
+                    type="number"
+                    inputmode="numeric"
+                    step="1"
+                    required
+                    min="1"
+                    [max]="frameCount()"
+                    [value]="first() + 1"
+                    [attr.aria-invalid]="!isRangeValid()"
+                    [attr.aria-describedby]="isRangeValid() ? null : 'tag-range-error'"
+                    (input)="first.set(firstField.valueAsNumber - 1)"
+                  />
+                </div>
+                <div class="lp-field">
+                  <label class="lp-field__label" for="tag-last">
+                    {{ 'timeline.tags.dialog.last_label' | transloco }}
+                  </label>
+                  <input
+                    #lastField
+                    id="tag-last"
+                    class="lp-input"
+                    type="number"
+                    inputmode="numeric"
+                    step="1"
+                    required
+                    min="1"
+                    [max]="frameCount()"
+                    [value]="last() + 1"
+                    [attr.aria-invalid]="!isRangeValid()"
+                    [attr.aria-describedby]="isRangeValid() ? null : 'tag-range-error'"
+                    (input)="last.set(lastField.valueAsNumber - 1)"
+                  />
+                </div>
+              </div>
+              @if (!isRangeValid()) {
+                <p id="tag-range-error" class="lp-field__error">
+                  <lp-icon name="error" size="small" />
+                  {{ 'timeline.tags.dialog.range_error' | transloco: { count: frameCount() } }}
+                </p>
+              }
+            </fieldset>
+            <fieldset class="lp-fieldset">
+              <legend>{{ 'timeline.tags.dialog.loop_label' | transloco }}</legend>
+              <label class="lp-check">
+                <input
+                  type="radio"
+                  name="tag-loop"
+                  value="loop"
+                  [checked]="loop() === 'loop'"
+                  (change)="loop.set('loop')"
+                />
+                {{ 'timeline.tags.dialog.loop_loop' | transloco }}
+              </label>
+              <label class="lp-check">
+                <input
+                  type="radio"
+                  name="tag-loop"
+                  value="once"
+                  [checked]="loop() === 'once'"
+                  (change)="loop.set('once')"
+                />
+                {{ 'timeline.tags.dialog.loop_once' | transloco }}
+              </label>
+            </fieldset>
+          </div>
+          <div class="lp-dialog__actions">
+            <button type="submit" class="lp-button lp-button--primary" [disabled]="!isValid()">
+              {{ 'timeline.tags.dialog.save' | transloco }}
+            </button>
+            <button type="button" class="lp-button lp-button--secondary" (click)="close()">
+              {{ 'common.cancel' | transloco }}
+            </button>
             @if (isEdit()) {
-              <button type="button" class="danger" (click)="delete()">
+              <button type="button" class="lp-button lp-button--danger delete" (click)="delete()">
+                <lp-icon name="trash" size="small" />
                 {{ 'timeline.tags.dialog.delete' | transloco }}
               </button>
             }
-            <button type="button" class="secondary" (click)="close()">
-              {{ 'common.cancel' | transloco }}
-            </button>
-            <button type="submit" class="primary" [disabled]="!isValid()">
-              {{ 'timeline.tags.dialog.save' | transloco }}
-            </button>
           </div>
         </form>
       </div>

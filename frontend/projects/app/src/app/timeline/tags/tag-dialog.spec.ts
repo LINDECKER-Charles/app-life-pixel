@@ -89,11 +89,50 @@ describe('the tag dialog', () => {
     fixture.detectChanges();
     const dialog = await form();
 
-    dialog.querySelector<HTMLButtonElement>('.danger')?.click();
+    dialog.querySelector<HTMLButtonElement>('.delete')?.click();
     await fixture.whenStable();
 
     expect(engine.document()?.tags).toEqual([]);
     expect(state.current()).toBeNull();
+  });
+
+  it('numbers the range from 1, as the frame strip does', async () => {
+    const { fixture, engine, state } = await setup();
+    state.open({ kind: 'add', first: 1, last: 1 });
+    fixture.detectChanges();
+    const dialog = await form();
+    const first = dialog.querySelector<HTMLInputElement>('#tag-first');
+    const last = dialog.querySelector<HTMLInputElement>('#tag-last');
+    const name = dialog.querySelector<HTMLInputElement>('#tag-name');
+    if (!first || !last || !name) throw new Error('missing fields');
+    expect([first.value, last.value, last.max]).toEqual(['2', '2', '3']);
+
+    name.value = 'blink';
+    name.dispatchEvent(new Event('input'));
+    last.value = '3';
+    last.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    dialog.querySelector<HTMLButtonElement>('button[type="submit"]')?.click();
+    await fixture.whenStable();
+
+    expect(engine.document()?.tags).toEqual([{ name: 'blink', first: 1, last: 2, loop: 'loop' }]);
+  });
+
+  it('says why a range is refused, under the range', async () => {
+    const { fixture, state } = await setup();
+    state.open({ kind: 'add', first: 0, last: 0 });
+    fixture.detectChanges();
+    const dialog = await form();
+    const last = dialog.querySelector<HTMLInputElement>('#tag-last');
+    if (!last) throw new Error('no last field');
+
+    last.value = '9';
+    last.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(last.getAttribute('aria-invalid')).toBe('true');
+    expect(dialog.querySelector('#tag-range-error')).not.toBeNull();
+    expect(dialog.querySelector<HTMLButtonElement>('button[type="submit"]')?.disabled).toBe(true);
   });
 
   it('refuses a duplicate name with the engine error, and keeps the dialog open', async () => {

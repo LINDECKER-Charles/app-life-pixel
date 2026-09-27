@@ -18,7 +18,8 @@ const schedule: (draw: () => void) => void =
 
 /**
  * A frame's thumbnail: the engine's render of `frame`, redrawn at most once per animation frame
- * whenever `frame` or `changedAt` changes. Drawing pixels needs a real 2D canvas context, absent
+ * whenever `frame` or `changedAt` changes, fitted whole into the host's box over the neutral
+ * checkerboard, whatever the animation's proportions. Drawing pixels needs a real 2D canvas context, absent
  * in the test environment: a missing context is not an error, just nothing drawn (editor.md, U3).
  */
 @Component({
@@ -26,12 +27,23 @@ const schedule: (draw: () => void) => void =
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `<canvas #canvas class="thumbnail" width="48" height="48"></canvas>`,
   styles: `
-    .thumbnail {
+    :host {
       display: block;
       width: 48px;
       height: 48px;
+    }
+    .thumbnail {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
       image-rendering: pixelated;
-      background-color: var(--lp-color-surface);
+      background: repeating-conic-gradient(
+          var(--lp-color-checker-dark) 0 25%,
+          var(--lp-color-checker-light) 0 50%
+        )
+        0 0 / 0.5rem 0.5rem;
+      forced-color-adjust: none;
     }
   `,
 })

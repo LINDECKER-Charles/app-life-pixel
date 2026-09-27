@@ -4,10 +4,13 @@ import { TranslocoService, TranslocoTestingModule } from '@jsverse/transloco';
 import { firstValueFrom } from 'rxjs';
 import en from '../../../../../../../i18n/en.json';
 import { EditorStore } from '../../editor/editor-store';
+import { EDITOR_ENGINE } from '../../engine/editor-engine';
 import { EngineStore } from '../../engine/engine-store';
 import { PlaybackPreview } from './playback-preview';
 
 const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] } };
+/** The catalogue by any key, those of i18n-pending/ included once merged. */
+const TEXTS: Readonly<Record<string, string>> = en;
 const NEW_ANIMATION = { title: 'Preview', width: 4, height: 4, layerName: 'Base' };
 
 /** jsdom ships neither: the element's `connectedCallback` and frame loop need a stand-in. */
@@ -32,6 +35,9 @@ describe('the playback preview', () => {
 
   beforeEach(() => {
     vi.stubGlobal('IntersectionObserver', FakeIntersectionObserver);
+    // jsdom cannot fetch a blob: URL, and the preview now shows a player error: the export stays
+    // loading until a test says how the player took it, with its `load` or `error` event.
+    vi.stubGlobal('fetch', () => new Promise<never>(() => undefined));
     rafSpy = vi.spyOn(globalThis, 'requestAnimationFrame').mockReturnValue(0);
     vi.spyOn(globalThis, 'cancelAnimationFrame').mockImplementation(() => undefined);
     // jsdom's Blob/URL.createObjectURL pairing is broken under Vitest; the mission only asks to
@@ -63,6 +69,21 @@ describe('the playback preview', () => {
 
   function button(fixture: ComponentFixture<PlaybackPreview>): HTMLButtonElement {
     return fixture.debugElement.nativeElement.querySelector('button') as HTMLButtonElement;
+  }
+
+  function stage(fixture: ComponentFixture<PlaybackPreview>): HTMLElement {
+    return fixture.nativeElement.querySelector('.stage') as HTMLElement;
+  }
+
+  /** The error the preview shows, once it has failed. */
+  async function failure(fixture: ComponentFixture<PlaybackPreview>): Promise<HTMLElement> {
+    return vi.waitFor(() => {
+      fixture.detectChanges();
+      const root = fixture.nativeElement as HTMLElement;
+      const alert = root.querySelector<HTMLElement>('[role="alert"]');
+      if (!alert) throw new Error('no error shown');
+      return alert;
+    });
   }
 
   async function waitForElement(): Promise<HTMLElementTagNameMap['life-pixel']> {
@@ -107,6 +128,62 @@ describe('the playback preview', () => {
 
     expect(document.querySelector('life-pixel')).toBeNull();
     expect(button(fixture).getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('says so, visibly, when the export fails, and plays again once asked', async () => {
+    const { fixture } = await setup();
+    const engine = TestBed.inject(EDITOR_ENGINE);
+    const exportSpy = vi.spyOn(engine, 'export').mockRejectedValueOnce(new Error('refused'));
+
+    button(fixture).click();
+    const alert = await failure(fixture);
+
+    expect(alert.textContent).toContain(TEXTS['timeline.playback.failed']);
+    expect(document.querySelector('life-pixel')).toBeNull();
+    expect(button(fixture).getAttribute('aria-pressed')).toBe('false');
+
+    button(fixture).click();
+    await waitForElement();
+    fixture.detectChanges();
+    expect(exportSpy).toHaveBeenCalledTimes(2);
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it('says so, visibly, when the player cannot play the export', async () => {
+    const { fixture } = await setup();
+
+    button(fixture).click();
+    const element = await waitForElement();
+    element.dispatchEvent(new Event('error'));
+    const alert = await failure(fixture);
+
+    expect(alert.textContent).toContain(TEXTS['timeline.playback.failed']);
+    expect(document.querySelector('life-pixel')).toBeNull();
+  });
+
+  it('shows that it is preparing until the player has drawn the first frame', async () => {
+    const { fixture } = await setup();
+    expect(stage(fixture).textContent).toContain(TEXTS['timeline.playback.idle']);
+
+    button(fixture).click();
+    const element = await waitForElement();
+    fixture.detectChanges();
+    expect(stage(fixture).getAttribute('aria-busy')).toBe('true');
+    expect(stage(fixture).textContent).toContain(TEXTS['timeline.playback.preparing']);
+
+    element.dispatchEvent(new Event('load'));
+    fixture.detectChanges();
+    expect(stage(fixture).getAttribute('aria-busy')).toBe('false');
+    expect(stage(fixture).textContent?.trim()).toBe('');
+  });
+
+  it('plays even under reduced motion, since the artist asked for it', async () => {
+    const { fixture } = await setup();
+
+    button(fixture).click();
+    const element = await waitForElement();
+
+    expect(element.getAttribute('motion')).toBe('always');
   });
 
   it('the button stops the preview while it plays', async () => {

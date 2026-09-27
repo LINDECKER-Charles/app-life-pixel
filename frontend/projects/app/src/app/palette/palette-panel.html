@@ -1,44 +1,83 @@
-<ul class="swatches">
+<ul class="swatches" role="list">
   @for (color of palette(); track $index; let index = $index) {
     <li class="swatch-item">
       <button
         type="button"
         class="swatch"
-        [class.checkerboard]="index === 0"
-        [style.backgroundColor]="index === 0 ? null : color"
+        [class.transparent]="index === 0"
+        [style.--lp-swatch-color]="index === 0 ? null : color"
         [attr.aria-pressed]="colorIndex() === index"
         [attr.aria-label]="
           (index === 0 ? 'palette.swatch_eraser' : 'palette.swatch') | transloco: { index }
         "
+        [attr.aria-describedby]="index > 0 ? 'palette-reorder-hint' : null"
         [attr.draggable]="index > 0"
         (click)="select(index)"
         (dragstart)="onDragStart($event, index)"
         (dragover)="onDragOver($event)"
         (drop)="onDrop($event, index)"
         (keydown)="onSwatchKeydown($event, index)"
-      ></button>
-      @if (index > 0) {
-        <div class="swatch-actions">
-          <button type="button" class="icon-button" (click)="edit(index)">
-            {{ 'palette.edit' | transloco }}
-          </button>
-          <button type="button" class="icon-button" (click)="remove(index)">
-            {{ 'palette.remove' | transloco }}
-          </button>
-        </div>
-      }
+      >
+        @if (colorIndex() === index) {
+          <span class="check"><lp-icon name="check" size="small" /></span>
+        }
+      </button>
     </li>
   }
 </ul>
-<button
-  type="button"
-  class="add"
-  [disabled]="isFull()"
-  [attr.aria-describedby]="isFull() ? 'palette-full-hint' : null"
-  (click)="add()"
->
-  {{ 'palette.add' | transloco }}
-</button>
+<p id="palette-reorder-hint" class="lp-visually-hidden">
+  {{ 'palette.reorder_hint' | transloco }}
+</p>
+@if (selected(); as selected) {
+  <div class="current">
+    <span
+      class="chip"
+      [class.transparent]="selected.index === 0"
+      [style.--lp-swatch-color]="selected.index === 0 ? null : selected.color"
+    ></span>
+    <div class="current-text">
+      @if (selected.index === 0) {
+        <p class="current-name">{{ 'palette.swatch_eraser' | transloco }}</p>
+        <p class="current-detail">{{ 'palette.transparent_hint' | transloco }}</p>
+      } @else {
+        <p class="current-name">{{ 'palette.swatch' | transloco: { index: selected.index } }}</p>
+        <p class="current-detail current-hex">{{ selected.color }}</p>
+      }
+    </div>
+  </div>
+}
+<div class="actions">
+  <button
+    type="button"
+    class="lp-button lp-button--secondary lp-button--compact"
+    [disabled]="!isEditable()"
+    [attr.aria-label]="'palette.edit_selected' | transloco: { index: colorIndex() }"
+    (click)="edit()"
+  >
+    <lp-icon name="edit" size="small" />
+    {{ 'palette.edit' | transloco }}
+  </button>
+  <button
+    type="button"
+    class="lp-button lp-button--secondary lp-button--compact"
+    [disabled]="!isEditable()"
+    [attr.aria-label]="'palette.remove_selected' | transloco: { index: colorIndex() }"
+    (click)="remove()"
+  >
+    <lp-icon name="trash" size="small" />
+    {{ 'palette.remove' | transloco }}
+  </button>
+  <button
+    type="button"
+    class="lp-button lp-button--quiet lp-button--compact"
+    [disabled]="isFull()"
+    [attr.aria-describedby]="isFull() ? 'palette-full-hint' : null"
+    (click)="add()"
+  >
+    <lp-icon name="plus" size="small" />
+    {{ 'palette.add' | transloco }}
+  </button>
+</div>
 @if (isFull()) {
   <p id="palette-full-hint" class="hint">{{ 'palette.full_hint' | transloco }}</p>
 }
