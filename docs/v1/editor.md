@@ -150,11 +150,9 @@ export interface EditorEngine {
     state (`library/save/state/`, see below), the opening status of a saved animation, then New,
     Save and Export — Export the primary action. All three are native buttons.
   - `rail`: `<lp-tool-bar>`.
-  - `stage`: `<lp-canvas>` on the neutral canvas surround, and a row under it for the view bar
-    (zoom, grid, onion skin, position), a commented insertion point that the canvas task fills with
-    `<lp-view-bar>` (`canvas/view-bar/`). The stage takes the height left, never less than half
-    the window (`50dvh`): at 1366 × 768 and 1024 × 768 it measures 405 pixels, and a 32 × 32
-    animation at zoom 8 is seen whole.
+  - `stage`: `<lp-canvas>`, with its view bar (U2), on the neutral canvas surround. It takes the
+    height left, never less than half the window (`50dvh`): at 1366 × 768 and 1024 × 768 it
+    measures 405 pixels, and a 32 × 32 animation at zoom 8 is seen whole.
   - `inspector`, 17 rem wide on the right: Palette (`<lp-palette-panel>`), Layers
     (`<lp-layer-list>`) and the playback preview (`<lp-playback-preview>`), each under its heading.
   - `timeline`, up to 11 rem under the rail and the stage: `<lp-timeline>`, the tags over the
@@ -234,57 +232,73 @@ shell, the settings and the not-found page.
   is one undo step.
 - **Zoom and pan**: zoom 1 to 64; Ctrl or ⌘ with the wheel, pinch, `+` and `-` zoom around the
   pointer; `0` fits the largest integer zoom into the view. Space with a drag, the middle button, or
-  Shift with the arrows pan.
+  Shift with the arrows pan. A new animation opens centred at zoom 8.
+- **View bar** (`canvas/view-bar/`) under the drawing surface: zoom −, + and fit around the zoom in
+  %, grid and onion skin switches, onion skin before/after counts (0 to 3), the pixel under the
+  pointer or the keyboard cursor, frame N of M, the layer and the tool. Its buttons go through the
+  same viewport and `EditorStore` methods as `+`, `-`, `0`, Shift `G` and `O`.
 - **Keyboard**: the canvas is focusable (`role="application"`, a translated label). The arrows move
-  a pixel cursor; Enter or Space applies the tool there — line, rectangle and select take a first
-  press for the start and a second for the end; Alt with the arrows moves the selection one pixel.
-  A polite live region announces the cursor's position and the colour index.
+  a pixel cursor (a white ring inside a black one); Enter or Space applies the tool there — line,
+  rectangle and select take a first press for the start and a second for the end; Alt with the
+  arrows moves the selection one pixel. A polite live region announces the position and colour.
 - **Keys**: `canvas.`.
 
 **Tests** with the mock engine: a pencil drag sends previews then one `paintStroke` with the
 dragged points; line, rectangle, fill and select send their operation; Escape sends nothing; zoom
-and fit arithmetic; the grid threshold; drawing a pixel with the keyboard alone.
+and fit arithmetic; the grid threshold; drawing a pixel with the keyboard alone; the view bar's
+buttons change `EditorStore` as the shortcuts do.
 
 ## U3 — Timeline
 
 `timeline/`: `lp-timeline` holds the tags and the frames. The layers (`timeline/layers/`) and the
 playback preview (`timeline/playback/`) keep their folder but sit in the editor's inspector (C7).
 
-- **Frames**: thumbnails rendered by the engine into 48-pixel boxes, refreshed at most once per
-  animation frame after a change; the active frame highlighted; a duration field per frame,
-  bounded by the limits; add after the active frame, duplicate, delete; reorder by drag and drop or
-  Alt with ← and →; Shift with a click extends `frameSelection`.
-- **Layers**: listed top layer first; add, delete, rename in place, show or hide
-  (`aria-pressed`), reorder by drag and drop or Alt with ↑ and ↓.
-- **Tags**: bars over their frames; "Add tag" on `frameSelection` asks a name and a loop mode;
-  rename, change, delete. Names that break the rules are refused with the engine's error.
-- **Playback preview**: play (`P`) exports the animation as WASM through the engine and plays it
-  in a `<life-pixel>` element, from a `blob:` URL, on the tag holding the active frame or on every
-  frame: the preview is the shipping player, so no timing rule is written in TypeScript. It never
-  starts on its own; any change stops it. The app depends on `@life-pixel/player` as
-  `"file:../player-js"`, and imports it once.
+- **Frames**: numbered engine thumbnails (48-pixel boxes, refreshed at most once per animation
+  frame), each with its duration in ms, bounded by the limits (a refused value shows the one kept).
+  The active frame (pencil icon, strong edge) is distinct from the range (`aria-pressed` on "Frame
+  N") and scrolls into view. Add after it, duplicate, delete (not the last; focus stays on the
+  strip); reorder by drag and drop or Alt with ← and →; Shift with a click extends `frameSelection`.
+- **Layers**, top first: clicking a name makes it the active layer ("Active", `aria-current`), where
+  the next stroke lands. "Rename layer “X”" or a double-click renames (Enter or blur confirms,
+  Escape reverts); "Show layer “X”" is pressed when visible, a hidden layer says Hidden; "Delete
+  layer “X”" spares the last layer, then focuses the new active one; Alt with ↑ and ↓ on the name
+  or a drag reorders. Adding a layer keeps the active one; the canvas still draws hidden layers.
+- **Tags**: bars on their frames' columns, saying the loop mode in words; "Add tag" on
+  `frameSelection` asks a name, a range numbered from 1 and a loop mode, errors shown in place;
+  rename, change, delete ("Edit tag “…”"). Names that break the rules get the engine's error.
+- **Playback preview**: a fixed 10 rem box saying its scope (one tag or all frames) and its state
+  (idle, preparing, loading, playing, failed — an export or player failure is an alert). Play (`P`)
+  exports the animation as WASM through the engine and plays it in a `<life-pixel>` element, from a
+  `blob:` URL, on the tag holding the active frame or on every frame, with `motion="always"` since
+  the artist started it: the preview is the shipping player, so no timing rule is written in
+  TypeScript. It never starts on its own; any change stops it. The app depends on
+  `@life-pixel/player` as `"file:../player-js"`, and imports it once.
 - Shortcuts: `,` and `.` for the previous and next frame, `P`, `O` for onion skin.
 - **Keys**: `timeline.`.
 
-**Tests**: each action sends its operation; reordering with the keyboard; the tag dialog; the
-preview element given the export's URL and the right tag, and stopped by a change.
+**Tests**: each action sends its operation; keyboard reordering; a clicked layer gets the next
+stroke; the active frame apart from the range; the tag dialog; the preview given the export's URL
+and tag, stopped by a change, and a visible message when the export fails.
 
 ## U4 — Palette and tools
 
 `palette/` (`lp-palette-panel`) and `tools/` (`lp-tool-bar`).
 
-- **Palette**: a grid of swatches with their index; entry 0 is a checkerboard, selectable — it is
-  the eraser's colour — but not editable. Selecting sets `colorIndex`; `[` and `]` move through it.
-  Add and edit through a dialog: a colour input, an alpha slider 0 to 255, and a `#rrggbbaa` field
-  kept in sync. Remove; reorder by drag and drop or Alt with the arrows. A full palette disables
-  Add.
-- **Tool bar**: one button per tool, `aria-pressed`, a tooltip with its shortcut; a filled/outlined
-  switch for the rectangle; undo and redo buttons bound to `canUndo` and `canRedo`.
+- **Palette**: swatches "Colour N", the selected one with a double ring and a check mark; entry 0,
+  a checkerboard described as transparent, is selectable — the eraser's colour — but not editable.
+  Selecting sets `colorIndex`; `[` and `]` move through it. "Edit colour N" and "Remove colour N"
+  act on the selection; a full palette disables Add. The dialog keeps a colour input, an alpha
+  slider 0 to 255 and a `#rrggbbaa` field in sync, and says an invalid hex value, keeping the last
+  valid colour. Drag and drop or Alt with the arrows reorder; the moved colour stays selected.
+- **Tool bar**: an icon rail, one button per tool with `aria-pressed` and a tooltip (`lpTooltip`,
+  `ui/tooltip/`) giving its name and shortcut as a key cap — on hover or keyboard focus, closed by
+  Escape, a press or blur, set as `aria-describedby`. "Filled rectangle" follows the rectangle; undo
+  and redo sit side by side (`canUndo`, `canRedo`); the import buttons are icons.
 - **Import**: "Import image" picks a PNG and applies `importImage` on the active layer and frame,
   at the top-left corner; "Import sprite sheet" picks a PNG, asks the cell size and the frames'
   duration, and applies `importSpriteSheet` after the active frame. Files larger than the limits
   are refused before they are read.
-- **Shortcuts** and the help dialog:
+- **Shortcuts** and the help dialog, which shows the keys as key caps:
 
 | Key | Action | Key | Action |
 |---|---|---|---|
