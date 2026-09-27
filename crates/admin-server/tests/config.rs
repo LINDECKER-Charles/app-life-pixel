@@ -2,7 +2,7 @@
 //! its public development keys — like any weak key — are refused anywhere else, by `serve` and
 //! by the `create-admin` and `disable-admin` commands alike.
 
-#![allow(clippy::unwrap_used)]
+#![allow(clippy::unwrap_used, reason = "a panic is a failed test")]
 
 use std::collections::HashMap;
 

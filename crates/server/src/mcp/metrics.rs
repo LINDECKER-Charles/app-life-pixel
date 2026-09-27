@@ -79,7 +79,10 @@ pub fn record_export(format: ExportFormat, (bytes, elapsed): (Option<usize>, Dur
         return;
     };
     histogram!(EXPORT_DURATION_SECONDS, "format" => format).record(elapsed.as_secs_f64());
-    #[allow(clippy::cast_precision_loss)] // A histogram is a float; files stay far below 2^53.
+    #[allow(
+        clippy::cast_precision_loss,
+        reason = "a histogram is a float; files stay far below 2^53"
+    )]
     histogram!(EXPORT_SIZE_BYTES, "format" => format).record(bytes as f64);
 }
 

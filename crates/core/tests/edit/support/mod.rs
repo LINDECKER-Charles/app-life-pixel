@@ -1,7 +1,10 @@
 //! Animations drawn from text grids, and the checks every operation test shares: undo restores
 //! the document byte for byte, and a refused operation leaves it unchanged.
 
-#![allow(dead_code)] // Each test module uses its own share of the helpers.
+#![allow(
+    dead_code,
+    reason = "each test module uses its own share of the helpers"
+)]
 
 pub mod golden;
 pub mod png;

@@ -82,7 +82,10 @@ pub const MCP_PAGE_SIZE_MAX: usize = 50;
 /// interface, so that no front-end code repeats a limit.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[allow(missing_docs)] // Each field is the constant of the same name, documented above.
+#[allow(
+    missing_docs,
+    reason = "each field is the constant of the same name, documented above"
+)]
 pub struct Limits {
     pub canvas_min_side: u16,
     pub canvas_max_side: u16,
@@ -126,7 +129,10 @@ pub struct Limits {
 impl Limits {
     /// The limits of this build.
     #[must_use]
-    #[allow(clippy::too_many_lines)] // One line per constant: splitting it would hide one.
+    #[allow(
+        clippy::too_many_lines,
+        reason = "one line per constant: splitting it would hide one"
+    )]
     pub const fn current() -> Self {
         Self {
             canvas_min_side: CANVAS_MIN_SIDE,

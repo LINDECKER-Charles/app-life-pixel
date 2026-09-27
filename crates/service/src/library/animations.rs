@@ -17,7 +17,10 @@ impl Library {
     ///
     /// The `document.*` code of an invalid spec; `library.project_not_found`;
     /// `quota.storage_exceeded`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn create_animation(
         &self,
         owner: &Owner,
@@ -36,7 +39,10 @@ impl Library {
     ///
     /// The `document.*` code of an invalid document; `library.project_not_found`;
     /// `quota.storage_exceeded`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn import_animation(
         &self,
         owner: &Owner,
@@ -68,7 +74,10 @@ impl Library {
     /// # Errors
     ///
     /// `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn list_animations(
         &self,
         owner: &Owner,
@@ -84,7 +93,10 @@ impl Library {
     /// # Errors
     ///
     /// `library.animation_not_found`; `library.project_not_found`; `service.unavailable`.
-    #[allow(clippy::too_many_arguments)] // The use case's signature is the contract of service.md.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "the use case's signature is the contract of service.md"
+    )]
     pub async fn move_animation(
         &self,
         owner: &Owner,

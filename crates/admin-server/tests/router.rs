@@ -2,7 +2,11 @@
 //! checks, the problems, the headers, the catalogues and `/healthz`. The flows that need a
 //! database are the stack tests'.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "a panic is a failed test"
+)]
 
 mod common;
 

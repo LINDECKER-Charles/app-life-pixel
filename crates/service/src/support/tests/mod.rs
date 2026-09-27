@@ -1,6 +1,9 @@
 //! The support use cases over the in-memory adapters.
 
-#![allow(clippy::unwrap_used)] // A helper fails its test by panicking, as the test would.
+#![allow(
+    clippy::unwrap_used,
+    reason = "a helper fails its test by panicking, as the test would"
+)]
 
 mod creation;
 mod screenshots;

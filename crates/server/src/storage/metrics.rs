@@ -74,7 +74,10 @@ pub async fn record(pool: &PgPool) -> Result<(), sqlx::Error> {
     gauge!(DB_POOL_CONNECTIONS, "pool" => POOL_NAME, "state" => "in_use").set(f64::from(in_use));
     let usage = sqlx::query_as::<_, (String, i64)>(USAGE_BY_PLAN).fetch_all(pool);
     for (plan, bytes) in timed("usage_by_plan", usage).await? {
-        #[allow(clippy::cast_precision_loss)] // A gauge is a float; bytes stay far below 2^53.
+        #[allow(
+            clippy::cast_precision_loss,
+            reason = "a gauge is a float; bytes stay far below 2^53"
+        )]
         gauge!(STORAGE_USED_BYTES, "plan" => plan).set(bytes as f64);
     }
     Ok(())

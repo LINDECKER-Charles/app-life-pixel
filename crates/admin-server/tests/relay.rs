@@ -1,7 +1,11 @@
 //! The relay to the internal admin API, against a fake one: what it sends — method, path,
 //! query, body, secret, admin identity, request id, and nothing else —, and what it passes back.
 
-#![allow(clippy::unwrap_used, clippy::expect_used)]
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "a panic is a failed test"
+)]
 
 mod common;
 
