@@ -3,17 +3,20 @@ import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EngineStore } from '../../engine/engine-store';
 import type { LoopMode, TagSpec } from '../../engine/engine-types';
+import { ModalLabel } from '../../library/save/modal-label';
+import { Icon } from '../../ui/icon/icon';
 import { TagDialogState } from './tag-dialog-state';
 import { initialValues, isValidRange, isValidTagName } from './tag-values';
 
 /**
- * Adds a tag over a frame range, or renames, changes and deletes an existing one; a name the
- * engine refuses — invalid, or used twice — leaves the dialog open with its error notified
- * (editor.md, U3).
+ * Adds a tag over a frame range, or renames, changes and deletes an existing one, in the shared
+ * dialog anatomy (`lp-dialog`). Frames are numbered from 1, as the strip shows them; a name
+ * or a range out of bounds says so under its field, the name once it has been edited. A name
+ * the engine refuses — used twice — leaves the dialog open with its error notified (editor.md, U3).
  */
 @Component({
   selector: 'lp-tag-dialog',
-  imports: [IonModal, TranslocoPipe],
+  imports: [Icon, IonModal, ModalLabel, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './tag-dialog.html',
   styleUrl: './tag-dialog.scss',
@@ -41,6 +44,8 @@ export class TagDialog {
   protected readonly first = linkedSignal(() => this.initial()?.first ?? 0);
   protected readonly last = linkedSignal(() => this.initial()?.last ?? 0);
   protected readonly loop = linkedSignal<LoopMode>(() => this.initial()?.loop ?? 'loop');
+  /** Whether the name field was left once: an empty name is not an error before that. */
+  protected readonly nameTouched = linkedSignal({ source: this.target, computation: () => false });
 
   protected readonly isNameValid = computed(() => {
     const limits = this.limits();
@@ -50,6 +55,9 @@ export class TagDialog {
     isValidRange(this.first(), this.last(), this.frameCount()),
   );
   protected readonly isValid = computed(() => this.isNameValid() && this.isRangeValid());
+  protected readonly showNameError = computed(
+    () => !this.isNameValid() && (this.nameTouched() || this.name().length > 0),
+  );
 
   protected async submit(event: SubmitEvent): Promise<void> {
     event.preventDefault();

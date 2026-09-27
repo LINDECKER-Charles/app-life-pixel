@@ -1,40 +1,37 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IonModal } from '@ionic/angular';
 import { TranslocoPipe } from '@jsverse/transloco';
+import { ModalLabel } from '../library/save/modal-label';
 import { PaletteEntryFlow } from './palette-entry-flow';
 import { PaletteEntryForm } from './palette-entry-form';
 
-/** The add/edit dialog, open while `PaletteEntryFlow` holds a mode; its form starts afresh. */
+/**
+ * The add/edit dialog, open while `PaletteEntryFlow` holds a mode, in the shared dialog anatomy
+ * (`lp-dialog`); its form starts afresh.
+ */
 @Component({
   selector: 'lp-palette-entry-dialog',
-  imports: [IonModal, PaletteEntryForm, TranslocoPipe],
+  imports: [IonModal, ModalLabel, PaletteEntryForm, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ion-modal
+      class="lp-modal"
       [isOpen]="flow.current() !== null"
       [attr.aria-label]="headingKey() | transloco"
+      [lpModalLabel]="headingKey() | transloco"
       (didDismiss)="flow.close()"
     >
       <ng-template>
-        <div class="dialog">
-          <h2 class="heading">{{ headingKey() | transloco }}</h2>
+        <div class="lp-dialog">
+          <header class="lp-dialog__header">
+            <h2 class="lp-dialog__title">{{ headingKey() | transloco }}</h2>
+          </header>
           @if (flow.current(); as mode) {
             <lp-palette-entry-form [mode]="mode" />
           }
         </div>
       </ng-template>
     </ion-modal>
-  `,
-  styles: `
-    .dialog {
-      padding: var(--lp-space-5);
-      overflow-y: auto;
-      background: var(--lp-color-background);
-    }
-    .heading {
-      margin: 0 0 var(--lp-space-4);
-      font-size: var(--lp-font-size-large);
-    }
   `,
 })
 export class PaletteEntryDialog {

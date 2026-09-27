@@ -1,16 +1,62 @@
+// The preview keeps one box of fixed height in the inspector, whatever plays in it, so that the
+// panels around never jump; the animation fits it whole, on the neutral canvas background.
+$stage-height: 10rem;
+
 :host {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: var(--lp-space-2);
 }
 
-button[aria-pressed='true'] {
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
+.stage {
+  position: relative;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  block-size: $stage-height;
+  overflow: hidden;
+  background: var(--lp-color-canvas-bg);
+  border: var(--lp-border-width) solid var(--lp-color-border-subtle);
+  border-radius: var(--lp-radius-medium);
 }
 
+// The player draws at 100 % of its width: its width follows the animation's proportions, so that
+// its height never passes the box's.
 life-pixel {
+  grid-area: 1 / 1;
+  width: min(100%, calc(#{$stage-height} * var(--lp-preview-aspect, 1)));
+  forced-color-adjust: none;
+}
+
+.placeholder {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-1);
+  align-items: center;
   max-width: 100%;
-  max-height: 12rem;
+  padding: var(--lp-space-3);
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  line-height: var(--lp-font-line-height-control);
+  color: var(--lp-color-text-muted);
+  text-align: center;
+
+  // Over a loading player, legible on its surface.
+  &.over {
+    color: var(--lp-color-text);
+    background: var(--lp-color-surface);
+    border-radius: var(--lp-radius-small);
+  }
+}
+
+.scope {
+  margin: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--lp-font-size-small);
+  color: var(--lp-color-text-muted);
+}
+
+.toggle {
+  align-self: flex-start;
 }

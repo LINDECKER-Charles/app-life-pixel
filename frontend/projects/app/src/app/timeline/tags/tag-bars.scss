@@ -1,25 +1,56 @@
+// Tags as bars over their frames (design-system/docs/components.md, "Palette, layers and
+// timeline"): one column per frame, the strip's own, so that a bar spans exactly its frames;
+// overlapping tags take a row each rather than hide one another. A tag played once says so.
+@use '../frames/strip';
+
 :host {
-  display: block;
+  @include strip.row;
+
+  align-items: center;
 }
 
-.toolbar {
-  margin-block-end: var(--lp-space-2);
+.head {
+  @include strip.head;
 }
 
 .track {
   display: grid;
-  gap: var(--lp-space-2);
-  min-height: 24px;
+  grid-template-columns: repeat(var(--lp-frame-count, 1), strip.$cell-width);
+  grid-auto-rows: minmax(1.75rem, auto);
+  grid-auto-flow: row dense;
+  gap: var(--lp-space-1) strip.$cell-gap;
 }
 
 .bar {
+  display: flex;
+  gap: var(--lp-space-1);
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0 var(--lp-space-2);
+  margin: 0;
+  font: inherit;
+  font-size: var(--lp-font-size-xsmall);
+  font-weight: var(--lp-font-weight-bold);
+  color: var(--lp-color-accent-text);
+  cursor: pointer;
+  background: var(--lp-color-accent-soft);
+  border: var(--lp-border-width) solid var(--lp-color-accent);
+  border-radius: var(--lp-radius-small);
+
+  &:hover {
+    background: var(--lp-color-surface-soft);
+  }
+}
+
+.bar-name {
   overflow: hidden;
-  font-size: var(--lp-font-size-small);
-  color: var(--lp-color-on-accent);
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--lp-color-accent);
-  border: 0;
-  border-radius: var(--lp-radius-small);
-  cursor: pointer;
+}
+
+.bar-once {
+  flex-shrink: 0;
+  font-weight: var(--lp-font-weight-semibold);
+  color: var(--lp-color-text-muted);
 }

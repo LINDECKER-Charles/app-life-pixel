@@ -8,6 +8,8 @@ import { PaletteEntryFlow, type PaletteEntryMode } from './palette-entry-flow';
 import { PaletteEntryForm } from './palette-entry-form';
 
 const I18N_TESTING = { langs: { en }, translocoConfig: { availableLangs: ['en'] } };
+/** The catalogue by any key, those of i18n-pending/ included once merged. */
+const TEXTS: Readonly<Record<string, string>> = en;
 const NEW_ANIMATION = { title: 'Entry', width: 8, height: 8, layerName: 'Base' };
 
 describe('PaletteEntryForm', () => {
@@ -66,6 +68,20 @@ describe('PaletteEntryForm', () => {
 
     expect(hex.getAttribute('aria-invalid')).toBe('true');
     expect(fixture.nativeElement.querySelector('button[type="submit"]').disabled).toBe(true);
+    expect(fixture.nativeElement.textContent).toContain(TEXTS['palette.dialog.hex_error']);
+    expect(hex.getAttribute('aria-describedby')).toBe('palette-entry-hex-error');
+  });
+
+  it('keeps the colour input and the slider on the last valid colour while the hex is invalid', async () => {
+    await setup({ kind: 'edit', index: 1, color: '#00ff00cc' });
+
+    const hex = field('#palette-entry-hex');
+    hex.value = '#00ff';
+    hex.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(field('#palette-entry-color').value).toBe('#00ff00');
+    expect(field('#palette-entry-alpha').valueAsNumber).toBe(0xcc);
   });
 
   it('starts from the entry being edited', async () => {

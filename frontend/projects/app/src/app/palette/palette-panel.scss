@@ -1,91 +1,139 @@
+// The palette (design-system/docs/components.md, "Palette, layers and timeline"): the artist's
+// colours stay theirs, over the neutral checkerboard that shows their transparency; the selection
+// is a double ring — the surface, then the ink — and a check, visible on any colour.
+$swatch-size: 2.25rem;
+$ring-gap: 2px;
+$ring-width: 2px;
+$checker-cell: 0.5rem;
+
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-space-3);
 }
 
 .swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--lp-space-2);
-  padding: 0;
-  margin: 0 0 var(--lp-space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, $swatch-size);
+  gap: var(--lp-space-3);
+  padding: $ring-gap + $ring-width;
+  margin: 0;
   list-style: none;
 }
 
 .swatch-item {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--lp-space-1);
+}
+
+.swatch,
+.chip {
+  position: relative;
+  box-sizing: border-box;
+  inline-size: $swatch-size;
+  block-size: $swatch-size;
+  padding: 0;
+  // The colour over the checkerboard, so that a translucent colour reads as one.
+  background:
+    linear-gradient(var(--lp-swatch-color), var(--lp-swatch-color)),
+    repeating-conic-gradient(
+        var(--lp-color-checker-dark) 0 25%,
+        var(--lp-color-checker-light) 0 50%
+      )
+      0 0 / #{$checker-cell} #{$checker-cell};
+  border: var(--lp-border-width) solid var(--lp-color-border);
+  border-radius: var(--lp-radius-small);
+  // The artist's colours are content: forced colours leave them as they are.
+  forced-color-adjust: none;
+
+  &.transparent {
+    --lp-swatch-color: transparent;
+  }
 }
 
 .swatch {
-  inline-size: 2rem;
-  block-size: 2rem;
-  padding: 0;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
   cursor: pointer;
 
   &[aria-pressed='true'] {
-    outline: 2px solid var(--lp-color-accent);
-    outline-offset: 2px;
+    box-shadow:
+      0 0 0 $ring-gap var(--lp-color-surface),
+      0 0 0 ($ring-gap + $ring-width) var(--lp-color-text);
   }
 
-  &.checkerboard {
-    background-image:
-      linear-gradient(45deg, var(--lp-color-border) 25%, transparent 25%),
-      linear-gradient(-45deg, var(--lp-color-border) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, var(--lp-color-border) 75%),
-      linear-gradient(-45deg, transparent 75%, var(--lp-color-border) 75%);
-    background-size: 8px 8px;
-    background-position:
-      0 0,
-      0 4px,
-      4px -4px,
-      -4px 0;
+  &:focus-visible {
+    outline-offset: $ring-gap + $ring-width + 2px;
   }
 }
 
-.swatch-actions {
+.check {
+  position: absolute;
+  inset-block-end: -0.375rem;
+  inset-inline-end: -0.375rem;
+  display: grid;
+  place-items: center;
+  inline-size: 1.125rem;
+  block-size: 1.125rem;
+  color: var(--lp-color-surface);
+  background: var(--lp-color-text);
+  border: var(--lp-border-width) solid var(--lp-color-surface);
+  border-radius: var(--lp-radius-round);
+
+  lp-icon {
+    inline-size: 0.75rem;
+    block-size: 0.75rem;
+  }
+}
+
+.current {
   display: flex;
-  gap: var(--lp-space-1);
-}
-
-.icon-button {
-  display: inline-flex;
+  gap: var(--lp-space-3);
   align-items: center;
-  justify-content: center;
-  min-inline-size: 24px;
-  min-block-size: 24px;
-  padding: 0 var(--lp-space-1);
-  font-size: var(--lp-font-size-small);
-  color: var(--lp-color-text-muted);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-
-  &:hover {
-    color: var(--lp-color-text);
-  }
+  min-width: 0;
 }
 
-.add {
-  padding: var(--lp-space-2) var(--lp-space-4);
-  font: inherit;
-  color: var(--lp-color-text);
-  background: transparent;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-medium);
-  cursor: pointer;
+.chip {
+  flex-shrink: 0;
+}
 
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
+.current-text {
+  min-width: 0;
+}
+
+.current-name,
+.current-detail {
+  margin: 0;
+  font-size: var(--lp-font-size-small);
+  line-height: var(--lp-font-line-height-control);
+}
+
+.current-name {
+  font-weight: var(--lp-font-weight-bold);
+}
+
+.current-detail {
+  color: var(--lp-color-text-muted);
+}
+
+.current-hex {
+  font-family: var(--lp-font-family-mono);
+  overflow-wrap: anywhere;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-space-2);
 }
 
 .hint {
-  margin: var(--lp-space-1) 0 0;
+  margin: 0;
   font-size: var(--lp-font-size-small);
   color: var(--lp-color-text-muted);
+}
+
+// Forced colours drop the ring's shadows: the selected swatch keeps a system-coloured edge.
+@media (forced-colors: active) {
+  .swatch[aria-pressed='true'] {
+    outline: $ring-width + $ring-gap double Highlight;
+    outline-offset: $ring-gap;
+  }
 }

@@ -1,21 +1,37 @@
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+} from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { EditorStore } from '../editor/editor-store';
 import { Shortcuts } from '../editor/shortcuts';
 import { EngineStore } from '../engine/engine-store';
+import type { Color } from '../engine/engine-types';
+import { Icon } from '../ui/icon/icon';
 import { PaletteEntryDialog } from './palette-entry-dialog';
 import { PaletteEntryFlow } from './palette-entry-flow';
 import { dropTarget, reorderTarget } from './palette-reorder';
 
+/** The selected palette entry, as the panel describes it under the swatches. */
+interface SelectedColor {
+  readonly index: number;
+  readonly color: Color;
+}
+
 /**
  * The editor page's palette panel (editor.md, U4): a grid of swatches, entry 0 the checkerboard
- * eraser colour, selectable but not editable. Selecting sets `colorIndex`; `[` and `]` move
- * through it. Add and edit open `PaletteEntryDialog`; remove and reorder (drag and drop, or Alt
- * with the arrows) apply directly.
+ * eraser colour, selectable but not editable; the selected one ringed twice and checked, then
+ * named with its index and `#rrggbbaa` value under the grid. Selecting sets `colorIndex`; `[` and
+ * `]` move through it. One Edit and Remove pair acts on the selected colour; Add and Edit open
+ * `PaletteEntryDialog`; Remove and reorder (drag and drop, or Alt with the arrows) apply directly.
  */
 @Component({
   selector: 'lp-palette-panel',
-  imports: [PaletteEntryDialog, TranslocoPipe],
+  imports: [Icon, PaletteEntryDialog, TranslocoPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './palette-panel.html',
   styleUrl: './palette-panel.scss',
@@ -24,6 +40,7 @@ export class PalettePanel {
   private readonly editor = inject(EditorStore);
   private readonly engine = inject(EngineStore);
   private readonly entryFlow = inject(PaletteEntryFlow);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private dragFrom: number | null = null;
 
   protected readonly colorIndex = this.editor.colorIndex;
@@ -31,6 +48,13 @@ export class PalettePanel {
   protected readonly isFull = computed(
     () => this.palette().length >= (this.engine.limits()?.maxPaletteEntries ?? Infinity),
   );
+  protected readonly selected = computed((): SelectedColor | null => {
+    const index = this.colorIndex();
+    const color = this.palette()[index];
+    return color === undefined ? null : { index, color };
+  });
+  /** Entry 0, the transparency, is neither edited nor removed. */
+  protected readonly isEditable = computed(() => (this.selected()?.index ?? 0) > 0);
 
   constructor() {
     const shortcuts = inject(Shortcuts);
@@ -50,12 +74,15 @@ export class PalettePanel {
     this.entryFlow.openAdd();
   }
 
-  protected edit(index: number): void {
-    this.entryFlow.openEdit(index, this.palette()[index]);
+  protected edit(): void {
+    const selected = this.selected();
+    if (selected && selected.index > 0) this.entryFlow.openEdit(selected.index, selected.color);
   }
 
-  protected async remove(index: number): Promise<void> {
-    await this.engine.apply({ kind: 'removePaletteEntry', index });
+  protected async remove(): Promise<void> {
+    const selected = this.selected();
+    if (!selected || selected.index === 0) return;
+    await this.engine.apply({ kind: 'removePaletteEntry', index: selected.index });
   }
 
   protected onSwatchKeydown(event: KeyboardEvent, index: number): void {
@@ -83,8 +110,19 @@ export class PalettePanel {
     if (from !== null) void this.move(from, dropTarget(from, index, this.palette().length));
   }
 
+  /**
+   * Moves an entry; the selection and the keyboard focus follow the colour moved, so that Alt with
+   * an arrow pressed again keeps moving the same one.
+   */
   private async move(from: number, to: number | null): Promise<void> {
-    if (to !== null) await this.engine.apply({ kind: 'movePaletteEntry', from, to });
+    if (to === null) return;
+    const before = this.palette();
+    await this.engine.apply({ kind: 'movePaletteEntry', from, to });
+    if (this.palette() === before) return;
+    if (this.colorIndex() === from) this.editor.colorIndex.set(to);
+    const host = this.host.nativeElement;
+    const swatches = host.querySelectorAll<HTMLButtonElement>('.swatches .swatch');
+    if (swatches[from] === document.activeElement) swatches[to]?.focus();
   }
 
   private step(direction: -1 | 1): void {

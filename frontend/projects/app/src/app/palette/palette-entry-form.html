@@ -1,50 +1,70 @@
 <form class="form" novalidate (submit)="submit($event)">
-  <div class="field">
-    <label for="palette-entry-color">{{ 'palette.dialog.color' | transloco }}</label>
-    <input
-      #colorField
-      id="palette-entry-color"
-      type="color"
-      [value]="rgb()"
-      (input)="setRgb(colorField.value)"
-    />
-  </div>
-  <div class="field">
-    <label for="palette-entry-alpha">{{ 'palette.dialog.alpha' | transloco }}</label>
-    <div class="alpha">
+  <div class="lp-dialog__body">
+    <div class="preview">
+      <span class="chip" [style.--lp-swatch-color]="lastValid()"></span>
+      <div class="lp-field color">
+        <label class="lp-field__label" for="palette-entry-color">
+          {{ 'palette.dialog.color' | transloco }}
+        </label>
+        <input
+          #colorField
+          id="palette-entry-color"
+          type="color"
+          [value]="rgb()"
+          (input)="setRgb(colorField.value)"
+        />
+      </div>
+    </div>
+    <div class="lp-field">
+      <label class="lp-field__label" for="palette-entry-alpha">
+        {{ 'palette.dialog.alpha' | transloco }}
+      </label>
+      <div class="lp-field__control">
+        <input
+          #alphaField
+          id="palette-entry-alpha"
+          class="alpha"
+          type="range"
+          min="0"
+          max="255"
+          step="1"
+          [value]="alpha()"
+          (input)="setAlpha(alphaField.valueAsNumber)"
+        />
+        <output class="lp-field__unit" for="palette-entry-alpha">{{ alpha() }}</output>
+      </div>
+    </div>
+    <div class="lp-field">
+      <label class="lp-field__label" for="palette-entry-hex">
+        {{ 'palette.dialog.hex' | transloco }}
+      </label>
       <input
-        #alphaField
-        id="palette-entry-alpha"
-        type="range"
-        min="0"
-        max="255"
-        step="1"
-        [value]="alpha()"
-        (input)="setAlpha(alphaField.valueAsNumber)"
+        #hexField
+        id="palette-entry-hex"
+        class="lp-input hex"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="9"
+        [value]="hex()"
+        [attr.aria-invalid]="!isValid()"
+        [attr.aria-describedby]="isValid() ? null : 'palette-entry-hex-error'"
+        (input)="setHex(hexField.value)"
       />
-      <output for="palette-entry-alpha">{{ alpha() }}</output>
+      @if (!isValid()) {
+        <p id="palette-entry-hex-error" class="lp-field__error">
+          <lp-icon name="error" size="small" />
+          {{ 'palette.dialog.hex_error' | transloco }}
+        </p>
+      }
     </div>
   </div>
-  <div class="field">
-    <label for="palette-entry-hex">{{ 'palette.dialog.hex' | transloco }}</label>
-    <input
-      #hexField
-      id="palette-entry-hex"
-      type="text"
-      autocomplete="off"
-      spellcheck="false"
-      maxlength="9"
-      [value]="hex()"
-      [attr.aria-invalid]="!isValid()"
-      (input)="setHex(hexField.value)"
-    />
-  </div>
-  <div class="actions">
-    <button type="button" class="secondary" (click)="cancel()">
-      {{ 'common.cancel' | transloco }}
-    </button>
-    <button type="submit" class="primary" [disabled]="!isValid()">
+  <div class="lp-dialog__actions">
+    <button type="submit" class="lp-button lp-button--primary" [disabled]="!isValid()">
       {{ submitLabel() | transloco }}
+    </button>
+    <button type="button" class="lp-button lp-button--secondary" (click)="cancel()">
+      {{ 'common.cancel' | transloco }}
     </button>
   </div>
 </form>

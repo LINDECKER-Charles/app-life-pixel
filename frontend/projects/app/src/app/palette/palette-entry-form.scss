@@ -1,74 +1,59 @@
+// The form spans the dialog's body and its action row (`lp-dialog__body`, `lp-dialog__actions`),
+// so that the body scrolls and the actions stay in view; fields and buttons are the shared ones.
+$chip-size: 3rem;
+$checker-cell: 0.5rem;
+
+:host,
 .form {
   display: flex;
+  flex: 1;
   flex-direction: column;
-  gap: var(--lp-space-4);
+  min-height: 0;
 }
 
-.field {
+.preview {
   display: flex;
-  flex-direction: column;
-  gap: var(--lp-space-1);
+  gap: var(--lp-space-4);
+  align-items: flex-end;
+}
+
+// The colour being made, over the neutral checkerboard that shows its transparency.
+.chip {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  inline-size: $chip-size;
+  block-size: $chip-size;
+  background:
+    linear-gradient(var(--lp-swatch-color, transparent), var(--lp-swatch-color, transparent)),
+    repeating-conic-gradient(
+        var(--lp-color-checker-dark) 0 25%,
+        var(--lp-color-checker-light) 0 50%
+      )
+      0 0 / #{$checker-cell} #{$checker-cell};
+  border: var(--lp-border-width) solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
+  forced-color-adjust: none;
+}
+
+.color input {
+  box-sizing: border-box;
+  inline-size: 4rem;
+  block-size: var(--lp-control-height);
+  padding: var(--lp-space-1);
+  cursor: pointer;
+  background: var(--lp-color-surface);
+  border: var(--lp-border-width) solid var(--lp-color-border);
+  border-radius: var(--lp-radius-medium);
 }
 
 .alpha {
-  display: flex;
-  align-items: center;
-  gap: var(--lp-space-2);
-}
-
-input[type='text'] {
-  padding: var(--lp-space-2);
-  font: inherit;
-  font-family: var(--lp-font-family-mono);
-  color: var(--lp-color-text);
-  background: var(--lp-color-background);
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
-
-  &[aria-invalid='true'] {
-    border-color: var(--lp-color-danger);
-  }
-}
-
-input[type='color'] {
-  inline-size: 3rem;
-  block-size: 2rem;
-  padding: 0;
-  border: 1px solid var(--lp-color-border);
-  border-radius: var(--lp-radius-small);
-}
-
-input[type='range'] {
   flex: 1;
+  min-width: 0;
+  min-height: var(--lp-control-height);
+  margin: 0;
+  accent-color: var(--lp-color-accent);
 }
 
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--lp-space-2);
-}
-
-button {
-  padding: var(--lp-space-2) var(--lp-space-4);
-  font: inherit;
-  border-radius: var(--lp-radius-medium);
-  cursor: pointer;
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-}
-
-.primary {
-  color: var(--lp-color-on-accent);
-  background: var(--lp-color-accent);
-  border: 1px solid var(--lp-color-accent);
-}
-
-.secondary {
-  color: var(--lp-color-text);
-  background: transparent;
-  border: 1px solid var(--lp-color-border);
+.hex {
+  font-family: var(--lp-font-family-mono);
 }
