@@ -93,8 +93,12 @@ The deploy job, per environment:
 
 `scripts/deploy/deploy.sh` does these six steps on the host. `_deploy.yml`, in the GitHub
 environment of its target (`staging` or `production`), sends it over SSH with the `.env` and the
-job's registry token in files of mode 600, never on a command line; the host's key is read with
-`ssh-keyscan` on each run. `DEPLOY_DRY_RUN=1` prints the commands instead, and CI's `docker`
+job's registry token in files of mode 600, never on a command line. `ci.yml` hands it the
+target's secrets alone, by name — never `secrets: inherit`, nor a secret read by a computed name,
+either of which gives the runner every secret of the repository —, and it checks each is set
+before anything is sent. The host's key is pinned by `<ENV>_KNOWN_HOSTS` when set; without it,
+`ssh-keyscan` trusts the key on first use and the job warns. `DEPLOY_DRY_RUN=1` prints the
+commands instead, and CI's `docker`
 job runs it so. The environment files are documented by `.env.staging.example` and
 `.env.prod.example`, which never set the images' listeners nor folders.
 
@@ -182,6 +186,7 @@ GitHub secrets, following the shared deployment kit:
 | `STAGING_HOST`, `PROD_HOST` | the VPS |
 | `STAGING_PATH`, `PROD_PATH` | `/opt/life-pixel-staging`, `/opt/life-pixel-prod` |
 | `STAGING_SSH_USER`, `PROD_SSH_USER` | optional, `root` by default |
+| `STAGING_KNOWN_HOSTS`, `PROD_KNOWN_HOSTS` | optional, the VPS's host keys as `known_hosts` lines — `ssh-keyscan -H <host>`, checked against `ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub` run on the VPS itself; without them the key is trusted on first use |
 | `ENV_STAGING`, `ENV_PROD` | the full `.env` of the environment, as one multi-line secret |
 | `ENV_TEST` | optional, for CI |
 | `PROMOTION_DEPLOY_KEY` | private half of a deploy key with write access, which the `test` ruleset lets push: `promote-test` fast-forwards `test` with it |
@@ -189,7 +194,9 @@ GitHub secrets, following the shared deployment kit:
 The `.env` of an environment carries the database URL, the object storage endpoint, bucket and
 keys, the session secret, the SMTP settings (D34), the domains (`CADDY_DOMAINS`, `ADMIN_DOMAINS`),
 the OpenTelemetry settings and, later, the billing keys. A versioned `.env.*.example` documents
-each variable; the real files are never committed.
+each variable; the real files are never committed. Every host generates its own keys
+(`openssl rand -hex 32`): outside `local`, both servers refuse to start on a key of fewer than 8
+distinct bytes, such as the public development keys of `.env.example`, one repeated byte each.
 
 Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
 Android upload key and Play Console service account join them at M6. The updater key and the
@@ -230,6 +237,10 @@ a fork's release checks its own releases, not this one's.
 | `TAURI_UPDATER_PUBKEY` | the matching public key, baked into every release build as `LP_UPDATER_PUBKEY` |
 | `APPLE_CERTIFICATE`, `APPLE_CERTIFICATE_PASSWORD`, `APPLE_ID`, `APPLE_PASSWORD`, `APPLE_TEAM_ID` | the Developer ID certificate and notarisation credentials for macOS |
 | `WINDOWS_SIGN_COMMAND` | optional until the Windows signing service is chosen (M5, D32); when set, patches `bundle.windows.signCommand` into `release.conf.json` before the build |
+
+The signing secrets reach the build step alone, never the whole job: `npm ci` and `cargo install`
+run the install and build scripts of every dependency before it, and none of them may read the
+key that signs every installed app's updates.
 
 Android is left out of `release.yml` until M6.
 
