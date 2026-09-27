@@ -178,17 +178,19 @@ fn a_root_admin_missing_a_variable_names_it() {
 fn an_invalid_root_admin_is_refused_without_quoting_its_value() {
     let secret = TotpSecret::generate().to_base32();
     let too_short_secret = &secret[..secret.len() - 1];
-    for (variable, value) in [
+    // A failure names the case by its position, never by its value: one of them is a secret.
+    let cases = [
         ("LPA_ROOT_ADMIN_EMAIL", "root"),
         ("LPA_ROOT_ADMIN_PASSWORD", "short pass"),
         ("LPA_ROOT_ADMIN_TOTP_SECRET", too_short_secret),
         ("LPA_ROOT_ADMIN_TOTP_SECRET", "not base32 at all, 1890"),
-    ] {
+    ];
+    for (case, (variable, value)) in cases.into_iter().enumerate() {
         let (mut variables, _) = with_root_admin();
         variables.insert(variable.to_owned(), value.to_owned());
         let error = read(&variables).unwrap_err();
-        assert_eq!(error.variable(), variable, "{value}");
-        assert!(matches!(error, ConfigError::Invalid { .. }), "{value}");
-        assert!(!error.to_string().contains(value), "{value}");
+        assert_eq!(error.variable(), variable, "case {case}");
+        assert!(matches!(error, ConfigError::Invalid { .. }), "case {case}");
+        assert!(!error.to_string().contains(value), "case {case}");
     }
 }
