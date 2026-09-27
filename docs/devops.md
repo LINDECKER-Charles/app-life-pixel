@@ -62,7 +62,8 @@ type/topic ──PR──► dev ──CI green──► test (fast-forward) ─
 | Workflow | Trigger | Does |
 |---|---|---|
 | `ci.yml` | pull request, push to `dev` or `main` | orchestrates the stages below |
-| `_verify.yml` | called | Rust: `fmt`, `clippy -D warnings`, tests, `cargo deny`, WebAssembly build and size budgets. Front-end: lint, format, type check, unit tests, build, catalogue parity. End-to-end tests of the critical path. Dockerfile and compose checks. `CLAUDE.md` identical to `AGENTS.md` |
+| `_verify.yml` | called | Rust: `fmt`, `clippy -D warnings`, tests, `cargo deny`, WebAssembly build and size budgets. Front-end: lint, format, type check, unit tests, build, catalogue parity. End-to-end tests of the critical path. Dockerfile and compose checks. `CLAUDE.md` identical to `AGENTS.md`, and the pull request rules' tests |
+| `pull-request.yml` | pull request to `dev`, and each edit of its title | the title follows the commit convention, the branch is named `type/short-description`; a warning beyond 600 changed lines. Dependabot's pull requests are left out |
 | `_build.yml` | push to `dev`, after promotion to `test` | builds `app` and `admin`, pushes `:<sha>` and `:staging` to GHCR |
 | `_promote.yml` | push to `main` | retags `:<sha>` as `:prod`, without rebuilding |
 | `_deploy.yml` | after build or promotion | deploys to the VPS over SSH (below) |

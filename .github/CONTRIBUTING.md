@@ -78,6 +78,7 @@ it lands; this is the loop so far.
 
 ```shell
 cmp CLAUDE.md AGENTS.md
+node --test "scripts/ci/*.test.mjs"
 docker run --rm -v "$PWD":/repo -w /repo rhysd/actionlint:latest@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 -color
 ```
 
