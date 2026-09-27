@@ -150,8 +150,10 @@ jobs:
           projectPath: tauri
           tauriScript: cargo tauri
           args: --config bundle.conf.json --config release.conf.json ${{ matrix.args }}
-          tagName: ${{ env.DRY_RUN == 'true' && '' || github.ref_name }}
-          releaseName: ${{ env.DRY_RUN == 'true' && '' || format('Life Pixel {0}', github.ref_name) }}
+          # `cond && '' || x` always gives x, '' being falsy: the empty value comes last, so that a
+          # dry run creates no release.
+          tagName: ${{ env.DRY_RUN != 'true' && github.ref_name || '' }}
+          releaseName: ${{ env.DRY_RUN != 'true' && format('Life Pixel {0}', github.ref_name) || '' }}
           releaseDraft: true
           includeUpdaterJson: true
       - name: Keep the installers of a dry run
