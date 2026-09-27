@@ -208,7 +208,10 @@ each variable; the real files are never committed. Every host generates its own 
 distinct bytes, such as the public development keys of `.env.example`, one repeated byte each —
 the server its four keys, the admin server `LPA_SESSION_SECRET` and `LPA_TOTP_KEY`, its
 `create-admin` and `disable-admin` commands included. The admin API secret the two share is
-checked once, by the server, as `LP_ADMIN_API_SECRET`.
+checked once, by the server, as `LP_ADMIN_API_SECRET`. The optional `LPA_ROOT_ADMIN_*` variables
+give a new environment its first admin, created at start while the admin database has none (see
+[support-admin.md](v1/support-admin.md)); they grant the console, so they are as secret as the
+keys, and can be emptied once that admin has signed in.
 
 Release secrets (D32) live in the GitHub `release` environment, detailed in "Release" below; the
 Android upload key and Play Console service account join them at M6. The updater key and the

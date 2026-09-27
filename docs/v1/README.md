@@ -85,7 +85,7 @@ or the VPS. Nothing in the build waits for these inputs; each is needed by a rel
 | Scaleway: a bucket per environment in `fr-par`, production's versioned, with a 30-day expiry of old versions; the backup bucket in `nl-ams` with a six-month expiry, and credentials that can write but not delete; Transactional Email with SPF, DKIM and DMARC (D34, D35) | staging | S3Mock and Mailpit on the local stack |
 | The GitHub secrets of [devops.md](../devops.md); the `staging`, `production` and `release` environments; the deploy key `PROMOTION_DEPLOY_KEY` and the `test` ruleset that lets it fast-forward | the delivery workflows | `actionlint` |
 | The `infra-vps` changes of [admin-console.md](../admin-console.md): read access to VictoriaLogs, a query-only proxy to VictoriaMetrics, Life Pixel's alert rules, and the label selectors of Life Pixel's metrics and logs | the admin console on staging | fakes of those APIs in tests |
-| The first admin account of each environment | the admin console | the admin server's `create-admin` command, locally |
+| The first admin account of each environment, from `LPA_ROOT_ADMIN_*` or `create-admin` | the admin console | the admin server's `create-admin` command, locally |
 | The legal identity (`LP_LEGAL_*`); the validation of the legal texts | production | placeholders |
 | The backups' two encryption passwords (rclone `crypt`), with an offline copy | backups | throwaway passwords, locally |
 | Apple Developer Program, Windows signing, the updater key and its offline copy (D32) — a month ahead | signed installers | unsigned local builds, updater off |
