@@ -1,5 +1,6 @@
 //! The `rmcp` handler: every tool and the resource template, whatever the transport serving it.
 
+use std::borrow::Cow;
 use std::sync::Arc;
 
 use life_pixel_service::animation::AnimationEditing;
@@ -7,7 +8,7 @@ use life_pixel_service::library::Library;
 use life_pixel_service::{CodedError, Owner};
 use rmcp::model::{
     CallToolRequestParams, CallToolResponse, CallToolResult, Implementation,
-    ListResourceTemplatesResult, ListToolsResult, PaginatedRequestParams,
+    ListResourceTemplatesResult, ListToolsResult, PaginatedRequestParams, ProtocolVersion,
     ReadResourceRequestParams, ReadResourceResponse, ServerCapabilities, ServerConfig, Tool,
 };
 use rmcp::service::RequestContext;
@@ -22,6 +23,10 @@ use crate::tools::{self, ToolCall, ToolDefinition};
 
 /// The version the server announces: this crate's.
 const VERSION: &str = env!("CARGO_PKG_VERSION");
+/// The newest MCP revision the server implements. rmcp also knows 2026-07-28, whose list results
+/// must carry cache hints (`ttlMs`, `cacheScope`) that rmcp does not produce: announced through
+/// `server/discover`, it makes a 2026-07-28 client reject every `tools/list`.
+const LATEST_PROTOCOL_VERSION: ProtocolVersion = ProtocolVersion::V_2025_11_25;
 /// What the server tells the model once, at initialization.
 const INSTRUCTIONS: &str = "Life Pixel edits pixel-art animations and exports them as a few \
                             kilobytes of WebAssembly that any web page plays. Find or create \
@@ -112,6 +117,10 @@ impl ServerHandler for LifePixelMcp {
         ServerConfig::new(capabilities)
             .with_server_info(Implementation::new(self.name.as_ref(), VERSION))
             .with_instructions(INSTRUCTIONS)
+    }
+
+    fn supported_protocol_versions(&self) -> Cow<'static, [ProtocolVersion]> {
+        Cow::Borrowed(ProtocolVersion::known_up_to(&LATEST_PROTOCOL_VERSION))
     }
 
     async fn list_tools(

@@ -5,6 +5,7 @@
 mod access;
 mod editing;
 mod library;
+mod negotiation;
 mod outputs;
 mod preview;
 mod read;
