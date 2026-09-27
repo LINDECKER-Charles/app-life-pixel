@@ -25,6 +25,12 @@ pub enum ConfigError {
         /// What a valid value looks like.
         expected: &'static str,
     },
+    /// A key too regular to be random — a development key — outside `local`.
+    #[error("{variable} is a weak key: every host generates its own, such as openssl rand -hex 32")]
+    WeakKey {
+        /// The variable's name.
+        variable: &'static str,
+    },
 }
 
 impl ConfigError {
@@ -32,7 +38,9 @@ impl ConfigError {
     #[must_use]
     pub fn variable(&self) -> &'static str {
         match self {
-            Self::Missing { variable } | Self::Invalid { variable, .. } => variable,
+            Self::Missing { variable }
+            | Self::Invalid { variable, .. }
+            | Self::WeakKey { variable } => variable,
         }
     }
 }

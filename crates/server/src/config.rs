@@ -81,8 +81,9 @@ impl Config {
     /// The first variable that is missing or invalid.
     pub fn from_lookup(lookup: &dyn Fn(&str) -> Option<String>) -> Result<Self, ConfigError> {
         let env = Env::new(lookup);
+        let environment = env.parse("LP_ENVIRONMENT")?;
         Ok(Self {
-            environment: env.parse("LP_ENVIRONMENT")?,
+            environment,
             http_addr: env.parse("LP_HTTP_ADDR")?,
             metrics_addr: env.parse("LP_METRICS_ADDR")?,
             admin_api_addr: env.parse("LP_ADMIN_API_ADDR")?,
@@ -93,7 +94,7 @@ impl Config {
             database: DatabaseConfig::read(&env)?,
             storage: StorageConfig::read(&env)?,
             mail: MailConfig::read(&env)?,
-            secrets: Secrets::read(&env)?,
+            secrets: Secrets::read(&env, environment)?,
             plans: sections::read_plans(&env)?,
             min_client_versions: env.parse("LP_MIN_CLIENT_VERSIONS")?,
             trusted_proxies: env.parse_or_default("LP_TRUSTED_PROXIES")?,

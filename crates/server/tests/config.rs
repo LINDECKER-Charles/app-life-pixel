@@ -60,6 +60,11 @@ const INVALID: [(&str, &str); 14] = [
     ("RUST_LOG", "info,[unclosed"),
 ];
 
+/// `.env.example`'s public development key for LP_SESSION_SECRET: one repeated byte.
+const DEVELOPMENT_KEY: &str = "0101010101010101010101010101010101010101010101010101010101010101";
+/// A key of zeros, as a careless host might set.
+const ZERO_KEY: &str = "0000000000000000000000000000000000000000000000000000000000000000";
+
 fn local() -> HashMap<String, String> {
     local_env(Path::new("frontend/dist/app/browser"))
 }
@@ -125,6 +130,32 @@ fn an_invalid_variable_is_named_without_its_value() {
         assert!(message.starts_with(&format!("{variable} is invalid: expected ")));
         assert!(!message.contains(value), "{message}");
     }
+}
+
+#[test]
+fn a_host_refuses_a_weak_key_and_names_it_without_its_value() {
+    for environment in ["staging", "production"] {
+        for weak in [DEVELOPMENT_KEY, ZERO_KEY] {
+            let mut env = local();
+            env.insert("LP_ENVIRONMENT".to_owned(), environment.to_owned());
+            env.insert("LP_EXPORT_LINK_SECRET".to_owned(), weak.to_owned());
+            let error = read_config(&env).unwrap_err();
+            let variable = "LP_EXPORT_LINK_SECRET";
+            assert_eq!(error, ConfigError::WeakKey { variable }, "{environment}");
+            assert!(!error.to_string().contains(weak));
+        }
+    }
+}
+
+#[test]
+fn a_host_takes_a_random_key_and_local_takes_the_development_keys() {
+    let mut production = local();
+    production.insert("LP_ENVIRONMENT".to_owned(), "production".to_owned());
+    let config = read_config(&production).unwrap();
+    assert_eq!(config.environment, Environment::Production);
+    let mut development = local();
+    development.insert("LP_SESSION_SECRET".to_owned(), DEVELOPMENT_KEY.to_owned());
+    assert!(read_config(&development).is_ok());
 }
 
 #[test]

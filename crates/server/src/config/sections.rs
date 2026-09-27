@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use life_pixel_service::Plans;
 
 use super::env::{ConfigError, Env, FromVariable};
-use super::values::{HmacKey, SecretString};
+use super::values::{Environment, HmacKey, SecretString};
 
 const POSTGRES_SCHEMES: [&str; 2] = ["postgres://", "postgresql://"];
 const POSTGRES_DEFAULT_PORT: &str = "5432";
@@ -183,14 +183,28 @@ pub struct Secrets {
 }
 
 impl Secrets {
-    pub(super) fn read(env: &Env<'_>) -> Result<Self, ConfigError> {
+    /// The keys, each refused when weak outside `local`: a host never runs on development keys.
+    pub(super) fn read(env: &Env<'_>, environment: Environment) -> Result<Self, ConfigError> {
+        let key = |variable| read_key(env, variable, environment);
         Ok(Self {
-            session: env.parse("LP_SESSION_SECRET")?,
-            events: env.parse("LP_EVENTS_SECRET")?,
-            export_link: env.parse("LP_EXPORT_LINK_SECRET")?,
-            admin_api: env.parse("LP_ADMIN_API_SECRET")?,
+            session: key("LP_SESSION_SECRET")?,
+            events: key("LP_EVENTS_SECRET")?,
+            export_link: key("LP_EXPORT_LINK_SECRET")?,
+            admin_api: key("LP_ADMIN_API_SECRET")?,
         })
     }
+}
+
+fn read_key(
+    env: &Env<'_>,
+    variable: &'static str,
+    environment: Environment,
+) -> Result<HmacKey, ConfigError> {
+    let key: HmacKey = env.parse(variable)?;
+    if environment != Environment::Local && key.is_weak() {
+        return Err(ConfigError::WeakKey { variable });
+    }
+    Ok(key)
 }
 
 /// `LP_PLAN_FREE_*`: the free plan.
