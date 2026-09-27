@@ -4,6 +4,8 @@
 @use '../../shared/src/styles/accessibility';
 
 // The charts' lines, at least 3:1 against the background (WCAG 1.4.11), and their faint grid.
+// stylelint-disable color-no-hex, function-disallowed-list -- The charts' palette is the
+// admin console's own tokens: Rose Atelier has no data-visualisation colours.
 @mixin light-chart {
   --lpa-chart-1: #4338ca;
   --lpa-chart-2: #b45309;
@@ -19,6 +21,7 @@
   --lpa-chart-4: #f9a8d4;
   --lpa-chart-grid: rgb(236 236 241 / 14%);
 }
+// stylelint-enable color-no-hex, function-disallowed-list
 
 :root {
   @include light-chart;
