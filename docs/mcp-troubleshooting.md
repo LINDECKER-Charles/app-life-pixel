@@ -1,13 +1,13 @@
 # MCP troubleshooting
 
-Known problems met when an agent drives the MCP server of [mcp.md](mcp.md), what was checked, and
-how to work around them. Each entry records the date it was observed: re-check it against the
-current client and server before acting on it.
+Known problems met when an agent drives the MCP server of [mcp.md](mcp.md), their cause, and how
+to fix them. Each entry records the date it was observed: re-check it against the current client
+and server before acting on it.
 
 ## Claude Code connects but lists no tool
 
 Observed on 2026-09-27, local stack (`http://localhost:8460/mcp`, server `life-pixel-dev` 0.1.0),
-Claude Code on Windows.
+Claude Code 2.1.283 on Windows. Fixed the same day.
 
 ### Symptom
 
@@ -26,43 +26,30 @@ Invalid result for tools/list: [
 The agent then has no `list_animations`, `write_frame`, `export`…: the session cannot use Life
 Pixel at all.
 
-### What was checked
+### Cause
 
-The server answers correctly when it is called directly, with the same token as the client:
+Claude Code no longer opens with `initialize`: it first probes with `server/discover` for MCP
+revision 2026-07-28, and falls back to `initialize` only when the server does not offer it.
+`rmcp` 3.4 answers `server/discover` with every revision it knows, 2026-07-28 included, yet leaves
+out of its list results (`tools/list`, `resources/list`…) the cache hints that revision requires:
+`ttlMs`, a number, and `cacheScope`, `public` or `private`. The client settled on 2026-07-28 and
+rejected every list result. Its MCP log — on Windows, under
+`%LOCALAPPDATA%\claude-cli-nodejs\Cache\<project>\mcp-logs-<server>\` — reads
+`"protocolEra":"modern","negotiatedProtocolVersion":"2026-07-28"`.
 
-| Request | Result |
-|---|---|
-| `initialize`, `protocolVersion: 2025-06-18` | accepted, `2025-06-18` echoed, capabilities `tools` and `resources` |
-| `initialize`, `protocolVersion: 2025-11-25` | accepted, `2025-11-25` echoed |
-| `initialize`, `protocolVersion: 2026-06-18` | negotiated down to `2025-11-25`, as the specification expects |
-| `tools/list` (every version above) | `{"tools": [...]}`: the 11 tools of [mcp.md](mcp.md), each with `name`, `description`, `inputSchema` and `annotations` |
-| `tools/call` on every tool | works: an animation was created, drawn, tagged and previewed end to end |
+Calling the endpoint with `initialize` does not show it: every revision up to 2025-11-25 is
+answered correctly there, and a newer one is negotiated down to 2025-11-25.
 
-Neither `ttlMs` nor `cacheScope` appears anywhere in the repository or in the server's answer.
+### Fix
 
-### Diagnosis
+The server offers only the revisions it implements, up to 2025-11-25: `LATEST_PROTOCOL_VERSION`
+in `crates/mcp/src/server.rs`, to which the hosted `HostedMcpHandler` delegates. A
+`server/discover` probe for 2026-07-28 is refused with `-32022`, unsupported protocol version,
+listing those revisions, and Claude Code falls back to `initialize`: `claude mcp list` reports
+`✔ Connected`, and the log reads `"protocolEra":"legacy","negotiatedProtocolVersion":"2025-11-25"`.
 
-The rejection happens in the client, while it validates the `tools/list` result: that version of
-Claude Code expects a cache hint (`ttlMs`, a number, and `cacheScope`, `public` or `private`) that
-the MCP revisions the server implements do not define. The server's answer is conforming; the
-server was not changed.
-
-Not established: whether those fields come from a newer MCP revision or draft that the server
-should adopt, or from a client-side regression. Settle that before adding fields to the server's
-answer — an unspecified field is a contract we would then have to keep.
-
-### Workaround
-
-Drive the endpoint over plain JSON-RPC, outside the client's tool loading:
-
-1. `POST /mcp` an `initialize` request, with `Authorization: Bearer <token>`,
-   `Content-Type: application/json` and `Accept: application/json, text/event-stream`.
-2. Send the `Mcp-Session-Id` the answer returns on every later request, if there is one.
-3. Call tools with `tools/call`, `{"name": "<tool>", "arguments": {...}}`. The answer may come as
-   a server-sent event: read the JSON after `data: `.
-
-Read the token from the client's configuration rather than pasting it into a command line or a
-file of the repository (see [security-model.md](security-model.md)).
+A server built before the fix still shows the symptom: rebuild its image and recreate its
+container. Offer 2026-07-28 again only once `rmcp` gives list results their cache hints.
 
 ## `export` fails with `token.scope`
 

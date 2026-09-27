@@ -19,6 +19,10 @@ the codebase. Claude is the first client we target; any MCP client works.
   [product.md](product.md)). Claude Desktop can also launch the local server over stdio.
 - The local server works on the desktop app's library folder; the app picks up the changes an
   agent makes.
+- Every transport offers the MCP revisions up to 2025-11-25, negotiated by `initialize`. It does
+  not offer 2026-07-28 while `rmcp` leaves out the cache hints that revision requires on list
+  results: a client probing with `server/discover` is refused with `-32022` and falls back to
+  `initialize` (see [mcp-troubleshooting.md](mcp-troubleshooting.md)).
 
 ## Tools
 
