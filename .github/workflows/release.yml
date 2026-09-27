@@ -58,8 +58,10 @@ jobs:
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
             args: ""
-    # The signing secrets are the build step's alone, below: never the job's, which would hand
-    # them to every install and build script that npm ci and cargo install run before it.
+    # The signing secrets are the tauri-action step's alone, below: never the job's, which would
+    # hand them to every install and build script that npm ci and cargo install run before it. The
+    # front end is built before that step, without them. The step itself still compiles the app,
+    # so the build scripts of its Rust dependencies run with them (devops.md, "Release").
     env:
       DRY_RUN: ${{ needs.plan.outputs.dry_run }}
       # Not secret: where every build checks for updates, computed so a fork's release checks its
@@ -68,6 +70,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install Tauri's system packages
         if: matrix.os == 'ubuntu-22.04'
         run: |
@@ -100,6 +104,12 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install the front-end
         run: npm ci --prefix frontend
+      # Built here, with no secret: release.conf.json turns off the beforeBuildCommand that would
+      # otherwise build it again inside the signing step. The engine was built above.
+      - name: Build the front-end
+        env:
+          LP_ENGINE_PREBUILT: "1"
+        run: npm run build:app --prefix frontend
       - name: Install the Tauri CLI
         run: cargo install tauri-cli --version ^2 --locked
       - name: Build the sidecar
@@ -154,28 +164,27 @@ jobs:
             target/release/bundle/**
           if-no-files-found: ignore
 
-  # Checks that player-js's committed build is current, then publishes it through trusted
-  # publishing: no token, `id-token: write` proves the identity to npm.
-  npm:
-    name: npm
+  # Checks that player-js's committed build is current and packs it, with no publishing right:
+  # npm ci's install scripts and the build's tools run here, never where the OIDC identity is.
+  npm-build:
+    name: npm build
     if: needs.plan.outputs.dry_run != 'true'
     needs: [plan, desktop]
     runs-on: ubuntu-latest
-    environment: release
     permissions:
       contents: read
-      id-token: write
     defaults:
       run:
         working-directory: player-js
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
-          registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: player-js/package-lock.json
       - name: Install
@@ -184,8 +193,43 @@ jobs:
         run: npm run build
       - name: Check that the committed build is current
         run: git diff --exit-code -- life-pixel.js
+      - name: Pack
+        run: npm pack --pack-destination "$RUNNER_TEMP/player"
+      - name: Keep the package
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: player-package
+          path: ${{ runner.temp }}/player/*.tgz
+          if-no-files-found: error
+
+  # Publishes the package npm-build packed, through trusted publishing: no token, and no
+  # dependency code runs in this job, so only npm itself holds the identity `id-token: write` proves.
+  npm:
+    name: npm
+    if: needs.plan.outputs.dry_run != 'true'
+    needs: [plan, npm-build]
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+      - name: Fetch the package
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: player-package
+          path: ${{ runner.temp }}/player
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish "$RUNNER_TEMP"/player/*.tgz --provenance --access public
 
   # Tags the `app` and `admin` images already built for this commit (H14's _build.yml) as
   # :vX.Y.Z and :latest, without rebuilding them.
