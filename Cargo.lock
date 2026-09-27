@@ -2831,7 +2831,7 @@ dependencies = [
  "opentelemetry",
  "opentelemetry-otlp",
  "opentelemetry_sdk",
- "rand 0.9.5",
+ "rand 0.10.3",
  "reqwest",
  "rpassword",
  "serde",
@@ -2844,7 +2844,7 @@ dependencies = [
  "time",
  "tokio",
  "tower",
- "tower-http",
+ "tower-http 0.7.1",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
@@ -3004,7 +3004,7 @@ dependencies = [
  "opentelemetry-otlp",
  "opentelemetry_sdk",
  "png 0.18.1",
- "rand 0.9.5",
+ "rand 0.10.3",
  "reqwest",
  "rmcp",
  "schemars 1.2.2",
@@ -3019,7 +3019,7 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tower",
- "tower-http",
+ "tower-http 0.7.1",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
@@ -3045,7 +3045,7 @@ dependencies = [
  "life-pixel-core",
  "life-pixel-service",
  "png 0.18.1",
- "rand 0.9.5",
+ "rand 0.10.3",
  "serde",
  "serde_json",
  "sha2 0.11.0",
@@ -4455,7 +4455,7 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "tower",
- "tower-http",
+ "tower-http 0.6.11",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -6277,13 +6277,30 @@ dependencies = [
  "futures-util",
  "http",
  "http-body",
- "http-body-util",
  "pin-project-lite",
  "tower",
  "tower-layer",
  "tower-service",
- "tracing",
  "url",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08a05a66a4fdd61cbbe0a1d755ffe0ca6aba159dd4820936a0ff8a8278245b9c"
+dependencies = [
+ "bitflags 2.13.2",
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "http-body-util",
+ "percent-encoding",
+ "pin-project-lite",
+ "tower-layer",
+ "tower-service",
+ "tracing",
 ]
 
 [[package]]
