@@ -67,7 +67,7 @@ type/topic ──PR──► dev ──CI green──► test (fast-forward) ─
 | `_build.yml` | push to `dev`, after promotion to `test` | builds `app` and `admin`, pushes `:<sha>` and `:staging` to GHCR |
 | `_promote.yml` | push to `main` | checks that the commit's CI run on a push to `dev` succeeded, then retags `:<sha>` as `:prod`, without rebuilding |
 | `_deploy.yml` | after build or promotion | deploys to the VPS over SSH (below) |
-| `security.yml` | pull request, push to `dev`, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`) — on a pull request, only the languages whose sources changed —, dependency review, `cargo deny`, `npm audit` |
+| `security.yml` | pull request, push to `dev`, weekly | CodeQL (`rust`, `javascript-typescript`, `actions`) — on a pull request, only the languages whose sources changed —, dependency review, `cargo deny`, `npm audit` with dated exceptions (`scripts/ci/check-npm-audit.mjs`, see [security-model.md](security-model.md#supply-chain)) |
 | `release.yml` | tag `vX.Y.Z`, or by hand as a dry run | desktop installers (Windows, macOS universal, Ubuntu 22.04) with the signed updater, `@life-pixel/player` to npm, Docker version tags, a draft GitHub Release with provenance attestations, published once every job passes — see "Release" below. Android joins at M6 |
 
 The same checks run on the pull request and on the push that follows the merge: the second run

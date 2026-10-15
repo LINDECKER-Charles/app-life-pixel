@@ -1,0 +1,8 @@
+[
+  {
+    "advisory": "GHSA-vfj7-8cjw-p6xm",
+    "package": "braces",
+    "reason": "Reached only by stylelint (dev), on this repository's lint globs; no fix exists.",
+    "expires": "2026-12-31"
+  }
+]

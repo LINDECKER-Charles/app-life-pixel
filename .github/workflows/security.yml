@@ -119,8 +119,9 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
+      # Development dependencies included, from moderate up; an advisory with no fix yet is
+      # accepted only by a dated entry of the directory's npm-audit-allowlist.json.
       - name: Audit the dependencies
-        working-directory: ${{ matrix.directory }}
-        run: npm audit --audit-level=moderate
+        run: node scripts/ci/check-npm-audit.mjs ${{ matrix.directory }}
 
   # F2 adds `cargo-deny`, F3 and L1 add `npm-audit`, each in its own job.
