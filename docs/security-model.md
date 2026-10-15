@@ -65,13 +65,22 @@ explains what the design protects and how.
 | Static analysis | CodeQL on `rust`, `javascript-typescript` and `actions` |
 | Dependency updates | Dependabot on `cargo`, `npm`, `github-actions` and `docker` |
 | Dependencies added by a pull request | dependency review action, failing on moderate severity and above |
-| Advisories, licences, sources | `cargo deny` (RustSec, licence allow-list, crates.io only), `npm audit` |
+| Advisories, licences, sources | `cargo deny` (RustSec, licence allow-list, crates.io only), `npm audit` of `frontend` and `player-js`, development dependencies included, failing on moderate severity and above, with dated exceptions (below) |
 | Licence boundary | `format`, `player` and `player-js` (MIT) pull no AGPL code and no copyleft dependency (D15) |
 | Secrets | GitHub secret scanning with push protection |
 | Actions | pinned to a full commit SHA, kept current by Dependabot |
 | Toolchains | pinned by `rust-toolchain.toml` and `.nvmrc`; lockfiles committed |
 | Releases | provenance attestations for images, installers and the npm package; reproducible player build, hash checked by CI |
 | Review | CODEOWNERS on `.github/`, `docker/`, `crates/format`, `crates/player`, `player-js` |
+
+**npm advisories with no fix yet.** `scripts/ci/check-npm-audit.mjs` audits a directory's
+lockfile and decides from the report, not from npm's exit status; it never runs `npm audit fix`.
+An advisory that cannot be fixed yet is accepted only by an entry of that directory's
+`npm-audit-allowlist.json` (none: nothing is accepted), one per advisory and package, with four
+required fields — `advisory` (GHSA id), `package`, `reason` and `expires` (`YYYY-MM-DD`, at most
+90 days ahead). Past its expiry the advisory blocks again, so that it is looked at anew; a
+malformed list accepts nothing; an entry that no longer matches a reported advisory raises a
+warning, to be removed.
 
 ## Privacy
 
