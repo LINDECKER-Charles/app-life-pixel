@@ -70,7 +70,7 @@ services:
     restart: unless-stopped
 
   backup-upload:
-    image: rclone/rclone@sha256:45401ad7410db1d67ffdb58e19059ad20b0d8e0285a60e38bbec55cc1019c7a5
+    image: rclone/rclone@sha256:2687085f718d3c628f7fdfb77c52a1d344332aed543110bb88088f2c70d43eb5
     profiles: [backup]
     networks: [default]
     entrypoint: ["sh", "/scripts/upload-loop.sh"]
