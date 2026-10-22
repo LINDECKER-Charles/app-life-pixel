@@ -29,7 +29,7 @@ fn entries(zip: &[u8]) -> Vec<Entry> {
             let mut bytes = Vec::new();
             file.read_to_end(&mut bytes).unwrap();
             Entry {
-                name: file.name().to_owned(),
+                name: file.name().unwrap().into_owned(),
                 compression: file.compression(),
                 modified: file.last_modified(),
                 bytes,
