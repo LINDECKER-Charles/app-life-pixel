@@ -107,7 +107,7 @@ mod tests {
 
         assert_eq!(bytes, file.metadata().unwrap().len());
         let mut zip = ZipArchive::new(file).unwrap();
-        let names: Vec<_> = zip.file_names().map(str::to_owned).collect();
+        let names: Vec<_> = zip.file_names().map(Result::unwrap).collect();
         let expected = [
             "library.json",
             "projects/",

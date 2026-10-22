@@ -142,7 +142,7 @@ async fn an_empty_library_exports_its_manifest_and_the_account() {
 
     let archive = export(&stack, &ada).await;
 
-    let mut names: Vec<&str> = archive.file_names().collect();
+    let mut names: Vec<_> = archive.file_names().map(Result::unwrap).collect();
     names.sort_unstable();
     assert_eq!(names, ["account.json", "library.json"]);
 }

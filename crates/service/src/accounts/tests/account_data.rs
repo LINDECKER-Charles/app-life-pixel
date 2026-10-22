@@ -105,7 +105,7 @@ async fn an_empty_library_exports_its_manifest_and_the_account() {
 
     assert_eq!(export.bytes, export.file.metadata().unwrap().len());
     let zip = ZipArchive::new(export.file).unwrap();
-    let names: Vec<_> = zip.file_names().collect();
+    let names: Vec<_> = zip.file_names().map(Result::unwrap).collect();
     assert_eq!(names, ["library.json", ACCOUNT_FILE]);
 }
 
