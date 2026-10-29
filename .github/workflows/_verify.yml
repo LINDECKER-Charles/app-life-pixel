@@ -17,7 +17,7 @@ jobs:
       - name: Compare CLAUDE.md and AGENTS.md
         run: cmp CLAUDE.md AGENTS.md
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
       - name: Test the pull request rules
@@ -43,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
       - name: Detect what the change calls for
@@ -76,7 +76,7 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Check formatting
         run: cargo fmt --all --check
       - name: Lint
@@ -103,7 +103,7 @@ jobs:
       - name: Install the nightly toolchain
         run: rustup toolchain install nightly --profile minimal
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: crates/format/fuzz
       - name: Install cargo-fuzz
@@ -114,7 +114,7 @@ jobs:
         run: cargo +nightly fuzz run decode -- -max_total_time=60
       - name: Keep the failing input
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fuzz-smoke-artifacts
           path: crates/format/fuzz/artifacts/decode
@@ -142,12 +142,12 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Build and check the player
         run: cargo xtask build-player --check
       - name: Keep the module that failed
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: player-module
           path: target/player/wasm32-unknown-unknown/player/life_pixel_player.wasm
@@ -178,7 +178,7 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Install the wasm-bindgen of Cargo.lock
         run: |
           version="$(cargo pkgid --locked wasm-bindgen)"
@@ -186,7 +186,7 @@ jobs:
       - name: Build the editor's engine
         run: cargo xtask build-editor
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -205,7 +205,7 @@ jobs:
         run: npm run test:engine
       - name: Keep the screenshots of the engine tests that failed
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: engine-test-screenshots
           path: frontend/.vitest/attachments
@@ -217,7 +217,7 @@ jobs:
       - name: Check that no catalogue is bundled
         run: npm run i18n:check-bundle
       - name: Keep the engine
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: engine
           path: |
@@ -241,7 +241,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -280,9 +280,9 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -319,7 +319,7 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Configure the local stack
         run: cp .env.example .env
       - name: Start the local stack
@@ -350,7 +350,7 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Configure the local stack
         run: cp .env.example .env
       - name: Start the local stack
@@ -390,13 +390,13 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Install the Tauri CLI
         run: cargo install tauri-cli --version ^2 --locked
       - name: Install tauri-driver
         run: cargo install tauri-driver --version 2.0.6 --locked
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -406,7 +406,7 @@ jobs:
       - name: Install the front-end
         run: npm ci --prefix frontend
       - name: Download the engine
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: engine
           path: frontend/projects/app
@@ -424,7 +424,7 @@ jobs:
         run: xvfb-run --auto-servernum npm test
       - name: Keep the screenshot of the smoke test that failed
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: desktop-smoke-test
           path: tauri/tests/e2e/test-results/
@@ -448,7 +448,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -456,7 +456,7 @@ jobs:
       - name: Install
         run: npm ci
       - name: Download the engine
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: engine
           path: frontend/projects/app
@@ -466,7 +466,7 @@ jobs:
         run: npm run e2e
       - name: Keep the report and the traces of the tests that failed
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-editor-report
           path: |
@@ -497,7 +497,7 @@ jobs:
           rustup toolchain install
           rustup show
       - name: Cache Cargo
-        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - name: Configure the local stack
         working-directory: .
         run: cp .env.example .env
@@ -505,7 +505,7 @@ jobs:
         working-directory: .
         run: docker compose up -d --wait
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -513,7 +513,7 @@ jobs:
       - name: Install
         run: npm ci
       - name: Download the engine
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: engine
           path: frontend/projects/app
@@ -525,7 +525,7 @@ jobs:
         run: npm run e2e:hosted
       - name: Keep the report, the traces and the servers' logs of the tests that failed
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: e2e-hosted-report
           path: |
