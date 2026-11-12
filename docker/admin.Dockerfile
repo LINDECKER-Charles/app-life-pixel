@@ -6,7 +6,7 @@
 
 # rust — the release admin server. The whole workspace is copied: Cargo resolves it with
 # --locked, even for one package.
-FROM rust:1.98-bookworm@sha256:93ce27a88655056a51dbdd8f5f2d7ddc071c7b0070fb288a37b5a285fc83971e AS rust
+FROM rust:1.99-bookworm@sha256:e6f2cff35d0f309acf8433b4f05878ed77092602c5065cc81801177da0bb3a9c AS rust
 ARG CARGO_BUILD_JOBS=4
 ENV CARGO_BUILD_JOBS=${CARGO_BUILD_JOBS}
 WORKDIR /life-pixel
@@ -25,7 +25,7 @@ RUN --mount=type=cache,id=life-pixel-cargo-registry,target=/usr/local/cargo/regi
     && cp target/release/life-pixel-admin-server /out/
 
 # web — the console.
-FROM node:24.21-bookworm-slim@sha256:0e0ff40c39bc087845bfb27465a0df4ea419520094bc35842ff83dd8cbe6f9b6 AS web
+FROM node:26.12-bookworm-slim@sha256:88e480776c6149ff1d098cd304f44bf18057fb5d284a3329b78162d29821e28c AS web
 WORKDIR /life-pixel
 # The workspace depends on the loader through file:../player-js.
 COPY player-js player-js
